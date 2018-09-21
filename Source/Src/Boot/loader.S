@@ -107,6 +107,8 @@ section .text:
     ; Setup kernel TSS
     call setup_tss
 
+    call kernel_kickstart
+
   ; TODO Remove
   global kernel_interrupt_handler
   kernel_interrupt_handler:

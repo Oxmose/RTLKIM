@@ -59,7 +59,7 @@ void detect_cpu(void)
         /* Check if CPUID return more that one available function */
         if(ret != 0)
         {
-            kernel_info("CPU Vendor ");
+            kernel_info("CPU Vendor: ");
 
             for(int8_t j = 0; j < 4; ++j)
             {
@@ -123,7 +123,6 @@ void detect_cpu(void)
             if((regs[2] & ECX_AVX) == ECX_AVX) { kernel_printf("AVX - "); }
             if((regs[2] & ECX_F16C) == ECX_F16C) { kernel_printf("F16C - "); }
             if((regs[2] & ECX_RDRAND) == ECX_RDRAND) { kernel_printf("RDRAND - "); }
-
             if((regs[3] & EDX_FPU) == EDX_FPU) { kernel_printf("FPU - "); }
             if((regs[3] & EDX_VME) == EDX_VME) { kernel_printf("VME - "); }
             if((regs[3] & EDX_DE) == EDX_DE) { kernel_printf("DE - "); }

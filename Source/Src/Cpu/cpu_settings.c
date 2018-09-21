@@ -39,13 +39,6 @@ static cpu_tss_entry_t cpu_main_tss __attribute__((aligned(4096)));
 /* Kernel stack pointer */
 extern uint32_t* kernel_stack;
 
-/* AP TSS*/
-cpu_tss_entry_t cpu_ap_tss[MAX_CPU_COUNT - 1] __attribute__((aligned(4096)));
-
-/* Kernel stacks for APs */
-uint32_t ap_cpu_stacks[MAX_CPU_COUNT - 1][KERNEL_STACK_SIZE];
-uint32_t ap_cpu_stack_size = KERNEL_STACK_SIZE;
-
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -658,8 +651,6 @@ static void format_idt_entry(volatile uint64_t* entry,
 
 void setup_gdt(void)
 {
-    uint32_t i;
-
     /* Set the kernel code descriptor */
     uint32_t kernel_code_seg_flags = GDT_FLAG_GRANULARITY_4K |
                                      GDT_FLAG_32_BIT_SEGMENT |
@@ -739,14 +730,6 @@ void setup_gdt(void)
                      ((uint32_t)(&cpu_main_tss)) + sizeof(cpu_tss_entry_t),
                      tss_seg_type, tss_seg_flags);
 
-    for(i = 1; i < MAX_CPU_COUNT; ++i)
-    {
-        format_gdt_entry(&cpu_gdt[(TSS_SEGMENT + i * 0x08) / 8],
-                         (uint32_t)&cpu_ap_tss[i - 1],
-                         ((uint32_t)(&cpu_ap_tss[i - 1])) + sizeof(cpu_tss_entry_t),
-                         tss_seg_type, tss_seg_flags);
-    }
-
     /* Set the GDT descriptor */
     cpu_gdt_size = ((sizeof(uint64_t) * GDT_ENTRY_COUNT) - 1);
     cpu_gdt_base = (uint32_t)&cpu_gdt;
@@ -794,8 +777,6 @@ void setup_idt(void)
 
 void setup_tss(void)
 {
-    uint32_t i;
-
     /* Blank the TSS */
     memset(&cpu_main_tss, 0, sizeof(cpu_tss_entry_t));
 
@@ -814,27 +795,6 @@ void setup_tss(void)
 
     /* Load TSS */
     __asm__ __volatile__("ltr %0" : : "rm" ((uint16_t)(TSS_SEGMENT)));
-
-    /* Setup the rest of the APs TSS */
-    for(i = 1; i < MAX_CPU_COUNT; ++i)
-    {
-        /* Blank the TSS */
-        memset(&cpu_ap_tss[i - 1], 0, sizeof(cpu_tss_entry_t));
-
-        /* Set basic values */
-        cpu_ap_tss[i - 1].ss0 = KERNEL_DS;
-    	cpu_ap_tss[i - 1].esp0 = (uint32_t)(ap_cpu_stacks[i - 1] +
-                                            ap_cpu_stack_size);
-
-        cpu_ap_tss[i - 1].es = KERNEL_DS;
-        cpu_ap_tss[i - 1].cs = KERNEL_CS;
-        cpu_ap_tss[i - 1].ss = KERNEL_DS;
-        cpu_ap_tss[i - 1].ds = KERNEL_DS;
-        cpu_ap_tss[i - 1].fs = KERNEL_DS;
-        cpu_ap_tss[i - 1].gs = KERNEL_DS;
-
-    	cpu_ap_tss[i - 1].iomap_base = sizeof(cpu_tss_entry_t);
-    }
 
     kernel_success("TSS Initialized at 0x%08x\n", &cpu_main_tss);
 }

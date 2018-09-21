@@ -43,14 +43,23 @@ LINKER_FILE = Config/linker.ld
 AS = nasm
 LD = ld
 OBJCOPY = objcopy
-QEMU = /usr/bin/qemu-system-i386
+QEMU = qemu-system-i386
 
-CFLAGS = -m32 -g -gstabs -O0 -std=c99 -nostdinc -fno-builtin -nostdlib \
-        -fno-stack-protector -nostartfiles -nodefaultlibs -Wall -Wextra \
-		-c 
+DEBUG_FLAGS = -O0 -g
+EXTRA_FLAGS = -O2
+
+CFLAGS = -m32 -gstabs -std=c11 -nostdinc -fno-builtin -nostdlib \
+        -fno-stack-protector -nostartfiles -nodefaultlibs -Wall -Wextra
+
+ifeq ($(DEBUG), TRUE)
+CFLAGS += $(DEBUG_FLAGS) -c
+else 
+CFLAGS += $(EXTRA_FLAGS) -c
+endif
+
 ASFLAGS = -g -f elf -w+gnu-elf-extensions
 LDFLAGS = -e loader -T $(LINKER_FILE) -melf_i386
-QEMUOPTS = -cpu core2duo -d guest_errors -rtc base=localtime -m 64M \
+QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 64 \
            -gdb tcp::1234 -vga std -smp 4 -kernel
 
 ######################### Compile options

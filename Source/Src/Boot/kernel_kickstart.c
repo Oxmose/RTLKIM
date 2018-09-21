@@ -8,10 +8,12 @@
  *
  * Version: 1.0
  *
- * Init the rest of the kernel after GDT, IDT and TSS
+ * Initializes the rest of the kernel after GDT, IDT and TSS initialization.
  * AT THIS POINT INTERRUPT SHOULD BE DISABLED
  ******************************************************************************/
 
+#include <Cpu/cpu.h>          /* detect_cpu() */
+#include <IO/kernel_output.h> /* kernel_output() */
 
 /*******************************************************************************
  * GLOBAL VARIABLES
@@ -26,5 +28,9 @@
  */
 void kernel_kickstart(void)
 {
+    kernel_info("----------------------------Kickstarting RTLK----------------------------");
+    /* Launch CPU detection routine */
+    detect_cpu();
+
     return;
 }
