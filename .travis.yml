@@ -1,0 +1,25 @@
+language: c
+sudo: required
+dist: trusty
+
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.9
+        packages:
+            - g++-7
+            - nasm
+
+matrix:
+  include:
+    - compiler: gcc
+      env: COMPILER=g++-7
+
+before_install:
+    - if [ "$TRAVIS_OS_NAME" = "linux"  ]; then sudo apt-get -qq update;    fi
+
+before_script:
+    - if [ "$COMPILER" = "g++-7"        ]; then export CXX="g++-7" CC="gcc-7";              fi
+
+script: ./.build-travis.sh
