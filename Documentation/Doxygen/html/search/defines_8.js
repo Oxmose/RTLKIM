@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['idt_5fentry_5fcount',['IDT_ENTRY_COUNT',['../cpu__settings_8h.html#ac5ba6506506314600fc35d49780e0072',1,'cpu_settings.h']]],
+  ['idt_5fflag_5fpl0',['IDT_FLAG_PL0',['../cpu__settings_8h.html#ad9fe2663969501bcffb2ce7f50de4321',1,'cpu_settings.h']]],
+  ['idt_5fflag_5fpl1',['IDT_FLAG_PL1',['../cpu__settings_8h.html#aa324eb394bc82d8df6c28ee306b87e5a',1,'cpu_settings.h']]],
+  ['idt_5fflag_5fpl2',['IDT_FLAG_PL2',['../cpu__settings_8h.html#a2a33a16204bac35f6d563318b3239777',1,'cpu_settings.h']]],
+  ['idt_5fflag_5fpl3',['IDT_FLAG_PL3',['../cpu__settings_8h.html#a2a29a1265ef69b55bfa5a5e3e664bf91',1,'cpu_settings.h']]],
+  ['idt_5fflag_5fpresent',['IDT_FLAG_PRESENT',['../cpu__settings_8h.html#a655be59845ed69ebd5b95e3ec05a0671',1,'cpu_settings.h']]],
+  ['idt_5fflag_5fstorage_5fseg',['IDT_FLAG_STORAGE_SEG',['../cpu__settings_8h.html#a9a6527e55b5e135419c71b7283f5a5b2',1,'cpu_settings.h']]],
+  ['idt_5ftype_5fint_5fgate',['IDT_TYPE_INT_GATE',['../cpu__settings_8h.html#a02d9fee9afa3f2e0c88f95ef47cb9141',1,'cpu_settings.h']]],
+  ['idt_5ftype_5ftask_5fgate',['IDT_TYPE_TASK_GATE',['../cpu__settings_8h.html#a98743f57f10f81b4d6ebaa17f5e8c503',1,'cpu_settings.h']]],
+  ['idt_5ftype_5ftrap_5fgate',['IDT_TYPE_TRAP_GATE',['../cpu__settings_8h.html#a1021029b5a224a966cb356460a4aba48',1,'cpu_settings.h']]],
+  ['int16_5fmax',['INT16_MAX',['../stdint_8h.html#ac58f2c111cc9989c86db2a7dc4fd84ca',1,'stdint.h']]],
+  ['int16_5fmin',['INT16_MIN',['../stdint_8h.html#ad4e9955955b27624963643eac448118a',1,'stdint.h']]],
+  ['int32_5fmax',['INT32_MAX',['../stdint_8h.html#a181807730d4a375f848ba139813ce04f',1,'stdint.h']]],
+  ['int32_5fmin',['INT32_MIN',['../stdint_8h.html#a688eb21a22db27c2b2bd5836943cdcbe',1,'stdint.h']]],
+  ['int64_5fmax',['INT64_MAX',['../stdint_8h.html#ad0d744f05898e32d01f73f8af3cd2071',1,'stdint.h']]],
+  ['int64_5fmin',['INT64_MIN',['../stdint_8h.html#ab21f12f372f67b8ff0aa3432336ede67',1,'stdint.h']]],
+  ['int8_5fmax',['INT8_MAX',['../stdint_8h.html#aaf7f29f45f1a513b4748a4e5014ddf6a',1,'stdint.h']]],
+  ['int8_5fmin',['INT8_MIN',['../stdint_8h.html#aadcf2a81af243df333b31efa6461ab8e',1,'stdint.h']]],
+  ['int_5fbits',['INT_BITS',['../div64_8c.html#aa5622509f213f84fa22674f8f6aed801',1,'div64.c']]]
+];

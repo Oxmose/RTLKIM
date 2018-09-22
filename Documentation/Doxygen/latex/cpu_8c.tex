@@ -1,0 +1,86 @@
+\hypertarget{cpu_8c}{}\section{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Cpu/cpu.c File Reference}
+\label{cpu_8c}\index{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Cpu/cpu.\+c@{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Cpu/cpu.\+c}}
+{\ttfamily \#include $<$Lib/stdint.\+h$>$}\newline
+{\ttfamily \#include $<$Lib/stddef.\+h$>$}\newline
+{\ttfamily \#include $<$Lib/string.\+h$>$}\newline
+{\ttfamily \#include $<$I\+O/kernel\+\_\+output.\+h$>$}\newline
+{\ttfamily \#include $<$Cpu/cpu.\+h$>$}\newline
+Include dependency graph for cpu.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{cpu_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{stddef_8h_a51557cb52bbb9ee9d55aab5b9b16c3d0}{O\+S\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+E} \hyperlink{cpu_8c_a161ae3250d5ebc057b2784b850564c42}{get\+\_\+cpu\+\_\+info} (\hyperlink{cpu_8h_a5d0444e34676b8c836666095091ceb88}{cpu\+\_\+info\+\_\+t} $\ast$info)
+\item 
+\hyperlink{stdint_8h_aef44329758059c91c76d334e8fc09700}{int8\+\_\+t} \hyperlink{cpu_8c_a1a8cb55ce40a2adb1636440c1c20413c}{cpuid\+\_\+capable} (void)
+\item 
+void \hyperlink{cpu_8c_aab96f38dab23a8fc333a33b99d3d7de9}{detect\+\_\+cpu} (void)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{cpu_8h_a5d0444e34676b8c836666095091ceb88}{cpu\+\_\+info\+\_\+t} \hyperlink{cpu_8c_a4d1b1a0aae8374f3e083083c2046d72a}{cpu\+\_\+info}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{cpu_8c_a1a8cb55ce40a2adb1636440c1c20413c}\label{cpu_8c_a1a8cb55ce40a2adb1636440c1c20413c}} 
+\index{cpu.\+c@{cpu.\+c}!cpuid\+\_\+capable@{cpuid\+\_\+capable}}
+\index{cpuid\+\_\+capable@{cpuid\+\_\+capable}!cpu.\+c@{cpu.\+c}}
+\subsubsection{\texorpdfstring{cpuid\+\_\+capable()}{cpuid\_capable()}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_aef44329758059c91c76d334e8fc09700}{int8\+\_\+t} cpuid\+\_\+capable (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{cpu_8c_a1a8cb55ce40a2adb1636440c1c20413c_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{cpu_8c_aab96f38dab23a8fc333a33b99d3d7de9}\label{cpu_8c_aab96f38dab23a8fc333a33b99d3d7de9}} 
+\index{cpu.\+c@{cpu.\+c}!detect\+\_\+cpu@{detect\+\_\+cpu}}
+\index{detect\+\_\+cpu@{detect\+\_\+cpu}!cpu.\+c@{cpu.\+c}}
+\subsubsection{\texorpdfstring{detect\+\_\+cpu()}{detect\_cpu()}}
+{\footnotesize\ttfamily void detect\+\_\+cpu (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=260pt]{cpu_8c_aab96f38dab23a8fc333a33b99d3d7de9_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=267pt]{cpu_8c_aab96f38dab23a8fc333a33b99d3d7de9_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{cpu_8c_a161ae3250d5ebc057b2784b850564c42}\label{cpu_8c_a161ae3250d5ebc057b2784b850564c42}} 
+\index{cpu.\+c@{cpu.\+c}!get\+\_\+cpu\+\_\+info@{get\+\_\+cpu\+\_\+info}}
+\index{get\+\_\+cpu\+\_\+info@{get\+\_\+cpu\+\_\+info}!cpu.\+c@{cpu.\+c}}
+\subsubsection{\texorpdfstring{get\+\_\+cpu\+\_\+info()}{get\_cpu\_info()}}
+{\footnotesize\ttfamily \hyperlink{stddef_8h_a51557cb52bbb9ee9d55aab5b9b16c3d0}{O\+S\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+E} get\+\_\+cpu\+\_\+info (\begin{DoxyParamCaption}\item[{\hyperlink{cpu_8h_a5d0444e34676b8c836666095091ceb88}{cpu\+\_\+info\+\_\+t} $\ast$}]{info }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=242pt]{cpu_8c_a161ae3250d5ebc057b2784b850564c42_cgraph}
+\end{center}
+\end{figure}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{cpu_8c_a4d1b1a0aae8374f3e083083c2046d72a}\label{cpu_8c_a4d1b1a0aae8374f3e083083c2046d72a}} 
+\index{cpu.\+c@{cpu.\+c}!cpu\+\_\+info@{cpu\+\_\+info}}
+\index{cpu\+\_\+info@{cpu\+\_\+info}!cpu.\+c@{cpu.\+c}}
+\subsubsection{\texorpdfstring{cpu\+\_\+info}{cpu\_info}}
+{\footnotesize\ttfamily \hyperlink{cpu_8h_a5d0444e34676b8c836666095091ceb88}{cpu\+\_\+info\+\_\+t} \hyperlink{structcpu__info}{cpu\+\_\+info}}
+

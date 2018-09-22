@@ -1,0 +1,147 @@
+\hypertarget{kernel__output_8c}{}\section{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+I\+O/kernel\+\_\+output.c File Reference}
+\label{kernel__output_8c}\index{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+I\+O/kernel\+\_\+output.\+c@{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+I\+O/kernel\+\_\+output.\+c}}
+{\ttfamily \#include $<$Lib/string.\+h$>$}\newline
+{\ttfamily \#include $<$Lib/stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$Drivers/graphic.\+h$>$}\newline
+{\ttfamily \#include $<$Drivers/serial.\+h$>$}\newline
+{\ttfamily \#include $<$I\+O/kernel\+\_\+output.\+h$>$}\newline
+Include dependency graph for kernel\+\_\+output.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{kernel__output_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{kernel__output_8c_ab117a38b3b66d615e62fe6e69544cf73}{tag\+\_\+printf} (const char $\ast$fmt,...)
+\item 
+void \hyperlink{kernel__output_8c_a55516ac44e090adb730dd682f4d8ae7b}{kernel\+\_\+printf} (const char $\ast$fmt,...)
+\item 
+void \hyperlink{kernel__output_8c_ae21908dcff90a9e3b6c6674aad9dd4bd}{kernel\+\_\+error} (const char $\ast$fmt,...)
+\item 
+void \hyperlink{kernel__output_8c_ada9153bf02cabf49bf9831e2425f5308}{kernel\+\_\+success} (const char $\ast$fmt,...)
+\item 
+void \hyperlink{kernel__output_8c_ad62b51b67332a06c80d3013cb1efed0d}{kernel\+\_\+info} (const char $\ast$fmt,...)
+\item 
+void \hyperlink{kernel__output_8c_abd40dbd84fff119a9a4385da8360441e}{kernel\+\_\+debug} (const char $\ast$fmt,...)
+\item 
+void \hyperlink{kernel__output_8c_a1575051fca52879a0255bba40c312575}{kernel\+\_\+serial\+\_\+debug} (const char $\ast$fmt,...)
+\item 
+void \hyperlink{kernel__output_8c_ae9363952bbb60281d5b9069b485fb7a7}{kernel\+\_\+doprint} (const char $\ast$str, \+\_\+\+\_\+builtin\+\_\+va\+\_\+list args)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{kernel__output_8c_abd40dbd84fff119a9a4385da8360441e}\label{kernel__output_8c_abd40dbd84fff119a9a4385da8360441e}} 
+\index{kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}!kernel\+\_\+debug@{kernel\+\_\+debug}}
+\index{kernel\+\_\+debug@{kernel\+\_\+debug}!kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}}
+\subsubsection{\texorpdfstring{kernel\+\_\+debug()}{kernel\_debug()}}
+{\footnotesize\ttfamily void kernel\+\_\+debug (\begin{DoxyParamCaption}\item[{const char $\ast$}]{fmt,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{kernel__output_8c_abd40dbd84fff119a9a4385da8360441e_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{kernel__output_8c_ae9363952bbb60281d5b9069b485fb7a7}\label{kernel__output_8c_ae9363952bbb60281d5b9069b485fb7a7}} 
+\index{kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}!kernel\+\_\+doprint@{kernel\+\_\+doprint}}
+\index{kernel\+\_\+doprint@{kernel\+\_\+doprint}!kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}}
+\subsubsection{\texorpdfstring{kernel\+\_\+doprint()}{kernel\_doprint()}}
+{\footnotesize\ttfamily void kernel\+\_\+doprint (\begin{DoxyParamCaption}\item[{const char $\ast$}]{str,  }\item[{\+\_\+\+\_\+builtin\+\_\+va\+\_\+list}]{args }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{kernel__output_8c_ae9363952bbb60281d5b9069b485fb7a7_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{kernel__output_8c_ae9363952bbb60281d5b9069b485fb7a7_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{kernel__output_8c_ae21908dcff90a9e3b6c6674aad9dd4bd}\label{kernel__output_8c_ae21908dcff90a9e3b6c6674aad9dd4bd}} 
+\index{kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}!kernel\+\_\+error@{kernel\+\_\+error}}
+\index{kernel\+\_\+error@{kernel\+\_\+error}!kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}}
+\subsubsection{\texorpdfstring{kernel\+\_\+error()}{kernel\_error()}}
+{\footnotesize\ttfamily void kernel\+\_\+error (\begin{DoxyParamCaption}\item[{const char $\ast$}]{fmt,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{kernel__output_8c_ae21908dcff90a9e3b6c6674aad9dd4bd_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{kernel__output_8c_ad62b51b67332a06c80d3013cb1efed0d}\label{kernel__output_8c_ad62b51b67332a06c80d3013cb1efed0d}} 
+\index{kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}!kernel\+\_\+info@{kernel\+\_\+info}}
+\index{kernel\+\_\+info@{kernel\+\_\+info}!kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}}
+\subsubsection{\texorpdfstring{kernel\+\_\+info()}{kernel\_info()}}
+{\footnotesize\ttfamily void kernel\+\_\+info (\begin{DoxyParamCaption}\item[{const char $\ast$}]{fmt,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{kernel__output_8c_ad62b51b67332a06c80d3013cb1efed0d_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{kernel__output_8c_a55516ac44e090adb730dd682f4d8ae7b}\label{kernel__output_8c_a55516ac44e090adb730dd682f4d8ae7b}} 
+\index{kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}!kernel\+\_\+printf@{kernel\+\_\+printf}}
+\index{kernel\+\_\+printf@{kernel\+\_\+printf}!kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}}
+\subsubsection{\texorpdfstring{kernel\+\_\+printf()}{kernel\_printf()}}
+{\footnotesize\ttfamily void kernel\+\_\+printf (\begin{DoxyParamCaption}\item[{const char $\ast$}]{fmt,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{kernel__output_8c_a55516ac44e090adb730dd682f4d8ae7b_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=272pt]{kernel__output_8c_a55516ac44e090adb730dd682f4d8ae7b_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{kernel__output_8c_a1575051fca52879a0255bba40c312575}\label{kernel__output_8c_a1575051fca52879a0255bba40c312575}} 
+\index{kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}!kernel\+\_\+serial\+\_\+debug@{kernel\+\_\+serial\+\_\+debug}}
+\index{kernel\+\_\+serial\+\_\+debug@{kernel\+\_\+serial\+\_\+debug}!kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}}
+\subsubsection{\texorpdfstring{kernel\+\_\+serial\+\_\+debug()}{kernel\_serial\_debug()}}
+{\footnotesize\ttfamily void kernel\+\_\+serial\+\_\+debug (\begin{DoxyParamCaption}\item[{const char $\ast$}]{fmt,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{kernel__output_8c_ada9153bf02cabf49bf9831e2425f5308}\label{kernel__output_8c_ada9153bf02cabf49bf9831e2425f5308}} 
+\index{kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}!kernel\+\_\+success@{kernel\+\_\+success}}
+\index{kernel\+\_\+success@{kernel\+\_\+success}!kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}}
+\subsubsection{\texorpdfstring{kernel\+\_\+success()}{kernel\_success()}}
+{\footnotesize\ttfamily void kernel\+\_\+success (\begin{DoxyParamCaption}\item[{const char $\ast$}]{fmt,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{kernel__output_8c_ada9153bf02cabf49bf9831e2425f5308_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{kernel__output_8c_ab117a38b3b66d615e62fe6e69544cf73}\label{kernel__output_8c_ab117a38b3b66d615e62fe6e69544cf73}} 
+\index{kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}!tag\+\_\+printf@{tag\+\_\+printf}}
+\index{tag\+\_\+printf@{tag\+\_\+printf}!kernel\+\_\+output.\+c@{kernel\+\_\+output.\+c}}
+\subsubsection{\texorpdfstring{tag\+\_\+printf()}{tag\_printf()}}
+{\footnotesize\ttfamily void tag\+\_\+printf (\begin{DoxyParamCaption}\item[{const char $\ast$}]{fmt,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=258pt]{kernel__output_8c_ab117a38b3b66d615e62fe6e69544cf73_icgraph}
+\end{center}
+\end{figure}

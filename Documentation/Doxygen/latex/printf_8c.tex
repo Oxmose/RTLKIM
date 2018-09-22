@@ -1,0 +1,142 @@
+\hypertarget{printf_8c}{}\section{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Lib/printf.c File Reference}
+\label{printf_8c}\index{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Lib/printf.\+c@{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Lib/printf.\+c}}
+{\ttfamily \#include $<$Lib/stddef.\+h$>$}\newline
+{\ttfamily \#include $<$Lib/stdio.\+h$>$}\newline
+Include dependency graph for printf.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=228pt]{printf_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{printf_8c_ae9363952bbb60281d5b9069b485fb7a7}{kernel\+\_\+doprint} (const char $\ast$str, \+\_\+\+\_\+builtin\+\_\+va\+\_\+list args)
+\item 
+void \hyperlink{printf_8c_aad6fbd2023787a0b075f009c42a82cbf}{screen\+\_\+put\+\_\+char} (const char c)
+\item 
+int \hyperlink{printf_8c_aa67a5fe4b1c84b5b61e0cfaef1c71c50}{vprintf} (const char $\ast$fmt, \+\_\+\+\_\+builtin\+\_\+va\+\_\+list args)
+\item 
+int \hyperlink{printf_8c_a55f3d956bb2ba20b5059e9e25484a47f}{printf} (const char $\ast$fmt,...)
+\item 
+int \hyperlink{printf_8c_af4de2514b7778805db3815e8dd6cf09a}{putchar} (int c)
+\item 
+int \hyperlink{printf_8c_ad41876f99f190c7488e64ef39c50a23f}{puts} (const char $\ast$s)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{printf_8c_ae9363952bbb60281d5b9069b485fb7a7}\label{printf_8c_ae9363952bbb60281d5b9069b485fb7a7}} 
+\index{printf.\+c@{printf.\+c}!kernel\+\_\+doprint@{kernel\+\_\+doprint}}
+\index{kernel\+\_\+doprint@{kernel\+\_\+doprint}!printf.\+c@{printf.\+c}}
+\subsubsection{\texorpdfstring{kernel\+\_\+doprint()}{kernel\_doprint()}}
+{\footnotesize\ttfamily void kernel\+\_\+doprint (\begin{DoxyParamCaption}\item[{const char $\ast$}]{str,  }\item[{\+\_\+\+\_\+builtin\+\_\+va\+\_\+list}]{args }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{printf_8c_ae9363952bbb60281d5b9069b485fb7a7_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{printf_8c_ae9363952bbb60281d5b9069b485fb7a7_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{printf_8c_a55f3d956bb2ba20b5059e9e25484a47f}\label{printf_8c_a55f3d956bb2ba20b5059e9e25484a47f}} 
+\index{printf.\+c@{printf.\+c}!printf@{printf}}
+\index{printf@{printf}!printf.\+c@{printf.\+c}}
+\subsubsection{\texorpdfstring{printf()}{printf()}}
+{\footnotesize\ttfamily int printf (\begin{DoxyParamCaption}\item[{const char $\ast$}]{fmt,  }\item[{}]{... }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{printf_8c_a55f3d956bb2ba20b5059e9e25484a47f_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=195pt]{printf_8c_a55f3d956bb2ba20b5059e9e25484a47f_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{printf_8c_af4de2514b7778805db3815e8dd6cf09a}\label{printf_8c_af4de2514b7778805db3815e8dd6cf09a}} 
+\index{printf.\+c@{printf.\+c}!putchar@{putchar}}
+\index{putchar@{putchar}!printf.\+c@{printf.\+c}}
+\subsubsection{\texorpdfstring{putchar()}{putchar()}}
+{\footnotesize\ttfamily int putchar (\begin{DoxyParamCaption}\item[{int}]{c }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{printf_8c_af4de2514b7778805db3815e8dd6cf09a_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=200pt]{printf_8c_af4de2514b7778805db3815e8dd6cf09a_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{printf_8c_ad41876f99f190c7488e64ef39c50a23f}\label{printf_8c_ad41876f99f190c7488e64ef39c50a23f}} 
+\index{printf.\+c@{printf.\+c}!puts@{puts}}
+\index{puts@{puts}!printf.\+c@{printf.\+c}}
+\subsubsection{\texorpdfstring{puts()}{puts()}}
+{\footnotesize\ttfamily int puts (\begin{DoxyParamCaption}\item[{const char $\ast$}]{s }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{printf_8c_ad41876f99f190c7488e64ef39c50a23f_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{printf_8c_aad6fbd2023787a0b075f009c42a82cbf}\label{printf_8c_aad6fbd2023787a0b075f009c42a82cbf}} 
+\index{printf.\+c@{printf.\+c}!screen\+\_\+put\+\_\+char@{screen\+\_\+put\+\_\+char}}
+\index{screen\+\_\+put\+\_\+char@{screen\+\_\+put\+\_\+char}!printf.\+c@{printf.\+c}}
+\subsubsection{\texorpdfstring{screen\+\_\+put\+\_\+char()}{screen\_put\_char()}}
+{\footnotesize\ttfamily void screen\+\_\+put\+\_\+char (\begin{DoxyParamCaption}\item[{const char}]{c }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=280pt]{printf_8c_aad6fbd2023787a0b075f009c42a82cbf_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=325pt]{printf_8c_aad6fbd2023787a0b075f009c42a82cbf_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{printf_8c_aa67a5fe4b1c84b5b61e0cfaef1c71c50}\label{printf_8c_aa67a5fe4b1c84b5b61e0cfaef1c71c50}} 
+\index{printf.\+c@{printf.\+c}!vprintf@{vprintf}}
+\index{vprintf@{vprintf}!printf.\+c@{printf.\+c}}
+\subsubsection{\texorpdfstring{vprintf()}{vprintf()}}
+{\footnotesize\ttfamily int vprintf (\begin{DoxyParamCaption}\item[{const char $\ast$}]{fmt,  }\item[{\+\_\+\+\_\+builtin\+\_\+va\+\_\+list}]{args }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{printf_8c_aa67a5fe4b1c84b5b61e0cfaef1c71c50_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=275pt]{printf_8c_aa67a5fe4b1c84b5b61e0cfaef1c71c50_icgraph}
+\end{center}
+\end{figure}

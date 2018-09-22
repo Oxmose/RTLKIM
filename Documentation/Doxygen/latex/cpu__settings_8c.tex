@@ -1,0 +1,139 @@
+\hypertarget{cpu__settings_8c}{}\section{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Cpu/cpu\+\_\+settings.c File Reference}
+\label{cpu__settings_8c}\index{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Cpu/cpu\+\_\+settings.\+c@{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Cpu/cpu\+\_\+settings.\+c}}
+{\ttfamily \#include $<$Lib/string.\+h$>$}\newline
+{\ttfamily \#include $<$Lib/stdint.\+h$>$}\newline
+{\ttfamily \#include $<$I\+O/kernel\+\_\+output.\+h$>$}\newline
+{\ttfamily \#include $<$config.\+h$>$}\newline
+{\ttfamily \#include $<$Cpu/cpu\+\_\+settings.\+h$>$}\newline
+Include dependency graph for cpu\+\_\+settings.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{cpu__settings_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{cpu__settings_8c_a1dee95fcf5b686585b942ed28875b442}{setup\+\_\+gdt} (void)
+\begin{DoxyCompactList}\small\item\em Setups the kernel\textquotesingle{}s G\+DT in memory and loads it in the G\+DT register. \end{DoxyCompactList}\item 
+void \hyperlink{cpu__settings_8c_a9782031a7d6cb759022b58789382f5eb}{setup\+\_\+idt} (void)
+\begin{DoxyCompactList}\small\item\em Setups the generic kernel\textquotesingle{}s I\+DT in memory and loads it in the I\+DT register. \end{DoxyCompactList}\item 
+void \hyperlink{cpu__settings_8c_aadd2bb249d145a23fefd086361c11ff2}{setup\+\_\+tss} (void)
+\begin{DoxyCompactList}\small\item\em Setups the main C\+PU T\+SS for the kernel. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{stdint_8h_aaa5d1cd013383c889537491c3cfd9aad}{uint64\+\_\+t} \hyperlink{cpu__settings_8c_aca4fd82e983823db5ba886641c00f09c}{cpu\+\_\+gdt} \mbox{[}\hyperlink{cpu__settings_8h_a297f2b8ecd7aef9861d7b84527ee0c4e}{G\+D\+T\+\_\+\+E\+N\+T\+R\+Y\+\_\+\+C\+O\+U\+NT}\mbox{]}
+\item 
+\hyperlink{stdint_8h_a273cf69d639a59973b6019625df33e30}{uint16\+\_\+t} \hyperlink{cpu__settings_8c_aae08bd0e9fc57e3643d7d07566c7db81}{cpu\+\_\+gdt\+\_\+size}
+\item 
+\hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t} \hyperlink{cpu__settings_8c_a734a5a2989b032d31447ffba18bdd9c3}{cpu\+\_\+gdt\+\_\+base}
+\item 
+\hyperlink{stdint_8h_aaa5d1cd013383c889537491c3cfd9aad}{uint64\+\_\+t} \hyperlink{cpu__settings_8c_a746bbef68005d11824f29bee142f1d36}{cpu\+\_\+idt} \mbox{[}\hyperlink{cpu__settings_8h_ac5ba6506506314600fc35d49780e0072}{I\+D\+T\+\_\+\+E\+N\+T\+R\+Y\+\_\+\+C\+O\+U\+NT}\mbox{]}
+\item 
+\hyperlink{stdint_8h_a273cf69d639a59973b6019625df33e30}{uint16\+\_\+t} \hyperlink{cpu__settings_8c_a2d3f2b003db3fe4e36fcce62bd24867e}{cpu\+\_\+idt\+\_\+size}
+\item 
+\hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t} \hyperlink{cpu__settings_8c_a7cb2b7e0e20c85d193fa427047f8c02e}{cpu\+\_\+idt\+\_\+base}
+\item 
+\hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t} $\ast$ \hyperlink{cpu__settings_8c_a6a4daa206b30d32ba90f51d0c53b450b}{kernel\+\_\+stack}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{cpu__settings_8c_a1dee95fcf5b686585b942ed28875b442}\label{cpu__settings_8c_a1dee95fcf5b686585b942ed28875b442}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!setup\+\_\+gdt@{setup\+\_\+gdt}}
+\index{setup\+\_\+gdt@{setup\+\_\+gdt}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{setup\+\_\+gdt()}{setup\_gdt()}}
+{\footnotesize\ttfamily void setup\+\_\+gdt (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Setups the kernel\textquotesingle{}s G\+DT in memory and loads it in the G\+DT register. 
+
+Setups a G\+DT for the kernel. Fills the entries in the G\+DT table and load the new G\+DT in the C\+PU\textquotesingle{}s G\+DT register. Once done, the function sets the segment registers (CS, DS, ES, FS, GS, SS) of the C\+PU according to the kernel\textquotesingle{}s settings. Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=227pt]{cpu__settings_8c_a1dee95fcf5b686585b942ed28875b442_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{cpu__settings_8c_a9782031a7d6cb759022b58789382f5eb}\label{cpu__settings_8c_a9782031a7d6cb759022b58789382f5eb}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!setup\+\_\+idt@{setup\+\_\+idt}}
+\index{setup\+\_\+idt@{setup\+\_\+idt}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{setup\+\_\+idt()}{setup\_idt()}}
+{\footnotesize\ttfamily void setup\+\_\+idt (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Setups the generic kernel\textquotesingle{}s I\+DT in memory and loads it in the I\+DT register. 
+
+Setups a simple I\+DT for the kernel. Fills the entries in the I\+DT table by adding basic support to the x86 exception (interrutps 0 to 32). The rest of the interrupts are not set. Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=224pt]{cpu__settings_8c_a9782031a7d6cb759022b58789382f5eb_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{cpu__settings_8c_aadd2bb249d145a23fefd086361c11ff2}\label{cpu__settings_8c_aadd2bb249d145a23fefd086361c11ff2}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!setup\+\_\+tss@{setup\+\_\+tss}}
+\index{setup\+\_\+tss@{setup\+\_\+tss}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{setup\+\_\+tss()}{setup\_tss()}}
+{\footnotesize\ttfamily void setup\+\_\+tss (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Setups the main C\+PU T\+SS for the kernel. 
+
+Initializes the main C\+PU\textquotesingle{}s T\+SS with kernel settings in memory and loads it in the T\+SS register. Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=227pt]{cpu__settings_8c_aadd2bb249d145a23fefd086361c11ff2_cgraph}
+\end{center}
+\end{figure}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{cpu__settings_8c_aca4fd82e983823db5ba886641c00f09c}\label{cpu__settings_8c_aca4fd82e983823db5ba886641c00f09c}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!cpu\+\_\+gdt@{cpu\+\_\+gdt}}
+\index{cpu\+\_\+gdt@{cpu\+\_\+gdt}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{cpu\+\_\+gdt}{cpu\_gdt}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_aaa5d1cd013383c889537491c3cfd9aad}{uint64\+\_\+t} cpu\+\_\+gdt\mbox{[}\hyperlink{cpu__settings_8h_a297f2b8ecd7aef9861d7b84527ee0c4e}{G\+D\+T\+\_\+\+E\+N\+T\+R\+Y\+\_\+\+C\+O\+U\+NT}\mbox{]}}
+
+\mbox{\Hypertarget{cpu__settings_8c_a734a5a2989b032d31447ffba18bdd9c3}\label{cpu__settings_8c_a734a5a2989b032d31447ffba18bdd9c3}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!cpu\+\_\+gdt\+\_\+base@{cpu\+\_\+gdt\+\_\+base}}
+\index{cpu\+\_\+gdt\+\_\+base@{cpu\+\_\+gdt\+\_\+base}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{cpu\+\_\+gdt\+\_\+base}{cpu\_gdt\_base}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t} cpu\+\_\+gdt\+\_\+base}
+
+\mbox{\Hypertarget{cpu__settings_8c_aae08bd0e9fc57e3643d7d07566c7db81}\label{cpu__settings_8c_aae08bd0e9fc57e3643d7d07566c7db81}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!cpu\+\_\+gdt\+\_\+size@{cpu\+\_\+gdt\+\_\+size}}
+\index{cpu\+\_\+gdt\+\_\+size@{cpu\+\_\+gdt\+\_\+size}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{cpu\+\_\+gdt\+\_\+size}{cpu\_gdt\_size}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_a273cf69d639a59973b6019625df33e30}{uint16\+\_\+t} cpu\+\_\+gdt\+\_\+size}
+
+\mbox{\Hypertarget{cpu__settings_8c_a746bbef68005d11824f29bee142f1d36}\label{cpu__settings_8c_a746bbef68005d11824f29bee142f1d36}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!cpu\+\_\+idt@{cpu\+\_\+idt}}
+\index{cpu\+\_\+idt@{cpu\+\_\+idt}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{cpu\+\_\+idt}{cpu\_idt}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_aaa5d1cd013383c889537491c3cfd9aad}{uint64\+\_\+t} cpu\+\_\+idt\mbox{[}\hyperlink{cpu__settings_8h_ac5ba6506506314600fc35d49780e0072}{I\+D\+T\+\_\+\+E\+N\+T\+R\+Y\+\_\+\+C\+O\+U\+NT}\mbox{]}}
+
+\mbox{\Hypertarget{cpu__settings_8c_a7cb2b7e0e20c85d193fa427047f8c02e}\label{cpu__settings_8c_a7cb2b7e0e20c85d193fa427047f8c02e}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!cpu\+\_\+idt\+\_\+base@{cpu\+\_\+idt\+\_\+base}}
+\index{cpu\+\_\+idt\+\_\+base@{cpu\+\_\+idt\+\_\+base}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{cpu\+\_\+idt\+\_\+base}{cpu\_idt\_base}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t} cpu\+\_\+idt\+\_\+base}
+
+\mbox{\Hypertarget{cpu__settings_8c_a2d3f2b003db3fe4e36fcce62bd24867e}\label{cpu__settings_8c_a2d3f2b003db3fe4e36fcce62bd24867e}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!cpu\+\_\+idt\+\_\+size@{cpu\+\_\+idt\+\_\+size}}
+\index{cpu\+\_\+idt\+\_\+size@{cpu\+\_\+idt\+\_\+size}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{cpu\+\_\+idt\+\_\+size}{cpu\_idt\_size}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_a273cf69d639a59973b6019625df33e30}{uint16\+\_\+t} cpu\+\_\+idt\+\_\+size}
+
+\mbox{\Hypertarget{cpu__settings_8c_a6a4daa206b30d32ba90f51d0c53b450b}\label{cpu__settings_8c_a6a4daa206b30d32ba90f51d0c53b450b}} 
+\index{cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}!kernel\+\_\+stack@{kernel\+\_\+stack}}
+\index{kernel\+\_\+stack@{kernel\+\_\+stack}!cpu\+\_\+settings.\+c@{cpu\+\_\+settings.\+c}}
+\subsubsection{\texorpdfstring{kernel\+\_\+stack}{kernel\_stack}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t}$\ast$ kernel\+\_\+stack}
+

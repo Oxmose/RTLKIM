@@ -1,0 +1,103 @@
+\hypertarget{serial_8c}{}\section{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Drivers/serial.c File Reference}
+\label{serial_8c}\index{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Drivers/serial.\+c@{/home/alexy/\+Documents/\+Dev/\+R\+T\+L\+K\+I\+M/\+Source/\+Src/\+Drivers/serial.\+c}}
+{\ttfamily \#include $<$Lib/stddef.\+h$>$}\newline
+{\ttfamily \#include $<$Lib/stdint.\+h$>$}\newline
+{\ttfamily \#include $<$Lib/string.\+h$>$}\newline
+{\ttfamily \#include $<$Cpu/cpu.\+h$>$}\newline
+{\ttfamily \#include $<$Drivers/serial.\+h$>$}\newline
+Include dependency graph for serial.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{serial_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{stddef_8h_a51557cb52bbb9ee9d55aab5b9b16c3d0}{O\+S\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+E} \hyperlink{serial_8c_a127638fb58a6cf0f0f880ae1697e2c33}{init\+\_\+serial} (void)
+\item 
+void \hyperlink{serial_8c_afb7bd137c3cca6f25fb34170ff58c999}{serial\+\_\+write} (const \hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t} port, const \hyperlink{stdint_8h_aba7bc1797add20fe3efdf37ced1182c5}{uint8\+\_\+t} data)
+\item 
+void \hyperlink{serial_8c_a89ce044b86475f9d3e3688b7cb043cc8}{serial\+\_\+put\+\_\+string} (const char $\ast$string)
+\item 
+void \hyperlink{serial_8c_a94affa1c8d77a69875f10c4915614afe}{serial\+\_\+put\+\_\+char} (const char character)
+\item 
+\hyperlink{stdint_8h_aba7bc1797add20fe3efdf37ced1182c5}{uint8\+\_\+t} \hyperlink{serial_8c_a45e1160c98d53c1306e75a32d54e81a3}{serial\+\_\+received} (const \hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t} port)
+\item 
+\hyperlink{stdint_8h_aba7bc1797add20fe3efdf37ced1182c5}{uint8\+\_\+t} \hyperlink{serial_8c_ab3b28cf37d70288fb56ad06c1815d824}{read\+\_\+serial} (const \hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t} port)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{serial_8c_a127638fb58a6cf0f0f880ae1697e2c33}\label{serial_8c_a127638fb58a6cf0f0f880ae1697e2c33}} 
+\index{serial.\+c@{serial.\+c}!init\+\_\+serial@{init\+\_\+serial}}
+\index{init\+\_\+serial@{init\+\_\+serial}!serial.\+c@{serial.\+c}}
+\subsubsection{\texorpdfstring{init\+\_\+serial()}{init\_serial()}}
+{\footnotesize\ttfamily \hyperlink{stddef_8h_a51557cb52bbb9ee9d55aab5b9b16c3d0}{O\+S\+\_\+\+R\+E\+T\+U\+R\+N\+\_\+E} init\+\_\+serial (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{serial_8c_ab3b28cf37d70288fb56ad06c1815d824}\label{serial_8c_ab3b28cf37d70288fb56ad06c1815d824}} 
+\index{serial.\+c@{serial.\+c}!read\+\_\+serial@{read\+\_\+serial}}
+\index{read\+\_\+serial@{read\+\_\+serial}!serial.\+c@{serial.\+c}}
+\subsubsection{\texorpdfstring{read\+\_\+serial()}{read\_serial()}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_aba7bc1797add20fe3efdf37ced1182c5}{uint8\+\_\+t} read\+\_\+serial (\begin{DoxyParamCaption}\item[{const \hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t}}]{port }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=262pt]{serial_8c_ab3b28cf37d70288fb56ad06c1815d824_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{serial_8c_a94affa1c8d77a69875f10c4915614afe}\label{serial_8c_a94affa1c8d77a69875f10c4915614afe}} 
+\index{serial.\+c@{serial.\+c}!serial\+\_\+put\+\_\+char@{serial\+\_\+put\+\_\+char}}
+\index{serial\+\_\+put\+\_\+char@{serial\+\_\+put\+\_\+char}!serial.\+c@{serial.\+c}}
+\subsubsection{\texorpdfstring{serial\+\_\+put\+\_\+char()}{serial\_put\_char()}}
+{\footnotesize\ttfamily void serial\+\_\+put\+\_\+char (\begin{DoxyParamCaption}\item[{const char}]{character }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=265pt]{serial_8c_a94affa1c8d77a69875f10c4915614afe_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{serial_8c_a89ce044b86475f9d3e3688b7cb043cc8}\label{serial_8c_a89ce044b86475f9d3e3688b7cb043cc8}} 
+\index{serial.\+c@{serial.\+c}!serial\+\_\+put\+\_\+string@{serial\+\_\+put\+\_\+string}}
+\index{serial\+\_\+put\+\_\+string@{serial\+\_\+put\+\_\+string}!serial.\+c@{serial.\+c}}
+\subsubsection{\texorpdfstring{serial\+\_\+put\+\_\+string()}{serial\_put\_string()}}
+{\footnotesize\ttfamily void serial\+\_\+put\+\_\+string (\begin{DoxyParamCaption}\item[{const char $\ast$}]{string }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=270pt]{serial_8c_a89ce044b86475f9d3e3688b7cb043cc8_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{serial_8c_a45e1160c98d53c1306e75a32d54e81a3}\label{serial_8c_a45e1160c98d53c1306e75a32d54e81a3}} 
+\index{serial.\+c@{serial.\+c}!serial\+\_\+received@{serial\+\_\+received}}
+\index{serial\+\_\+received@{serial\+\_\+received}!serial.\+c@{serial.\+c}}
+\subsubsection{\texorpdfstring{serial\+\_\+received()}{serial\_received()}}
+{\footnotesize\ttfamily \hyperlink{stdint_8h_aba7bc1797add20fe3efdf37ced1182c5}{uint8\+\_\+t} serial\+\_\+received (\begin{DoxyParamCaption}\item[{const \hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t}}]{port }\end{DoxyParamCaption})}
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=262pt]{serial_8c_a45e1160c98d53c1306e75a32d54e81a3_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{serial_8c_afb7bd137c3cca6f25fb34170ff58c999}\label{serial_8c_afb7bd137c3cca6f25fb34170ff58c999}} 
+\index{serial.\+c@{serial.\+c}!serial\+\_\+write@{serial\+\_\+write}}
+\index{serial\+\_\+write@{serial\+\_\+write}!serial.\+c@{serial.\+c}}
+\subsubsection{\texorpdfstring{serial\+\_\+write()}{serial\_write()}}
+{\footnotesize\ttfamily void serial\+\_\+write (\begin{DoxyParamCaption}\item[{const \hyperlink{stdint_8h_a324c5d28c0d82f502a234ab99efac87a}{uint32\+\_\+t}}]{port,  }\item[{const \hyperlink{stdint_8h_aba7bc1797add20fe3efdf37ced1182c5}{uint8\+\_\+t}}]{data }\end{DoxyParamCaption})}
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=270pt]{serial_8c_afb7bd137c3cca6f25fb34170ff58c999_icgraph}
+\end{center}
+\end{figure}
