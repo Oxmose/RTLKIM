@@ -61,5 +61,5 @@ iso/*
 .vscode/
 
 # Doxygen
-Documentation/Doxygen/htlm
+Documentation/Doxygen/html
 Documentation/Doxygen/latex
