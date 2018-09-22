@@ -1,14 +1,17 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file string.h
  *
- * File: string.h
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 04/10/2017
  *
- * Date: 04/10/2017
+ * @version 1.0
  *
- * Version: 1.0
- *
- * Strings and memory manipulation functions.
+ * @brief Kernel's strings and memory manipulation functions.
+ * 
+ * @details Strings and memory manipulation functions.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #ifndef __STRING_H_

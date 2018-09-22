@@ -1,14 +1,17 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file stdlib.h
  *
- * File: stdlib.h
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 04/10/2017
  *
- * Date: 08/01/2018
+ * @version 1.0
  *
- * Version: 1.0
- *
- * Standard lib functions.
+ * @brief Kernel's standard lib functions.
+ * 
+ * @details Standard lib functions.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #ifndef __STDLIB_H_
@@ -28,7 +31,28 @@
  * FUNCTIONS
  ******************************************************************************/
 
-extern void itoa(int32_t i, char* buf, uint32_t base);
-extern void uitoa(int32_t i, char* buf, uint32_t base);
+/** 
+ * @brief Convert a signed integer value to a string.
+ * 
+ * @details Convert a signed integer value to a string and inject the conversion 
+ * result in the buffer given as parameter.
+ * 
+ * @param[in] value The value to convert.
+ * @param[out] buf The buffer to receive the convertion's result.
+ * @param[in] base The base of the signed integer to convert.
+ */
+void itoa(int32_t value, char* buf, uint32_t base);
+
+/** 
+ * @brief Convert a unsigned integer value to a string.
+ * 
+ * @details Convert a unsigned integer value to a string and inject the 
+ * conversion result in the buffer given as parameter.
+ * 
+ * @param[in] value The value to convert.
+ * @param[out] buf The buffer to receive the convertion's result.
+ * @param[in] base The base of the unsigned integer to convert.
+ */
+void uitoa(uint32_t value, char* buf, uint32_t base);
 
 #endif /* __STDLIB_H_ */
