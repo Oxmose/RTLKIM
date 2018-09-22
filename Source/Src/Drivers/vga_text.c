@@ -229,12 +229,19 @@ OS_RETURN_E vga_put_cursor_at(const uint8_t line, const uint8_t column)
 {
     int16_t cursor_position;
 
+    /* Checks the values of line and column */
+    if(column > SCREEN_COL_SIZE || line > SCREEN_LINE_SIZE)
+    {
+        return OS_ERR_UNAUTHORIZED_ACTION;
+    }
+
     /* Set new cursor position */
     screen_cursor.x = column;
     screen_cursor.y = line;
 
     /* Display new position on screen */
     cursor_position = column + line * SCREEN_COL_SIZE;
+
     /* Send low part to the screen */
     outb(CURSOR_COMM_LOW, SCREEN_COMM_PORT);
     outb((int8_t)(cursor_position & 0x00FF), SCREEN_DATA_PORT);
