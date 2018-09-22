@@ -385,7 +385,7 @@ __inline__ static uint32_t get_cpuid_max (const uint32_t ext)
     return regs[0];
 }
 
-/* 
+/** 
  * @brief Returns the CPUIS data for a requested leaf.
  * 
  * @details Returns CPUID data for requested CPUID leaf, as found in returned
@@ -397,7 +397,6 @@ __inline__ static uint32_t get_cpuid_max (const uint32_t ext)
  * @param[out] regs The register used to store the CPUID instruction return.
  * @return 1 in case of succes, 0 otherwise.
  */
-
 __inline__ static int32_t cpuid (const uint32_t code,
                                  uint32_t regs[4])
 {

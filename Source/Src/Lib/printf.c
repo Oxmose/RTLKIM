@@ -26,7 +26,7 @@
  ******************************************************************************/
 
 extern void kernel_doprint(const char* str, __builtin_va_list args);
-extern void screen_put_char(const char c);
+extern void screen_put_char(const char character);
 
 int vprintf(const char *fmt, __builtin_va_list args)
 {    
