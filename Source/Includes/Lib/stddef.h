@@ -27,7 +27,7 @@
 
 #else
 extern void kernel_panic(const uint32_t);
-extern void kernel_error(const char*, ...);
+extern void kernel_error(const char* fmt, ...);
 #define assert(expr) \
     ((void)((expr) ? 0 : \
         (kernel_error(__FILE__":%u: failed assertion `"#expr"'\n", \
