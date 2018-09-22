@@ -28,7 +28,8 @@
  */
 void kernel_kickstart(void)
 {
-    kernel_printf("------------------------------ Kickstarting RTLK -------------------------------");
+    kernel_printf("------------------------------ Kickstarting RTLK -----------"
+                  "--------------------\n");
 
     /* Launch CPU detection routine */
     if(detect_cpu(1) != OS_NO_ERR)

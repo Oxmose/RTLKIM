@@ -21,6 +21,8 @@
 #include <Cpu/cpu.h>        /* outb */
 #include <Drivers/serial.h> /* serial_write */
 
+/* RTLK configuration file */
+#include <config.h>
 
 /* Header file */
 #include <Drivers/vga_text.h>

@@ -46,6 +46,9 @@
 /** @brief Enables mouse driver support. */
 #define ENABLE_MOUSE      0
 
+/** @brief Defines which serial port is used for debug purposes. */
+#define SERIAL_DEBUG_PORT COM1
+
 /* Screen settings */
 
 /** @brief When VESA drivers are enabled, defines the maximal supported height
@@ -60,5 +63,11 @@
  * depth.
  */
 #define MAX_SUPPORTED_BPP    32
+
+/** @brief Enables kernel debuging features. */
+#define KERNEL_DEBUG 
+
+/** @brief Enables test mode features. */
+#define TEST_MODE_ENABLED
 
 #endif /* __CONFIG_H_ */

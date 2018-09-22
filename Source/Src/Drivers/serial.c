@@ -16,6 +16,9 @@
 #include <Lib/string.h>      /* strlen */
 #include <Cpu/cpu.h>         /* outb, inb */
 
+/* RTLK configuration file */
+#include <config.h>
+
 /* Header file */
 #include <Drivers/serial.h>
 
@@ -170,6 +173,15 @@ void serial_write(const uint32_t port, const uint8_t data)
     {}
 }
 
+uint8_t serial_read(const uint32_t port)
+{
+    /* Wait for data to be received */
+   while (serial_received(port) == 0);
+
+   /* Read available data on port */
+   return inb(SERIAL_DATA_PORT(port));
+}
+
 void serial_put_string(const char* string)
 {
     uint32_t i;
@@ -188,13 +200,4 @@ uint8_t serial_received(const uint32_t port)
 {
     /* Read on LINE status port */
    return inb(SERIAL_LINE_STATUS_PORT(port)) & 0x01;
-}
-
-uint8_t read_serial(const uint32_t port)
-{
-    /* Wait for data to be received */
-   while (serial_received(port) == 0);
-
-   /* Read available data on port */
-   return inb(SERIAL_DATA_PORT(port));
 }

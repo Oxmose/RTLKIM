@@ -21,8 +21,8 @@
 #ifndef __GRAPHIC_H_
 #define __GRAPHIC_H_
 
-#include <Lib/stdint.h>      /* Generic int types */
-#include <Lib/stddef.h>      /* OS_RETURN_E */
+#include <Lib/stdint.h> /* Generic int types */
+#include <Lib/stddef.h> /* OS_RETURN_E */
 
 /*******************************************************************************
  * CONSTANTS
@@ -284,6 +284,8 @@ OS_RETURN_E save_color_scheme(colorscheme_t* buffer);
  * screen using the selected driver.
  *
  * @param[in] str The string to display on the screen.
+ * 
+ * @warning string must be NULL terminated.
  */
 void screen_put_string(const char* str);
 
