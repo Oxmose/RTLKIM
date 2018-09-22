@@ -1,15 +1,21 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file kernel_kickstart.c
  *
- * File: kernel_kickstart.c
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 15/12/2017
  *
- * Date: 15/12/2017
+ * @version 1.0
  *
- * Version: 1.0
- *
- * Initializes the rest of the kernel after GDT, IDT and TSS initialization.
- * AT THIS POINT INTERRUPT SHOULD BE DISABLED
+ * @brief Kernel's main boot sequence.
+ * 
+ * @warning At this point interrupts should be disabled.
+ * 
+ * @details Kernel's booting sequence. Initializes the rest of the kernel after
+ *  GDT, IDT and TSS initialization. Initializes the hardware and software
+ * core of the kernel.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #include <Cpu/cpu.h>          /* detect_cpu() */
@@ -23,8 +29,14 @@
  * FUNCTIONS
  ******************************************************************************/
 
-/* Init each basic drivers for the kernel, then init the scheduler and
- * start the system.
+/** 
+ * @brief Main boot sequence, C kernel entry point.
+ * 
+ * @details Main boot sequence, C kernel entry point. Initializes each basic 
+ * drivers for the kernel, then init the scheduler and start the system.
+ * 
+ * @warning This function should never return. In case of return, the kernel
+ * should be able to catch the return as an error.
  */
 void kernel_kickstart(void)
 {
