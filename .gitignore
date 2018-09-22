@@ -60,3 +60,6 @@ iso/*
 # VS code
 .vscode/
 
+# Doxygen
+Documentation/Doxygen/htlm
+Documentation/Doxygen/latex
