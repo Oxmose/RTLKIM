@@ -9,7 +9,7 @@
  *
  * @version 1.0
  *
- * @brief X86 CPU abstraction funtions and definitions. 
+ * @brief X86 CPU abstraction functions and definitions. 
  * 
  * @details X86 CPU abstraction: setting functions and structures, used to set 
  * the GDT, IDT and TSS of the CPU. This file also ontains the delarations of 

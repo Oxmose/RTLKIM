@@ -247,7 +247,7 @@ OS_RETURN_E restore_cursor(const cursor_t buffer);
  * @details The function will use the driver to scroll of lines_count line in
  * the desired direction.
  *
- * @param[in] direction The direction to whoch the console should be scrolled.
+ * @param[in] direction The direction to which the screen should be scrolled.
  * @param[in] lines_count The number of lines to scroll.
  */
 void scroll(const SCROLL_DIRECTION_E direction,
@@ -259,7 +259,7 @@ void scroll(const SCROLL_DIRECTION_E direction,
  * @details Replaces the curent color scheme used t output data with the new
  * one given as parameter.
  *
- * @param[in] color_scheme The new color scheme to apply to the screen console.
+ * @param[in] color_scheme The new color scheme to apply to the screen.
  */
 void set_color_scheme(const colorscheme_t color_scheme);
 
@@ -270,7 +270,7 @@ void set_color_scheme(const colorscheme_t color_scheme);
  * color scheme value.
  *
  * @param[out] buffer The buffer that will receive the current color scheme used 
- * by the screen console.
+ * by the screen.
  * 
  * @return The succes state or the error code. OS_NO_ERR if no error is 
  * encountered. OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
