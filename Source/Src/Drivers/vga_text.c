@@ -1,18 +1,21 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file vga_text.c
+ * 
+ * @see vga_text.h
  *
- * File: vga_text.c
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 03/10/2017
  *
- * Date: 03/10/2017
+ * @version 1.5
  *
- * Version: 1.5
- *
- * VGA text mode driver.
- * Allows the kernel to display text and general ASCII characters to be
- * displayed on the screen.
- * Includes cursor management, screen colors management and other fancy
- * screen driver things.
+ * @brief VGA text mode driver.
+ * 
+ * @details Allows the kernel to display text and general ASCII characters to be
+ * displayed on the screen. Includes cursor management, screen colors management 
+ * and other fancy screen driver things.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #include <Lib/stdint.h>     /* Generic int types */
@@ -32,27 +35,44 @@
  ******************************************************************************/
 
 /* Screen runtime parameters */
+/** @brief Stores the curent screen's color scheme. */
 static colorscheme_t screen_scheme = {
     .background = BG_BLACK,
     .foreground = FG_WHITE
 };
 
+/** @brief Stores the curent screen's cursor settings. */
 static cursor_t      screen_cursor;
+/** 
+ * @brief Stores the curent screen's cursor settings ofthe last printed 
+ * character. 
+ */
 static cursor_t      last_printed_cursor;
 
 /* Set the last column printed with a char */
+/**
+ * @brief Stores the column index of the last printed character for each lines
+ * of the screen.
+ */
 static uint8_t last_columns[SCREEN_LINE_SIZE] = {0};
 
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
 
-/* Print character to the selected coordinates
+/**
+ * @brief Prints a character to the selected coordinates.
  *
- * @param line The line index where to write the character.
- * @param column The colums index where to write the character.
- * @param character The character to display on the screem.
- * @returns The error or success state.
+ * @details Prints a character to the selected coordinates by setting the memory
+ * accordingly.
+ * 
+ * @param[in] line The line index where to write the character.
+ * @param[in] column The colums index where to write the character.
+ * @param[in] character The character to display on the screem.
+ * 
+ * @return The succes state or the error code. OS_NO_ERR if no error is 
+ * encountered. OS_ERR_OUT_OF_BOUND is returned if the parameters are
+ * out of bound.
  */
 static OS_RETURN_E vga_print_char(const uint8_t line, const uint8_t column,
                                   const char character)
@@ -75,9 +95,14 @@ static OS_RETURN_E vga_print_char(const uint8_t line, const uint8_t column,
     return OS_NO_ERR;
 }
 
-/* Process the character in parameters.
+/**
+ * @brief Processes the character in parameters.
+ * 
+ * @details Check the character nature and code. Corresponding to the 
+ * character's code, an action is taken. A regular character will be printed 
+ * whereas \n will create a line feed.
  *
- * @param character The character to process.
+ * @param[in] character The character to process.
  */
 static void vga_process_char(const char character)
 {
@@ -234,7 +259,7 @@ OS_RETURN_E vga_put_cursor_at(const uint8_t line, const uint8_t column)
     /* Checks the values of line and column */
     if(column > SCREEN_COL_SIZE || line > SCREEN_LINE_SIZE)
     {
-        return OS_ERR_UNAUTHORIZED_ACTION;
+        return OS_ERR_OUT_OF_BOUND;
     }
 
     /* Set new cursor position */

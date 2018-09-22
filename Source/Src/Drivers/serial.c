@@ -1,20 +1,30 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file serial.c
+ * 
+ * @see serial.h
  *
- * File: serial.c
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 25/12/2017
  *
- * Date: 25/12/2017
+ * @version 1.0
  *
- * Version: 1.0
- *
- * Serial driver for the kernel.
+ * @brief Serial communication driver.
+ * 
+ * @details Serial communication driver. Initializes the serial ports as in and
+ * output. The serial can be used to output data or communicate with other 
+ * prepherals that support this communication method. Only COM1 to COM4 are
+ * supported by this driver.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
+ * 
+ * @warning Only COM1 and COM2 are initialized for input.
  ******************************************************************************/
 
-#include <Lib/stddef.h>      /* OS_RETURN_E */
-#include <Lib/stdint.h>      /* Generic int types */
-#include <Lib/string.h>      /* strlen */
-#include <Cpu/cpu.h>         /* outb, inb */
+#include <Lib/stddef.h> /* OS_RETURN_E */
+#include <Lib/stdint.h> /* Generic int types */
+#include <Lib/string.h> /* strlen */
+#include <Cpu/cpu.h>    /* outb, inb */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -26,17 +36,22 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
+/** @brief Stores the serial initialization state. */
 static uint8_t serial_init = 0;
 
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
 
-/* Set line parameters for the desired port.
+/**
+ * @brief Sets line parameters for the desired port.
+ * 
+ * @details Sets line parameters for the desired port.
  *
- * @param attr The settings for the port's line.
- * @param com The port to set.
- * @returns OS_NO_ERR on success, en error is returned otherwise.
+ * @param[in] attr The settings for the port's line.
+ * @param[in] com The port to set.
+ * 
+ * @return OS_NO_ERR on success, no other value is returned.
  */
 static OS_RETURN_E set_line(const uint8_t attr, const uint32_t com)
 {
@@ -45,11 +60,15 @@ static OS_RETURN_E set_line(const uint8_t attr, const uint32_t com)
     return OS_NO_ERR;
 }
 
-/* Set buffer parameters for the desired port.
+/**
+ * @brief Sets buffer parameters for the desired port.
+ * 
+ * @details Sets buffer parameters for the desired port.
  *
- * @param attr The settings for the port's buffer.
- * @param com The port to set.
- * @returns OS_NO_ERR on success, en error is returned otherwise.
+ * @param[in] attr The settings for the port's buffer.
+ * @param[in] com The port to set.
+ * 
+ * @return OS_NO_ERR on success, no other value is returned.
  */
 static OS_RETURN_E set_buffer(const uint8_t attr, const uint32_t com)
 {
@@ -58,11 +77,15 @@ static OS_RETURN_E set_buffer(const uint8_t attr, const uint32_t com)
     return OS_NO_ERR;
 }
 
-/* Set the port baudrate.
+/**
+ * @brief Sets the port's baudrate.
+ * 
+ * @details Sets the port's baudrate.
  *
- * @param rate The desired baudrate for the port.
- * @param com The port to set.
- * @returns OS_NO_ERR on success, en error is returned otherwise.
+ * @param[in] rate The desired baudrate for the port.
+ * @param[in] com The port to set.
+ * 
+ * @return OS_NO_ERR on success, no other value is returned.
  */
 static OS_RETURN_E set_baudrate(SERIAL_BAUDRATE_E rate, const uint32_t com)
 {
@@ -176,10 +199,10 @@ void serial_write(const uint32_t port, const uint8_t data)
 uint8_t serial_read(const uint32_t port)
 {
     /* Wait for data to be received */
-   while (serial_received(port) == 0);
+    while (serial_received(port) == 0);
 
-   /* Read available data on port */
-   return inb(SERIAL_DATA_PORT(port));
+    /* Read available data on port */
+    return inb(SERIAL_DATA_PORT(port));
 }
 
 void serial_put_string(const char* string)
@@ -199,5 +222,5 @@ void serial_put_char(const char character)
 uint8_t serial_received(const uint32_t port)
 {
     /* Read on LINE status port */
-   return inb(SERIAL_LINE_STATUS_PORT(port)) & 0x01;
+    return inb(SERIAL_LINE_STATUS_PORT(port)) & 0x01;
 }

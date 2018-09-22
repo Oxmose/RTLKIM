@@ -1,25 +1,32 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file kernel_output.c
+ * 
+ * @see kernel_output.h
  *
- * File: kernel_output.c
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 15/12/2017
  *
- * Date: 15/12/2017
+ * @version 2.0
  *
- * Version: 2.0
- *
- * Simple output functions to print messages to screen. These are really basic
- * output too allow early kernel boot output and debug.
- * These functions can be used in interrupts handlers since no lock is required
- * to used them. This also makes them non thread safe.
+ * @brief Kernel's output methods.
+ * 
+ * @details Simple output functions to print messages to screen. These are 
+ * really basic output too allow early kernel boot output and debug. These 
+ * functions can be used in interrupts handlers since no lock is required to use
+ * them. This also makes them non thread safe.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Lib/string.h>       /* memset, strlen */
-#include <Lib/stdlib.h>        /* uitoa, itoa */
+#include <Lib/string.h>      /* memset, strlen */
+#include <Lib/stdlib.h>      /* uitoa, itoa */
+#include <Drivers/graphic.h> /* save_color_scheme, set_color_sheme,
+                              * screen_put_char, screen_put_string */
+#include <Drivers/serial.h>  /* serial_put_char, serial_put_string */
 
-#include <Drivers/graphic.h>   /* save_color_scheme, set_color_sheme,
-                                   * screen_put_char, screen_put_string */
-#include <Drivers/serial.h>    /* serial_put_char, serial_put_string */
+/* RTLK configuration file */
+#include <config.h>
 
 /* Header file */
 #include <IO/kernel_output.h>
@@ -28,17 +35,21 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
+/** @brief Stores the current output type. */
 static output_t current_output;
 
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
 
-/* Tranforms all lowercase character of a NULL terminated string to uppercase
-   characters.
-
-   @param string The string to tranform.
-*/
+/**
+ * @brief Converts a string to upper case characters.
+ * 
+ * @details Transforms all lowercase character of a NULL terminated string to 
+ * uppercase characters.
+ * 
+ * @param[in,out] string The string to tranform.
+ */
 static void toupper(char* string)
 {
     /* For each character of the string */
@@ -53,11 +64,14 @@ static void toupper(char* string)
     }
 }
 
-/* Tranforms all uppercase character of a NULL terminated string to lowercase
-   characters.
-
-   @param string The string to tranform.
-*/
+/**
+ * @brief Converts a string to upper case characters.
+ * 
+ * @details Transforms all uppercase character of a NULL terminated string to 
+ * lowercase characters.
+ * 
+ * @param[in,out] string The string to tranform.
+ */
 static void tolower(char* string)
 {
     /* For each character of the string */
@@ -72,12 +86,15 @@ static void tolower(char* string)
     }
 }
 
-/* Print a formated string to the output and managing the formated string
-   arguments.
-
-   @param str The formated string to output.
-   @param args The arguments to use with the formated string.
-*/
+/**
+ * @brief Prints a formated string.
+ * 
+ * @details Prints a formated string to the output and managing the formated 
+ * string arguments.
+ * 
+ * @param[in] str The formated string to output.
+ * @param[in] args The arguments to use with the formated string.
+ */
 static void kprint_fmt(const char* str, __builtin_va_list args)
 {
     uint32_t i;
@@ -195,12 +212,15 @@ static void kprint_fmt(const char* str, __builtin_va_list args)
 	}
 }
 
-/* Print a formated string to the serial and managing the formated string
-   arguments.
-
-   @param str The formated string to output.
-   @param args The arguments to use with the formated string.
-*/
+/**
+ * @brief Prints a formated string to serial output.
+ * 
+ * @details Prints a formated string to the serial output and managing the 
+ * formated string arguments.
+ * 
+ * @param[in] str The formated string to output.
+ * @param[in] args The arguments to use with the formated string.
+ */
 static void kprint_fmt_serial(const char* str, __builtin_va_list args)
 {
     uint32_t i;
@@ -318,11 +338,15 @@ static void kprint_fmt_serial(const char* str, __builtin_va_list args)
 	}
 }
 
-/* Print the tag for kernel output functions
- * @param fmt The formated string to print
+/**
+ * @brief Prints the tag for kernel output functions.
+ * 
+ * @details Prints the tag for kernel output functions.
+ * 
+ * @param[in] fmt The formated string to print.
+ * @param[in] ... The associated arguments to the formated string.
  */
-
-void tag_printf(const char* fmt, ...)
+static void tag_printf(const char* fmt, ...)
 {
     __builtin_va_list args;
 

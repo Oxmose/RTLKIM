@@ -265,6 +265,6 @@ uint8_t serial_received(const uint32_t port);
  * 
  * @return The byte that has been read on the serial port.
  */
-uint8_t serail_read(const uint32_t port);
+uint8_t serial_read(const uint32_t port);
 
 #endif /* __SERIAL_H_ */

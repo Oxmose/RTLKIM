@@ -21,6 +21,9 @@
 #include <Cpu/cpu.h>          /* detect_cpu() */
 #include <IO/kernel_output.h> /* kernel_output() */
 
+/* RTLK configuration file */
+#include <config.h>
+
 /*******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************/

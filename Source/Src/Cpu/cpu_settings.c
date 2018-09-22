@@ -1,21 +1,29 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file cpu_settings.c
+ * 
+ * @see cpu_settings.h
  *
- * File: cpu_settings.c
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 14/12/2017
  *
- * Date: 14/12/2017
+ * @version 1.0
  *
- * Version: 1.0
- *
- * X86 abstraction: setting functions and structures.
- * Used to set the GDT, IDT, TSS and other structures.
+ * @brief X86 CPU abstraction functions and definitions. 
+ * 
+ * @details X86 CPU abstraction: setting functions and structures, used to set 
+ * the GDT, IDT and TSS of the CPU. This file also ontains the delarations of 
+ * the 256 interrupt handlers of the x86 interrupts.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Lib/string.h>         /* memset */
-#include <Lib/stdint.h>         /* Generic int types */
-#include <IO/kernel_output.h>   /* kernel_success */
-#include <config.h>      /* KERNEL_STACK_SIZE */
+#include <Lib/string.h>       /* memset */
+#include <Lib/stdint.h>       /* Generic int types */
+#include <IO/kernel_output.h> /* kernel_success */
+
+/* RTLK configuration file */
+#include <config.h>
 
 /* Header file */
 #include <Cpu/cpu_settings.h>
@@ -25,29 +33,41 @@
  ******************************************************************************/
 
 /* Kernel GDT structure */
+
+/** @brief CPU GDT space in memory. */
 extern uint64_t cpu_gdt[GDT_ENTRY_COUNT];
+/** @brief CPU GDT size in memory. */
 extern uint16_t cpu_gdt_size;
+/** @brief CPU GDT base address. */
 extern uint32_t cpu_gdt_base;
 
 /* Kernel IDT structure */
+/** @brief CPU IDT space in memory. */
 extern uint64_t cpu_idt[IDT_ENTRY_COUNT];
+/** @brief CPU IDT size in memory. */
 extern uint16_t cpu_idt_size;
+/** @brief CPU IDT base address. */
 extern uint32_t cpu_idt_base;
-/* Kernel main TSS structure */
+
+/** @brief Kernel main TSS structure */
 static cpu_tss_entry_t cpu_main_tss __attribute__((aligned(4096)));
 
-/* Kernel stack pointer */
+/** @brief Kernel stack pointer */
 extern uint32_t* kernel_stack;
 
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
 
-/* Return the address of the handler attached to the interrupt ID given as
- * parameter.
+/**
+ * @brief Returns the address of the handler for a given interrupt line.
+ * 
+ * @details Returns the address of the handler attached to the interrupt ID 
+ * given as parameter.
  *
- * @param int_id This interrupt ID to get the handler of.
- * @returns The address of the interrupt handler.
+ * @param[in] int_id This interrupt ID to get the handler of.
+ * 
+ * @return The address of the interrupt handler.
  */
 static uint32_t get_handler(const uint32_t int_id)
 {
@@ -571,14 +591,17 @@ static uint32_t get_handler(const uint32_t int_id)
     }
 }
 
-/* Format data given as parameter into a standard GDT entry. The result is
- * directly written in the memory pointed by the entry parameter.
+/** 
+ * @brief Formats a GDT entry.
+ * 
+ * @details Formats data given as parameter into a standard GDT entry. 
+ * The result is directly written in the memory pointed by the entry parameter.
  *
- * @param entry The pointer to the entry structure to format.
- * @param base  The base address of the segment for the GDT entry.
- * @param limit The limit address of the segment for the GDT entry.
- * @param type  The type of segment for the GDT entry.
- * @param flags The flags to be set for the GDT entry.
+ * @param[out] entry The pointer to the entry structure to format.
+ * @param[in] base  The base address of the segment for the GDT entry.
+ * @param[in] limit The limit address of the segment for the GDT entry.
+ * @param[in] type  The type of segment for the GDT entry.
+ * @param[in] flags The flags to be set for the GDT entry.
  */
 static void format_gdt_entry(uint64_t* entry,
                              const uint32_t base, const uint32_t limit,
@@ -619,13 +642,16 @@ static void format_gdt_entry(uint64_t* entry,
     *entry = lo_part | (((uint64_t) hi_part) << 32);
 }
 
-/* Format data given as parameter into a standard IDT entry. The result is
- * directly written in the memory pointed by the entry parameter.
+/**
+ * @brief Formats an IDT entry.
+ * 
+ * @details Formats data given as parameter into a standard IDT entry. 
+ * The result is directly written in the memory pointed by the entry parameter.
  *
- * @param entry The pointer to the entry structure to format.
- * @param handler The handler function for the IDT entry.
- * @param type  The type of segment for the IDT entry.
- * @param flags The flags to be set for the IDT entry.
+ * @param[out] entry The pointer to the entry structure to format.
+ * @param[in] handler The handler function for the IDT entry.
+ * @param[in] type  The type of segment for the IDT entry.
+ * @param[in] flags The flags to be set for the IDT entry.
  */
 static void format_idt_entry(volatile uint64_t* entry,
                              volatile uint32_t handler,
@@ -651,6 +677,10 @@ static void format_idt_entry(volatile uint64_t* entry,
 
 void setup_gdt(void)
 {
+    /************************************
+     * KERNEL GDT ENTRIES
+     ***********************************/
+
     /* Set the kernel code descriptor */
     uint32_t kernel_code_seg_flags = GDT_FLAG_GRANULARITY_4K |
                                      GDT_FLAG_32_BIT_SEGMENT |
@@ -708,7 +738,6 @@ void setup_gdt(void)
     memset(cpu_gdt, 0, sizeof(uint64_t) * GDT_ENTRY_COUNT);
 
     /* Load the segments */
-
     format_gdt_entry(&cpu_gdt[KERNEL_CS / 8],
                      KERNEL_CODE_SEGMENT_BASE, KERNEL_CODE_SEGMENT_LIMIT,
                      kernel_code_seg_type, kernel_code_seg_flags);

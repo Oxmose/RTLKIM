@@ -88,7 +88,7 @@ void vga_clear_screen(void);
  * @param[in] column The column index where to place the cursor.
  * 
  * @return The succes state or the error code. OS_NO_ERR if no error is 
- * encountered. OS_ERR_UNAUTHORIZED_ACTION is returned if the coordinates are
+ * encountered. OS_ERR_OUT_OF_BOUND is returned if the coordinates are
  * out of bound.
  */
 OS_RETURN_E vga_put_cursor_at(const uint8_t line, const uint8_t column);

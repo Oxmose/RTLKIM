@@ -1,21 +1,29 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file graphic.c
+ * 
+ * @see graphic.h
  *
- * File: graphic.c
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 04/01/2018
  *
- * Date: 04/01/2018
+ * @version 1.0
  *
- * Version: 1.0
- *
- * Graphic drivers abtraction
+ * @brief Graphic drivers abtraction.
+ * 
+ * @details Graphic driver abtraction layer. The functions of this module allows
+ * to abtract the use of any supported graphic driver and the selection of the
+ * desired driver.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-
-#include <Lib/stdint.h>      /* Generic int types */
-#include <Lib/stddef.h>      /* OS_RETURN_E */
-
+#include <Lib/stdint.h>       /* Generic int types */
+#include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Drivers/vga_text.h> /* VGA drivers */
+
+/* RTLK configuration file */
+#include <config.h>
 
 /* Header file */
 #include <Drivers/graphic.h>
@@ -23,6 +31,8 @@
 /*******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************/
+
+/** @brief Stores the currently selected driver. */
 uint8_t selected_driver = VGA_DRIVER_SELECTED;
 
 #if 0
@@ -58,7 +68,6 @@ void clear_screen(void)
 {
 	vga_clear_screen();
 }
-
 
 OS_RETURN_E put_cursor_at(const uint32_t line, const uint32_t column)
 {
