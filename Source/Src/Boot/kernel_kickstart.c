@@ -29,8 +29,13 @@
 void kernel_kickstart(void)
 {
     kernel_printf("------------------------------ Kickstarting RTLK -------------------------------");
+
     /* Launch CPU detection routine */
-    detect_cpu();
+    if(detect_cpu(1) != OS_NO_ERR)
+    {
+        kernel_error("Could not detect CPU, halting.");
+        return;
+    }
 
     return;
 }
