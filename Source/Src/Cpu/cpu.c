@@ -92,7 +92,7 @@ void detect_cpu(void)
             cpu_info.cpuid_data[0] = regs[2];
             cpu_info.cpuid_data[1] = regs[3];
 
-            kernel_printf(" | Features: \n");
+            kernel_printf(" | Features: ");
 
             if((regs[2] & ECX_SSE3) == ECX_SSE3) { kernel_printf("SSE3 - "); }
             if((regs[2] & ECX_PCLMULQDQ) == ECX_PCLMULQDQ) { kernel_printf("PCLMULQDQ - "); }

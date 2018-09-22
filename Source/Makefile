@@ -33,9 +33,6 @@ A_SRCS = $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.S))
 C_OBJS = $(C_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 A_OBJS = $(A_SRCS:$(SRC_DIR)/%.S=$(BUILD_DIR)/%.o)
 
-# Doxygen's directory
-DOXY_DIR = doxygen
-
 # Linker script's name 
 LINKER_FILE = Config/linker.ld
 
@@ -71,19 +68,29 @@ init:
 	@mkdir -p $(BIN_DIR)
 
 # kernel generation
-kernel.bin: $(LINKER_FILE) $(C_OBJS) $(A_OBJS)
+kernel.bin: $(LINKER_FILE) compile_asm compile_cc
 	$(LD) $(LDFLAGS) $(C_OBJS) $(A_OBJS) -o $(BIN_DIR)/$(KERNEL)
+	@echo Linked object files
+	@echo
 
+compile_asm: $(A_OBJS)
+	@echo Compiled assembly sources
+	@echo
+
+compile_cc: $(C_OBJS)
+	@echo Compiled c sources
+	@echo
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS)  $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
+	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
-	$(AS) $(ASFLAGS)  $< -o $@
+	$(AS) $(ASFLAGS) $< -o $@
 
 clean:
 	@$(RM) -rf $(BIN_DIR) $(BUILD_DIR)
 	@echo Cleaned build files and binaries
+	@echo
 
 ######################### Qemu options
 run:
