@@ -17,7 +17,7 @@ do
         # Execute the test
         rm -f *.out
         cd ../
-        make && (make qemu-test-mode > test.out &)
+        make TESTS=TRUE && (make qemu-test-mode > test.out &)
         sleep 2
         killall qemu-system-i386
         mv test.out Tests/test.out

@@ -17,8 +17,11 @@
 extern setup_gdt
 extern setup_idt
 extern setup_tss
+
 extern vga_clear_screen
+
 extern init_serial
+
 extern kernel_kickstart
 
 extern _edata

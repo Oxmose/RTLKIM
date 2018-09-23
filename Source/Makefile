@@ -12,7 +12,10 @@
 
 ######################### Modules selection
 
-MODULES = Boot Cpu IO Lib Drivers ../Tests/Tests
+MODULES = Boot Cpu IO Lib Drivers
+ifeq ($(TESTS), TRUE)
+MODULES += ../Tests/Tests
+endif
 
 ######################### Files options
 # Kernel name
@@ -85,7 +88,11 @@ compile_cc: $(C_OBJS)
 	@echo
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+ifeq ($(TESTS), TRUE)
 	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)
+else 
+	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
+endif
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
 	$(AS) $(ASFLAGS) $< -o $@
@@ -107,6 +114,7 @@ debug:
 
 ######################### Tests
 test:
+	MODULES+= ../Tests/Tests
 	chmod +x launchtests.sh
 	./launchtests.sh
 
