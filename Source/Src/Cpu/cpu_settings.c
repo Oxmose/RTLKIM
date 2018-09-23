@@ -677,6 +677,9 @@ static void format_idt_entry(volatile uint64_t* entry,
 
 void setup_gdt(void)
 {
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Setting CPU GDT\n");
+    #endif
     /************************************
      * KERNEL GDT ENTRIES
      ***********************************/
@@ -781,6 +784,10 @@ void setup_idt(void)
 {
     uint32_t i;
 
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Setting CPU IDT\n");
+    #endif
+
     /* Blank the IDT */
     memset(cpu_idt, 0, sizeof(uint64_t) * IDT_ENTRY_COUNT);
 
@@ -806,6 +813,10 @@ void setup_idt(void)
 
 void setup_tss(void)
 {
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Setting CPU TSS\n");
+    #endif
+
     /* Blank the TSS */
     memset(&cpu_main_tss, 0, sizeof(cpu_tss_entry_t));
 

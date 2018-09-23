@@ -39,6 +39,10 @@
 
 OS_RETURN_E init_pic(void)
 {
+    #if PIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("PIC Initialization start\n");
+    #endif
+
     /* Initialize the master, remap IRQs */
     outb(PIC_ICW1_ICW4 | PIC_ICW1_INIT, PIC_MASTER_COMM_PORT);
     outb(PIC0_BASE_INTERRUPT_LINE, PIC_MASTER_DATA_PORT);
@@ -59,12 +63,20 @@ OS_RETURN_E init_pic(void)
     outb(0xFF, PIC_MASTER_DATA_PORT);
     outb(0xFF, PIC_SLAVE_DATA_PORT);
 
+    #if PIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("PIC Initialization end\n");
+    #endif
+
     return OS_NO_ERR;
 }
 
 OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint8_t enabled)
 {
     uint8_t  init_mask;
+
+    #if PIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("PIC IRQ mask setting start\n");
+    #endif
 
     if(irq_number > PIC_MAX_IRQ_LINE)
     {
@@ -114,11 +126,19 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint8_t enabled)
         outb(init_mask, PIC_SLAVE_DATA_PORT);
     }
 
+    #if PIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("PIC IRQ mask setting end\n");
+    #endif
+
     return OS_NO_ERR;
 }
 
 OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number)
 {
+    #if PIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("PIC IRQ EOI start\n");
+    #endif
+
     if(irq_number > PIC_MAX_IRQ_LINE)
     {
         return OS_ERR_NO_SUCH_IRQ_LINE;
@@ -130,6 +150,10 @@ OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number)
         outb(PIC_EOI, PIC_SLAVE_COMM_PORT);
     }
     outb(PIC_EOI, PIC_MASTER_COMM_PORT);
+
+    #if PIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("PIC IRQ EOI end\n");
+    #endif
 
     return OS_NO_ERR;
 }

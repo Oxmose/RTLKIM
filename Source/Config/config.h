@@ -64,8 +64,17 @@
  */
 #define MAX_SUPPORTED_BPP    32
 
+/*******************************************************************************
+ * DEBUG CONFIGURATION
+ ******************************************************************************/
 /** @brief Enables kernel debuging features. */
 #define KERNEL_DEBUG 1
+
+/** @brief Enables PIC driver debuging feature. */
+#define PIC_KERNEL_DEBUG 1
+
+/** @brief Enables Serial driver debuging feature. */
+#define SERIAL_KERNEL_DEBUG 1
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0

@@ -50,6 +50,10 @@ void kernel_kickstart(void)
 {
     OS_RETURN_E err;
 
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Kickstarting the kernel\n");
+    #endif
+
     #if TEST_MODE_ENABLED
     loader_ok_test();
     idt_ok_test();
@@ -59,6 +63,10 @@ void kernel_kickstart(void)
 
     kernel_printf("------------------------------ Kickstarting RTLK -----------"
                   "--------------------\n");
+
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Detecting CPU\n");
+    #endif
 
     /* Launch CPU detection routine */
     if(detect_cpu(1) != OS_NO_ERR)
@@ -72,6 +80,9 @@ void kernel_kickstart(void)
     #endif
 
     /* Init PIC */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing the PIC driver\n");
+    #endif
     err = init_pic();
     if(err == OS_NO_ERR)
     {
@@ -82,10 +93,6 @@ void kernel_kickstart(void)
         kernel_error("PIC Initialization error [%d]\n", err);
         return;
     }
-
-
-    
-    
 
     return;
 }

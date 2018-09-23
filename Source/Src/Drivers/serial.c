@@ -101,6 +101,10 @@ OS_RETURN_E init_serial(void)
     OS_RETURN_E err;
     uint8_t i;
 
+    #if SERIAL_KERNEL_DEBUG == 1
+    kernel_serial_debug("Serial Initialization start\n");
+    #endif
+
     /* Init all comm ports */
     for(i = 0; i < 4; ++i)
     {
@@ -163,6 +167,10 @@ OS_RETURN_E init_serial(void)
     }
 
     serial_init = 1;
+
+    #if SERIAL_KERNEL_DEBUG == 1
+    kernel_serial_debug("Serial Initialization end\n");
+    #endif
 
     return err;
 }
