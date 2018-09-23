@@ -99,11 +99,16 @@ clean:
 run:
 	$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -serial stdio
 
-test:
+qemu-test-mode:
 	$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -serial mon:stdio -nographic
 
 debug:
 	$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -S
+
+######################### Tests
+test:
+	chmod +x launchtests.sh
+	./launchtests.sh
 
 ######################### Image file options
 bootable: all

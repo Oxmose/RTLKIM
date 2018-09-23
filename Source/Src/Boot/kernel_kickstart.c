@@ -51,6 +51,7 @@ void kernel_kickstart(void)
     loader_ok_test();
     idt_ok_test();
     gdt_ok_test();
+    output_test();
     #endif
 
     kernel_printf("------------------------------ Kickstarting RTLK -----------"

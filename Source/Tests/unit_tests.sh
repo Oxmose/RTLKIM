@@ -17,23 +17,23 @@ do
         # Execute the test
         rm -f *.out
         cd ../
-        make && (make test > test.out &)
+        make && (make qemu-test-mode > test.out &)
         sleep 2
         killall qemu-system-i386
         mv test.out Tests/test.out
         cd Tests
     } > /dev/null
     # Filter output
-    cat test.out | grep '\[TESTMODE\]' > filtered.out
+    grep '\[TESTMODE\]' test.out > filtered.out
     #Compare output
     diff filtered.out Refs/$filename.valid >> /dev/null
     if (( $? != 0 ))
     then
         echo -e "\e[31mERROR \e[39m"
-        error=$(($error + 1))
+        error=$((error + 1))
     else
         echo -e "\e[92mPASSED\e[39m"
-        success=$(($success + 1))
+        success=$((success + 1))
     fi
     #Clean data
     rm *.out
@@ -50,6 +50,7 @@ if (( error != 0 ))
 then
     echo -e "\e[31m $error ERRORS \e[39m"
     echo -e "\e[92m $success SUCCESS \e[39m"
+    exit -1
 else
     echo -e "\e[92m 0 ERROR \e[39m"
     echo -e "\e[92m $success SUCCESS \e[39m"
