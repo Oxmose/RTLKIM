@@ -24,6 +24,10 @@
 /* RTLK configuration file */
 #include <config.h>
 
+#if TEST_MODE_ENABLED
+#include <Tests/test_bank.h>
+#endif
+
 /*******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************/
@@ -43,6 +47,10 @@
  */
 void kernel_kickstart(void)
 {
+    #if TEST_MODE_ENABLED
+    loader_ok_test();
+    #endif
+
     kernel_printf("------------------------------ Kickstarting RTLK -----------"
                   "--------------------\n");
 
@@ -52,6 +60,8 @@ void kernel_kickstart(void)
         kernel_error("Could not detect CPU, halting.");
         return;
     }
+
+    
 
     return;
 }

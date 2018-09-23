@@ -12,7 +12,7 @@
 
 ######################### Modules selection
 
-MODULES = Boot Cpu IO Lib Drivers
+MODULES = Boot Cpu IO Lib Drivers ../Tests/Tests
 
 ######################### Files options
 # Kernel name
@@ -23,6 +23,7 @@ SRC_DIR    = Src
 BUILD_DIR  = Build
 INC_DIR    = Includes
 CONFIG_DIR = Config
+TESTS_DIR  = Tests
 BIN_DIR    = Bin
 
 SRC_DIRS = $(MODULES:%=$(SRC_DIR)/%)
@@ -67,6 +68,8 @@ init:
 	@mkdir -p $(OBJ_DIRS)
 	@mkdir -p $(BIN_DIR)
 
+	echo $(C_SRCS)
+
 # kernel generation
 kernel.bin: $(LINKER_FILE) compile_asm compile_cc
 	$(LD) $(LDFLAGS) $(C_OBJS) $(A_OBJS) -o $(BIN_DIR)/$(KERNEL)
@@ -82,13 +85,13 @@ compile_cc: $(C_OBJS)
 	@echo
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
+	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
 	$(AS) $(ASFLAGS) $< -o $@
 
 clean:
-	@$(RM) -rf $(BIN_DIR) $(BUILD_DIR)
+	@$(RM) -rf $(BIN_DIR) $(BUILD_DIR) $(TESTS_DIR)/Tests/*.o
 	@echo Cleaned build files and binaries
 	@echo
 

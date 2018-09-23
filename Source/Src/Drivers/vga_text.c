@@ -106,7 +106,7 @@ static OS_RETURN_E vga_print_char(const uint8_t line, const uint8_t column,
  */
 static void vga_process_char(const char character)
 {
-    #ifdef KERNEL_DEBUG
+    #if (KERNEL_DEBUG == 1) | (TEST_MODE_ENABLED == 1)
     /* Write on serial */
     serial_write(COM1, character);
     #endif

@@ -65,9 +65,9 @@
 #define MAX_SUPPORTED_BPP    32
 
 /** @brief Enables kernel debuging features. */
-#define KERNEL_DEBUG 
+#define KERNEL_DEBUG 1
 
 /** @brief Enables test mode features. */
-#define TEST_MODE_ENABLED
+#define TEST_MODE_ENABLED 0
 
 #endif /* __CONFIG_H_ */
