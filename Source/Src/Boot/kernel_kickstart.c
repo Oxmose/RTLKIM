@@ -20,6 +20,7 @@
 
 #include <Cpu/cpu.h>          /* detect_cpu() */
 #include <IO/kernel_output.h> /* kernel_output() */
+#include <Drivers/pic.h>      /* init_pic(); */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -47,6 +48,8 @@
  */
 void kernel_kickstart(void)
 {
+    OS_RETURN_E err;
+
     #if TEST_MODE_ENABLED
     loader_ok_test();
     idt_ok_test();
@@ -64,10 +67,24 @@ void kernel_kickstart(void)
         return;
     }
 
-
     #if TEST_MODE_ENABLED
     pic_driver_test();
     #endif
+
+    /* Init PIC */
+    err = init_pic();
+    if(err == OS_NO_ERR)
+    {
+        kernel_success("PIC Initialized\n");
+    }
+    else
+    {
+        kernel_error("PIC Initialization error [%d]\n", err);
+        return;
+    }
+
+
+    
     
 
     return;

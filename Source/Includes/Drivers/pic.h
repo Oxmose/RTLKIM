@@ -104,22 +104,22 @@ OS_RETURN_E init_pic(void);
  * @param[in] enabled Must be set to 1 to enable the IRQ or 0 to disable the 
  * IRQ.
  * 
- * @return The succes state or the error code. OS_NO_ERR if no error is 
- * encountered. No other return value is possible. OS_ERR_NO_SUCH_IRQ_LINE is 
- * returned is the IRQ number is not supported.
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returnd if no error is encountered. 
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number is not supported.
  */
 OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint8_t enabled);
 
 /**
- * @brief Acknowlege an IRQ.
+ * @brief Acknowleges an IRQ.
  * 
  * @details Acknowlege an IRQ by setting the End Of Interrupt bit for this IRQ.
  * 
  * @param[in] irq_number The irq number to Acknowlege.
  * 
- * @return The succes state or the error code. OS_NO_ERR if no error is 
- * encountered. No other return value is possible. OS_ERR_NO_SUCH_IRQ_LINE is 
- * returned is the IRQ number is not supported.
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR if no error is encountered.
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number is not supported.
  */
 OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number);
 

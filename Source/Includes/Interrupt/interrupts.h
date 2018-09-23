@@ -1,16 +1,21 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file interrupts.h
+ * 
+ * @see interrupts.c
  *
- * File: interrupts.h
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 14/12/2017
  *
- * Date: 14/12/2017
+ * @version 1.5
  *
- * Version: 1.5
- *
- * X86 interrupt manager. Allows to attach ISR to interrupt lines and
- * manage IRQ used by the CPU.
- * We also define the general interrupt handler here.
+ * @brief X86 interrupt manager.
+ * 
+ * @details X86 interrupt manager. Allows to attach ISR to interrupt lines and
+ * manage IRQ used by the CPU. We also define the general interrupt handler 
+ * here.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #ifndef __INTERRUPTS_H_
@@ -24,102 +29,170 @@
  * CONSTANTS
  ******************************************************************************/
 
-#define INT_IRQ_OFFSET      0x30
-#define MIN_INTERRUPT_LINE  0x20
-#define MAX_INTERRUPT_LINE  (IDT_ENTRY_COUNT - 2)
+/** @brief Offset of the first line of an IRQ interrupt. */
+#define INT_IRQ_OFFSET     0x30
+/** @brief Minimal customizable accepted interrupt line. */
+#define MIN_INTERRUPT_LINE 0x20
+/** @brief Maximal customizable accepted interrupt line. */
+#define MAX_INTERRUPT_LINE (IDT_ENTRY_COUNT - 2)
 
-#define SPURIOUS_INT_LINE (IDT_ENTRY_COUNT - 1)
-
+/** @brief PIT IRQ number. */
 #define PIT_IRQ_LINE              0
+/** @brief PIT interrupt line. */
 #define PIT_INTERRUPT_LINE        (INT_IRQ_OFFSET + PIT_IRQ_LINE)
+/** @brief Keyboard IRQ number. */
 #define KBD_IRQ_LINE              1
+/** @brief Keyboard interrupt line. */
 #define KBD_INTERRUPT_LINE        (INT_IRQ_OFFSET + KBD_IRQ_LINE)
+/** @brief Serial COM2-4 IRQ number. */
 #define SERIAL_2_4_IRQ_LINE       3
+/** @brief Serial COM2-4 interrupt line. */
 #define SERIAL_2_4_INTERRUPT_LINE (INT_IRQ_OFFSET + SERIAL_2_4_IRQ_LINE)
+/** @brief Serial COM1-3 IRQ number. */
 #define SERIAL_1_3_IRQ_LINE       4
+/** @brief Serial COM1-3 interrupt line. */
 #define SERIAL_1_3_INTERRUPT_LINE (INT_IRQ_OFFSET + SERIAL_1_3_IRQ_LINE)
+/** @brief RTC IRQ number. */
 #define RTC_IRQ_LINE              8
+/** @brief RTC interrupt line. */
 #define RTC_INTERRUPT_LINE        (INT_IRQ_OFFSET + RTC_IRQ_LINE)
+/** @brief Mouse IRQ number. */
 #define MOUSE_IRQ_LINE            12
+/** @brief Mouse interrupt line. */
 #define MOUSE_INTERRUPT_LINE      (INT_IRQ_OFFSET + MOUSE_IRQ_LINE)
 
-#define LAPIC_TIMER_INTERRUPT_LINE  0x20
-#define SCHEDULER_SW_INT_LINE       0x21
-#define PANIC_INT_LINE              0x2A
+/** @brief LAPIC Timer interrupt line. */
+#define LAPIC_TIMER_INTERRUPT_LINE 0x20
+/** @brief Scheduler software interrupt line. */
+#define SCHEDULER_SW_INT_LINE      0x21
+/** @brief Panic software interrupt line. */
+#define PANIC_INT_LINE             0x2A
+/** @brief Spurious interrupt line. */
+#define SPURIOUS_INT_LINE          (IDT_ENTRY_COUNT - 1)
 
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/
 
-/* Holds the CPU register values */
+/** @brief Holds the CPU register values */
 struct cpu_state
 {
+    /** @brief CPU's esp register. */
     uint32_t esp;
+    /** @brief CPU's ebp register. */
     uint32_t ebp;
+    /** @brief CPU's edi register. */
     uint32_t edi;
+    /** @brief CPU's esi register. */
     uint32_t esi;
+    /** @brief CPU's edx register. */
     uint32_t edx;
+    /** @brief CPU's ecx register. */
     uint32_t ecx;
+    /** @brief CPU's ebx register. */
     uint32_t ebx;
+    /** @brief CPU's eax register. */
     uint32_t eax;
-
+    
+    /** @brief CPU's ss register. */
     uint32_t ss;
+    /** @brief CPU's gs register. */
     uint32_t gs;
+    /** @brief CPU's fs register. */
     uint32_t fs;
+    /** @brief CPU's es register. */
     uint32_t es;
+    /** @brief CPU's ds register. */
     uint32_t ds;
 } __attribute__((packed));
+
+/** 
+ * @brief Defines cpu_state_t type as a shorcut for struct cpu_state.
+ */
 typedef struct cpu_state cpu_state_t;
 
-/* Hold the stack state before the interrupt */
+/** @brief Hold the stack state before the interrupt */
 struct stack_state
 {
+    /** @brief Interrupt's error code. */
     uint32_t error_code;
+    /** @brief EIP of the faulting instruction. */
     uint32_t eip;
+    /** @brief CS before the interrupt. */
     uint32_t cs;
+    /** @brief EFLAGDS before the interrupt. */
     uint32_t eflags;
 } __attribute__((packed));
+
+/** 
+ * @brief Defines stack_state_t type as a shorcut for struct stack_state.
+ */
 typedef struct stack_state stack_state_t;
 
+/** @brief Custom interrupt handler structure. */
 struct custom_handler
 {
+    /** @brief Handler's state.*/
     int32_t  enabled;
+    /** @brief Handler's entry point. */
     void(*handler)(cpu_state_t*, uint32_t, stack_state_t*);
 };
+
+/** 
+ * @brief Defines custom_handler_t type as a shorcut for struct custom_handler.
+ */
 typedef struct custom_handler custom_handler_t;
 
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
 
-/* Generic and global interrupt handler. This function should only be called
- * by an assembly interrupt handler. The function will dispatch the interrupt
- * to the desired function to handler the interrupt.
+/**
+ * @brief Kernel's main interrupt handler.
+ * 
+ * @details Generic and global interrupt handler. This function should only be 
+ * called by an assembly interrupt handler. The function will dispatch the 
+ * interrupt to the desired function to handle the interrupt.
  *
- * @param cpu_state The cpu registers structure.
- * @param int_id The interrupt number.
- * @param stack_state The stack state before the interrupt that contain cs, eip,
- * error code and the eflags register value.
+ * @param[in] cpu_state The cpu registers structure.
+ * @param[in] int_id The interrupt number.
+ * @param[in] stack_state The stack state before the interrupt that contain cs, 
+ * eip, error code and the eflags register value.
  */
 void kernel_interrupt_handler(cpu_state_t cpu_state,
                               uint32_t int_id,
                               stack_state_t stack_state);
 
-/* Blank the handlers memory and initializepanic and surious interrupt lines
- * handlers.
- * @return The function returns OS_NO_ERR in case of success, otherwise, please
- * refer to the error codes.
+/**
+ * @brief Initializes the kernel's interrupt manager.
+ * 
+ * @details Blanks the handlers memory, initializes panic and spurious interrupt 
+ * lines handlers.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - No other return value is possible.
  */
 OS_RETURN_E init_kernel_interrupt(void);
 
-/* Register a custom interrupt handler to be executed. The interrupt line must
- * be greater or equal to the minimal authorized custom interrupt line and less
- * than the maximum one.
+/**
+ * @brief Registers a new interrupt handler for the desired interrupt line.
+ * 
+ * @details Registers a custom interrupt handler to be executed. The interrupt 
+ * line must be greater or equal to the minimal authorized custom interrupt line 
+ * and less than the maximal one.
  *
- * @param interrupt_line The interrupt line to attach the handler to.
- * @param handler The handler for the desired interrupt.
- * @return The function returns OS_NO_ERR in case of succes, otherwise, please
- * refer to the error codes.
+ * @param[in] interrupt_line The interrupt line to attach the handler to.
+ * @param[in] handler The handler for the desired interrupt.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the desired
+ * interrupt line is not allowed. 
+ * - OS_ERR_NULL_POINTER is returned if the pointer
+ * to the handler is NULL. 
+ * - OS_ERR_INTERRUPT_ALREADY_REGISTERED is returned if a 
+ * handler is already registered for this interrupt line.
  */
 OS_RETURN_E register_interrupt_handler(const uint32_t interrupt_line,
                                        void(*handler)(
@@ -129,22 +202,39 @@ OS_RETURN_E register_interrupt_handler(const uint32_t interrupt_line,
                                              )
                                        );
 
-/* Unregister a custom interrupt handler to be executed. The interrupt line must
- * be greater or equal to the minimal authorized custom interrupt line and less
- * than the maximum one.
+/**
+ * @brief Unregisters a new interrupt handler for the desired interrupt line.
+ * 
+ * @details Unregisters a custom interrupt handler to be executed. The interrupt 
+ * line must be greater or equal to the minimal authorized custom interrupt line 
+ * and less than the maximal one.
  *
- * @param interrupt_line The interrupt line to deattach the handler from.
- * @return The function returns OS_NO_ERR in case of succes, otherwise, please
- * refer to the error codes.
+ * @param[in] interrupt_line The interrupt line to deattach the handler from.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the desired
+ * interrupt line is not allowed.
+ * - OS_ERR_INTERRUPT_NOT_REGISTERED is returned if the interrupt line has no
+ * handler attached.
  */
 OS_RETURN_E remove_interrupt_handler(const uint32_t interrupt_line);
 
-/* Register a custom exception handler to be executed. If a handler was already
- * set it will be overwritten.
- * @param exception_line The exception line to attach the handler to.
- * @param handler The handler for the desired exception.
- * @return The function returns OS_NO_ERR in case of succes, otherwise, please
- * refer to the error codes.
+/**
+ * @brief Registers a custom exception handler to be executed.
+ * 
+ * @details Registers a custom exception handler to be executed. If a handler 
+ * was already set it will be overwritten.
+ * 
+ * @param[in] exception_line The exception line to attach the handler to.
+ * @param[in] handler The handler for the desired exception.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the desired
+ * interrupt line is not allowed. 
+ * - OS_ERR_NULL_POINTER is returned if the pointer
+ * to the handler is NULL.
  */
 OS_RETURN_E register_exception_handler(const uint32_t exception_line,
                                        void(*handler)(
@@ -154,9 +244,12 @@ OS_RETURN_E register_exception_handler(const uint32_t exception_line,
                                              )
                                        );
 
-/* Restore CPU interrupt (SW/HW) state.
+/**
+ * @brief Restores the CPU interrupts state.
+ * 
+ * @details Restores the CPU interrupts state by setting the EFLAGS accordingly.
  *
- * @param prev_state The previous interrupt state that has to be retored.
+ * @param[in] prev_state The previous interrupts state that has to be retored.
  */
 void restore_local_interrupt(const uint32_t prev_state);
 
@@ -167,61 +260,97 @@ void restore_local_interrupt(const uint32_t prev_state);
  * @returns  The interupt state prior to disabling interrupts, to be used with
  * restore_local_interrupt
  */
+
+/**
+ * @brief Disables the CPU interrupts.
+ * 
+ * @details Disables the CPU interrupts by setting the EFLAGS accordingly.
+ *
+ * @return The current interrupt state is returned to be restored latter in the
+ * execution of the kernel.
+ */
 uint32_t disable_local_interrupt(void);
 
-/* Tells if the interrupt are enabled for the current CPU
+/** 
+ * @brief Tells if the interrupts are enabled for the current CPU.
+ * 
+ * @details Tells if the interrupts are enabled for the current CPU.
  *
- * @returns The functions returns 1 if the interrupts are enabled, every other
+ * @return The functions returns 1 if the interrupts are enabled, every other
  * values are considered as false.
  */
 uint32_t get_local_interrupt_enabled(void);
 
-/* Set the IRQ mask for the IRQ number given as parameter.
+/**
+ * @brief Sets the IRQ mask for the IRQ number given as parameter.
+ * 
+ * @details Sets the IRQ mask for the IRQ number given as parameter.
  *
- * @param irq_number The irq number to enable/disable.
- * @param enabled Must be set to 1 to enable the IRQ or 0 to disable the IRQ.
- * @return The state or error code.
+ * @param[in] irq_number The irq number to enable/disable.
+ * @param[in] enabled Must be set to 1 to enable the IRQ or 0 to disable the 
+ * IRQ.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
  */
 OS_RETURN_E set_IRQ_mask(const uint32_t irq_number, const uint8_t enabled);
 
-/* Acknomledge the IRQ.
+/**
+ * @brief Acknowleges an IRQ.
  *
- * @param irq_number The irq number to acknowledge.
- * @return The state or error code.
+ * @details Acknowleges an IRQ.
+ * 
+ * @param[in] irq_number The irq number to acknowledge.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
  */
 OS_RETURN_E set_IRQ_EOI(const uint32_t irq_number);
 
-/* Update kernel time counter by one tick, compute the uptime in ms */
+/**
+ * @brief Updates the kernel time counter by one tick.
+ * 
+ * @details Updates the kernel time counter by one tick and computes the uptime 
+ * in ms.
+ */
 void update_tick(void);
 
-/* Returns the timer IRQ number attached to the scheduler.
+/**
+ * @brief Returns the timer IRQ number attached to the scheduler.
+ * 
+ * @details Returns the timer IRQ number attached to the scheduler.
  *
  * @return The IRQ number of the timer that is attached to the scheduler.
  */
 int32_t get_IRQ_SCHED_TIMER(void);
 
-/* Returns the timer interrupt line attached to the scheduler.
+/**
+ * @brief Returns the timer interrupt line attached to the scheduler.
+ * 
+ * @details Returns the timer interrupt line attached to the scheduler.
  *
  * @return The interrupt line of the timer that is attached to the scheduler.
  */
 int32_t get_line_SCHED_HW(void);
 
-/* Return current uptime
+/** 
+ * @brief Returns the current uptime.
+ * 
+ * @details Return the current uptime of the system in seconds.
  *
- * @returns The current uptime in seconds.
+ * @return The current uptime in seconds.
  */
 uint32_t get_current_uptime(void);
 
-/* Return tick count since the system started
+/**
+ * @brief Returns the number of system ticks since the system started.
+ * 
+ * @details Returns the number of system ticks since the system started.
  *
- * @returns Tick count since the system started
+ * @returns The number of system ticks since the system started.
  */
 uint32_t get_tick_count(void);
-
-/* Returns the current interrupt nesting level
- *
- * @returns The current interrupt nesting level.
- */
-uint32_t get_interrupt_level(void);
 
 #endif /* __INTERRUPTS_H_ */
