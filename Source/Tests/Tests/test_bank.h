@@ -17,8 +17,12 @@
 
 /* Set here the tests that should run */
 #define LOADER_OK_TEST 0
+#define IDT_OK_TEST 0
+#define GDT_OK_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
+void idt_ok_test(void);
+void gdt_ok_test(void);
 
 #endif /* __TEST_BANK_H_ */

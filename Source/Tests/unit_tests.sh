@@ -26,7 +26,7 @@ do
     # Filter output
     cat test.out | grep '\[TESTMODE\]' > filtered.out
     #Compare output
-    diff filtered.out Refs/loader_ok_test.valid >> /dev/null
+    diff filtered.out Refs/$filename.valid >> /dev/null
     if (( $? != 0 ))
     then
         echo -e "\e[31mERROR \e[39m"
