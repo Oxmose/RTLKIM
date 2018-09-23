@@ -12,11 +12,11 @@ extern uint32_t cpu_idt_base;
 #if IDT_OK_TEST  == 1
 void idt_ok_test(void)
 {
-    printf("[TESTMODE][OK] IDT base 0x%08x\n", cpu_idt_base);
-    printf("[TESTMODE][OK] IDT size 0x%08x\n", cpu_idt_size);
+    printf("[TESTMODE][OK] IDT base 0x%08x\n", (uint32_t)cpu_idt_base);
+    printf("[TESTMODE][OK] IDT size 0x%08x\n", (uint32_t)cpu_idt_size);
    
-    printf("[TESTMODE][OK] IDT size desc 0x%08x\n", &cpu_idt_size);
-    printf("[TESTMODE][OK] IDT base desc 0x%08x\n", &cpu_idt_base);
+    printf("[TESTMODE][OK] IDT size desc 0x%08x\n", (uint32_t)&cpu_idt_size);
+    printf("[TESTMODE][OK] IDT base desc 0x%08x\n", (uint32_t)&cpu_idt_base);
     
     while(1)
     {

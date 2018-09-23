@@ -31,6 +31,7 @@ before_script:
     - chmod +x travis-qemu/travis-qemu.sh
     - bash -e travis-qemu/travis-qemu.sh
     - export PATH=$PATH:$HOME/qemu/bin
+    - qemu-system-i386 --version
     - if [ "$COMPILER" = "g++-7"        ]; then export CXX="g++-7" CC="gcc-7";              fi
 
 script: ./.build-travis.sh

@@ -15,14 +15,14 @@ do
     sed -i 's/TEST_MODE_ENABLED 0/TEST_MODE_ENABLED 1/g' ../Config/config.h
     {
         # Execute the test
-        rm *.out
+        rm -f *.out
         cd ../
         make && (make run > test.out &)
         sleep 1
         killall qemu-system-i386
         mv test.out Tests/test.out
         cd Tests
-    } > /dev/null 2>&1
+    } > /dev/null
     # Filter output
     cat test.out | grep '\[TESTMODE\]' > filtered.out
     #Compare output
