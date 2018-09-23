@@ -1,3 +1,0 @@
-[submodule "travis-qemu"]
-	path = travis-qemu
-	url = git@github.com:jdub/travis-qemu.git
