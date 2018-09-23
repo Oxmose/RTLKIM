@@ -20,11 +20,13 @@
 #define IDT_OK_TEST 0
 #define GDT_OK_TEST 0
 #define OUTPUT_TEST 0
+#define PIC_DRIVER_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
 void idt_ok_test(void);
 void gdt_ok_test(void);
 void output_test(void);
+void pic_driver_test(void);
 
 #endif /* __TEST_BANK_H_ */

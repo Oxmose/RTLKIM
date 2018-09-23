@@ -64,6 +64,10 @@ void kernel_kickstart(void)
         return;
     }
 
+
+    #if TEST_MODE_ENABLED
+    pic_driver_test();
+    #endif
     
 
     return;

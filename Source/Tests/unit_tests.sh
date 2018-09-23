@@ -31,6 +31,7 @@ do
     then
         echo -e "\e[31mERROR \e[39m"
         error=$((error + 1))
+        mv filtered.out $filename.error
     else
         echo -e "\e[92mPASSED\e[39m"
         success=$((success + 1))

@@ -114,7 +114,6 @@ debug:
 
 ######################### Tests
 test:
-	MODULES+= ../Tests/Tests
 	chmod +x launchtests.sh
 	./launchtests.sh
 
