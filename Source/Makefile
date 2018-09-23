@@ -58,7 +58,7 @@ endif
 ASFLAGS = -g -f elf -w+gnu-elf-extensions
 LDFLAGS = -e loader -T $(LINKER_FILE) -melf_i386
 QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 64 \
-           -gdb tcp::1234 -vga std -smp 4 -kernel
+           -gdb tcp::1234 -smp 4 -kernel
 
 ######################### Compile options
 .PHONY: all
@@ -98,6 +98,9 @@ clean:
 ######################### Qemu options
 run:
 	$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -serial stdio
+
+test:
+	$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -serial mon:stdio -nographic
 
 debug:
 	$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -S
