@@ -12,7 +12,7 @@
 
 ######################### Modules selection
 
-MODULES = Boot Cpu IO Lib Drivers
+MODULES = Boot Cpu IO Lib Drivers Interrupts
 ifeq ($(TESTS), TRUE)
 MODULES += ../Tests/Tests
 endif

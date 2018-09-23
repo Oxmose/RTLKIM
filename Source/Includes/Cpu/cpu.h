@@ -324,8 +324,9 @@ typedef enum cpuid_requests CPUID_REQ_E;
  *
  * @param[out] info The pointer to the structure to receive the data.
  * 
- * @return The succes state or the error code. OS_NO_ERR if no error is 
- * encountered. OS_ERR_NULL_POINTER is returned if info if NULL.
+ * @return The succes state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OS_ERR_NULL_POINTER is returned if info if NULL.
  * 
  * @warning The function detect_cpu() must have been called at least once before
  * using get_cpu_info. Otherwise the data gatered are undefined.
@@ -351,9 +352,10 @@ int8_t cpuid_capable(void);
  * @param[in] print If not set to 0, the function will print a message with
  * the collected data.
  * 
- * @return The succes state or the error code. OS_NO_ERR if no error is 
- * encountered. Otherwise OS_ERR_UNAUTHORIZED_ACTION is retuned if the kernel
- * could not detect the CPU.
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OS_ERR_UNAUTHORIZED_ACTION is retuned if the kernel could not detect the 
+ * CPU.
  */
 OS_RETURN_E detect_cpu(const uint8_t print);
 
