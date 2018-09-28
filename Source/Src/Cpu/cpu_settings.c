@@ -675,7 +675,7 @@ static void format_idt_entry(volatile uint64_t* entry,
     *entry = lo_part | (((uint64_t) hi_part) << 32);
 }
 
-void setup_gdt(void)
+void cpu_setup_gdt(void)
 {
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Setting CPU GDT\n");
@@ -780,7 +780,7 @@ void setup_gdt(void)
     kernel_success("GDT Initialized at 0x%08x\n",cpu_gdt_base);
 }
 
-void setup_idt(void)
+void cpu_setup_idt(void)
 {
     uint32_t i;
 
@@ -811,7 +811,7 @@ void setup_idt(void)
     kernel_success("IDT Initialized at 0x%08x\n", cpu_idt_base);
 }
 
-void setup_tss(void)
+void cpu_setup_tss(void)
 {
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Setting CPU TSS\n");

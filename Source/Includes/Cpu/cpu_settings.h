@@ -1487,7 +1487,7 @@ extern void interrupt_handler_255(void);
  * Once done, the function sets the segment registers (CS, DS, ES, FS, GS, SS)
  * of the CPU according to the kernel's settings.
  */
-void setup_gdt(void);
+void cpu_setup_gdt(void);
 
 /**
  * @brief Setups the generic kernel's IDT in memory and loads it in the IDT 
@@ -1497,7 +1497,7 @@ void setup_gdt(void);
  * table by adding basic support to the x86 exception (interrutps 0 to 32).
  * The rest of the interrupts are not set.
  */
-void setup_idt(void);
+void cpu_setup_idt(void);
 
 /**
  *  @brief Setups the main CPU TSS for the kernel. 
@@ -1505,6 +1505,6 @@ void setup_idt(void);
  * @details Initializes the main CPU's TSS with kernel settings in memory and
  * loads it in the TSS register.
  */
-void setup_tss(void);
+void cpu_setup_tss(void);
 
 #endif /* __CPU_SETTINGS_H_ */

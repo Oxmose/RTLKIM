@@ -203,7 +203,7 @@ typedef enum SERIAL_BAUDRATE SERIAL_BAUDRATE_E;
  * - OS_NO_ERR is returned if no error is encountered. 
  * - There is not other possible return value.
  */
-OS_RETURN_E init_serial(void);
+OS_RETURN_E serial_init(void);
 
 /**
  * @brief Writes the data given as patameter on the desired port.

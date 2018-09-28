@@ -107,7 +107,7 @@ extern interrupt_driver_t pic_driver;
  * - OS_NO_ERR is returned if no error is encountered. 
  * - No other return value is possible.
  */
-OS_RETURN_E init_pic(void);
+OS_RETURN_E pic_init(void);
 
 /**
  * @brief Sets the IRQ mask for the desired IRQ number.
@@ -119,10 +119,10 @@ OS_RETURN_E init_pic(void);
  * IRQ.
  * 
  * @return The succes state or the error code. 
- * - OS_NO_ERR is returnd if no error is encountered. 
+ * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number is not supported.
  */
-OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled);
+OS_RETURN_E pic_set_irq_mask(const uint32_t irq_number, const uint32_t enabled);
 
 /**
  * @brief Acknowleges an IRQ.
@@ -135,7 +135,7 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled);
  * - OS_NO_ERR if no error is encountered.
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number is not supported.
  */
-OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number);
+OS_RETURN_E pic_set_irq_eoi(const uint32_t irq_number);
 
 /**
  * @brief Checks if the serviced interrupt is a spurious 
@@ -150,6 +150,6 @@ OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number);
  * - INTERRUPT_TYPE_SPURIOUS if the current interrupt is a spurious one.
  * - INTERRUPT_TYPE_REGULAR if the current interrupt is a regular one.
  */
-INTERRUPT_TYPE_E handle_IRQ_PIC_spurious(const uint32_t irq_number);
+INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t irq_number);
 
 #endif /* __PIC_H_ */

@@ -40,36 +40,36 @@ interrupt_driver_t pic_driver;
  * FUNCTIONS
  ******************************************************************************/
 
-OS_RETURN_E init_pic(void)
+OS_RETURN_E pic_init(void)
 {
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC Initialization start\n");
     #endif
 
     /* Initialize the master, remap IRQs */
-    outb(PIC_ICW1_ICW4 | PIC_ICW1_INIT, PIC_MASTER_COMM_PORT);
-    outb(PIC0_BASE_INTERRUPT_LINE, PIC_MASTER_DATA_PORT);
-    outb(0x4,  PIC_MASTER_DATA_PORT);
-    outb(PIC_ICW4_8086,  PIC_MASTER_DATA_PORT);
+    cpu_outb(PIC_ICW1_ICW4 | PIC_ICW1_INIT, PIC_MASTER_COMM_PORT);
+    cpu_outb(PIC0_BASE_INTERRUPT_LINE, PIC_MASTER_DATA_PORT);
+    cpu_outb(0x4,  PIC_MASTER_DATA_PORT);
+    cpu_outb(PIC_ICW4_8086,  PIC_MASTER_DATA_PORT);
 
     /* Initialize the slave, remap IRQs */
-    outb(PIC_ICW1_ICW4 | PIC_ICW1_INIT, PIC_SLAVE_COMM_PORT);
-    outb(PIC1_BASE_INTERRUPT_LINE, PIC_SLAVE_DATA_PORT);
-    outb(0x2,  PIC_SLAVE_DATA_PORT);
-    outb(PIC_ICW4_8086,  PIC_SLAVE_DATA_PORT);
+    cpu_outb(PIC_ICW1_ICW4 | PIC_ICW1_INIT, PIC_SLAVE_COMM_PORT);
+    cpu_outb(PIC1_BASE_INTERRUPT_LINE, PIC_SLAVE_DATA_PORT);
+    cpu_outb(0x2,  PIC_SLAVE_DATA_PORT);
+    cpu_outb(PIC_ICW4_8086,  PIC_SLAVE_DATA_PORT);
 
     /* Set EOI for both PICs. */
-    outb(PIC_EOI, PIC_MASTER_COMM_PORT);
-    outb(PIC_EOI, PIC_SLAVE_COMM_PORT);
+    cpu_outb(PIC_EOI, PIC_MASTER_COMM_PORT);
+    cpu_outb(PIC_EOI, PIC_SLAVE_COMM_PORT);
 
     /* Disable all IRQs */
-    outb(0xFF, PIC_MASTER_DATA_PORT);
-    outb(0xFF, PIC_SLAVE_DATA_PORT);
+    cpu_outb(0xFF, PIC_MASTER_DATA_PORT);
+    cpu_outb(0xFF, PIC_SLAVE_DATA_PORT);
 
     /* Init driver */
-    pic_driver.driver_set_IRQ_mask = &set_IRQ_PIC_mask;
-    pic_driver.driver_set_IRQ_EOI  = &set_IRQ_PIC_EOI;
-    pic_driver.driver_handle_spurious = &handle_IRQ_PIC_spurious;
+    pic_driver.driver_set_irq_mask = &pic_set_irq_mask;
+    pic_driver.driver_set_irq_eoi  = &pic_set_irq_eoi;
+    pic_driver.driver_handle_spurious = &pic_handle_spurious_irq;
 
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC Initialization end\n");
@@ -78,7 +78,7 @@ OS_RETURN_E init_pic(void)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled)
+OS_RETURN_E pic_set_irq_mask(const uint32_t irq_number, const uint32_t enabled)
 {
     uint8_t  init_mask;
 
@@ -95,7 +95,7 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled)
     if(irq_number < 8)
     {
         /* Retrieve initial mask */
-        init_mask = inb(PIC_MASTER_DATA_PORT);
+        init_mask = cpu_inb(PIC_MASTER_DATA_PORT);
 
         /* Set new mask value */
         if(!enabled)
@@ -108,7 +108,7 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled)
         }
 
         /* Set new mask */
-        outb(init_mask, PIC_MASTER_DATA_PORT);
+        cpu_outb(init_mask, PIC_MASTER_DATA_PORT);
     }
 
     /* Manage slave PIC. WARNING, cascading will be enabled */
@@ -118,16 +118,16 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled)
         uint32_t cascading_number = irq_number - 8;
 
         /* Retrieve initial mask */
-        init_mask = inb(PIC_MASTER_DATA_PORT);
+        init_mask = cpu_inb(PIC_MASTER_DATA_PORT);
 
         /* Set new mask value */
         init_mask &= ~(1 << PIC_CASCADING_IRQ);
 
         /* Set new mask */
-        outb(init_mask, PIC_MASTER_DATA_PORT);
+        cpu_outb(init_mask, PIC_MASTER_DATA_PORT);
 
         /* Retrieve initial mask */
-        init_mask = inb(PIC_SLAVE_DATA_PORT);
+        init_mask = cpu_inb(PIC_SLAVE_DATA_PORT);
 
         /* Set new mask value */
         if(!enabled)
@@ -140,19 +140,19 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled)
         }
 
         /* Set new mask */
-        outb(init_mask, PIC_SLAVE_DATA_PORT);
+        cpu_outb(init_mask, PIC_SLAVE_DATA_PORT);
 
         /* If all is masked then disable cascading */
         if(init_mask == 0xFF)
         {
             /* Retrieve initial mask */
-            init_mask = inb(PIC_MASTER_DATA_PORT);
+            init_mask = cpu_inb(PIC_MASTER_DATA_PORT);
 
             /* Set new mask value */
             init_mask  |= 1 << PIC_CASCADING_IRQ;
 
             /* Set new mask */
-            outb(init_mask, PIC_MASTER_DATA_PORT);
+            cpu_outb(init_mask, PIC_MASTER_DATA_PORT);
         }
     }
 
@@ -163,7 +163,7 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number)
+OS_RETURN_E pic_set_irq_eoi(const uint32_t irq_number)
 {
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC IRQ EOI start\n");
@@ -177,9 +177,9 @@ OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number)
     /* End of interrupt signal */
     if(irq_number > 7)
     {
-        outb(PIC_EOI, PIC_SLAVE_COMM_PORT);
+        cpu_outb(PIC_EOI, PIC_SLAVE_COMM_PORT);
     }
-    outb(PIC_EOI, PIC_MASTER_COMM_PORT);
+    cpu_outb(PIC_EOI, PIC_MASTER_COMM_PORT);
 
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC IRQ EOI end\n");
@@ -188,7 +188,7 @@ OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number)
     return OS_NO_ERR;
 }
 
-INTERRUPT_TYPE_E handle_IRQ_PIC_spurious(const uint32_t irq_number)
+INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t irq_number)
 {
     uint8_t isr_val;
 
@@ -208,8 +208,8 @@ INTERRUPT_TYPE_E handle_IRQ_PIC_spurious(const uint32_t irq_number)
         }
 
         /* Read the ISR mask */
-        outb(PIC_READ_ISR, PIC_SLAVE_COMM_PORT);
-        isr_val = inb(PIC_SLAVE_COMM_PORT);
+        cpu_outb(PIC_READ_ISR, PIC_SLAVE_COMM_PORT);
+        isr_val = cpu_inb(PIC_SLAVE_COMM_PORT);
         if((isr_val & PIC_SPURIOUS_IRQ_MASK) != 0)
         {
             return INTERRUPT_TYPE_REGULAR;
@@ -217,7 +217,7 @@ INTERRUPT_TYPE_E handle_IRQ_PIC_spurious(const uint32_t irq_number)
         else 
         {
             /* Send EOI on master */
-            set_IRQ_PIC_EOI(PIC_CASCADING_IRQ);
+            pic_set_irq_eoi(PIC_CASCADING_IRQ);
             return INTERRUPT_TYPE_SPURIOUS;
         }
     }
@@ -230,8 +230,8 @@ INTERRUPT_TYPE_E handle_IRQ_PIC_spurious(const uint32_t irq_number)
         }
 
         /* Read the ISR mask */
-        outb(PIC_READ_ISR, PIC_MASTER_COMM_PORT);
-        isr_val = inb(PIC_MASTER_COMM_PORT);
+        cpu_outb(PIC_READ_ISR, PIC_MASTER_COMM_PORT);
+        isr_val = cpu_inb(PIC_MASTER_COMM_PORT);
         if((isr_val & PIC_SPURIOUS_IRQ_MASK) != 0)
         {
             return INTERRUPT_TYPE_REGULAR;

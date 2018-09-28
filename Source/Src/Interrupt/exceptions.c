@@ -69,11 +69,12 @@ static void div_by_zero_handler(cpu_state_t* cpu_state, uint32_t int_id,
 }
 
 
-OS_RETURN_E init_kernel_exception(void)
+OS_RETURN_E kernel_exception_init(void)
 {
     OS_RETURN_E err;
 
-    err = register_exception_handler(DIV_BY_ZERO_LINE, div_by_zero_handler);
+    err = kernel_exception_register_handler(DIV_BY_ZERO_LINE,
+                                            div_by_zero_handler);
     if(err != OS_NO_ERR)
     {
         return err;
@@ -82,7 +83,7 @@ OS_RETURN_E init_kernel_exception(void)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E register_exception_handler(const uint32_t exception_line,
+OS_RETURN_E kernel_exception_register_handler(const uint32_t exception_line,
                                        void(*handler)(
                                              cpu_state_t*,
                                              uint32_t,
@@ -117,7 +118,7 @@ OS_RETURN_E register_exception_handler(const uint32_t exception_line,
     return OS_NO_ERR;
 }
 
-OS_RETURN_E remove_exception_handler(const uint32_t exception_line)
+OS_RETURN_E kernel_exception_remove_handler(const uint32_t exception_line)
 {
     if((int32_t)exception_line < MIN_EXCEPTION_LINE ||
        exception_line > MAX_EXCEPTION_LINE)

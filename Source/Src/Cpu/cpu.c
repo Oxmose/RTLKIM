@@ -40,7 +40,7 @@ cpu_info_t cpu_info;
  * FUNCTIONS
  ******************************************************************************/
 
-OS_RETURN_E get_cpu_info(cpu_info_t* info)
+OS_RETURN_E cpu_get_info(cpu_info_t* info)
 {
     if(info == NULL)
     {
@@ -52,20 +52,20 @@ OS_RETURN_E get_cpu_info(cpu_info_t* info)
     return OS_NO_ERR;
 }
 
-int8_t cpuid_capable(void)
+int8_t cpu_cpuid_capable(void)
 {
-    return ((cpu_info.cpu_flags & CPU_FLAG_CPUID_CAPABLE) >> 21) & 0x1;
+    return ((cpu_info.cpu_flags & CPU_FLAG_cpu_cpuid_capable) >> 21) & 0x1;
 }
 
-OS_RETURN_E detect_cpu(const uint8_t print)
+OS_RETURN_E cpu_detect(const uint8_t print)
 {
-    if(cpuid_capable() == 1)
+    if(cpu_cpuid_capable() == 1)
     {
         /* eax, ebx, ecx, edx */
         int32_t regs[4];
         uint32_t ret;
 
-        ret = cpuid(CPUID_GETVENDORSTRING, (uint32_t*)regs);
+        ret = cpu_cpuid(CPUID_GETVENDORSTRING, (uint32_t*)regs);
 
     
         /* Check if CPUID return more that one available function */
@@ -102,7 +102,7 @@ OS_RETURN_E detect_cpu(const uint8_t print)
         if(ret >= 0x01)
         {
             /* Get CPU features */
-            cpuid(CPUID_GETFEATURES, (uint32_t*)regs);
+            cpu_cpuid(CPUID_GETFEATURES, (uint32_t*)regs);
 
             /* Save and display */
             cpu_info.cpuid_data[0] = regs[2];

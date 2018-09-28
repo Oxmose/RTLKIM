@@ -56,7 +56,7 @@
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  */
-OS_RETURN_E init_kernel_exception(void);
+OS_RETURN_E kernel_exception_init(void);
 
 /**
  * @brief Registers a new exception handler for the desired exception line.
@@ -77,7 +77,7 @@ OS_RETURN_E init_kernel_exception(void);
  * - OS_ERR_INTERRUPT_ALREADY_REGISTERED is returned if a 
  * handler is already registered for this exception line.
  */
-OS_RETURN_E register_exception_handler(const uint32_t exception_line,
+OS_RETURN_E kernel_exception_register_handler(const uint32_t exception_line,
                                        void(*handler)(
                                              cpu_state_t*,
                                              uint32_t,
@@ -101,6 +101,6 @@ OS_RETURN_E register_exception_handler(const uint32_t exception_line,
  * - OS_ERR_INTERRUPT_NOT_REGISTERED is returned if the exception line has no
  * handler attached.
  */
-OS_RETURN_E remove_exception_handler(const uint32_t exception_line);
+OS_RETURN_E kernel_exception_remove_handler(const uint32_t exception_line);
 
 #endif /* __EXCEPTIONS_H_ */

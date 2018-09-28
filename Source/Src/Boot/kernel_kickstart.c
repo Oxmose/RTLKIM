@@ -18,11 +18,11 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Cpu/cpu.h>              /* detect_cpu() */
+#include <Cpu/cpu.h>              /* cpu_detect() */
 #include <IO/kernel_output.h>     /* kernel_output() */
-#include <Drivers/pic.h>          /* init_pic(), pic_driver */
-#include <Interrupt/interrupts.h> /* init_kernel_interrupt() */
-#include <Interrupt/exceptions.h> /* init_kernel_exception() */
+#include <Drivers/pic.h>          /* pic_init(), pic_driver */
+#include <Interrupt/interrupts.h> /* kernel_interrupt_init() */
+#include <Interrupt/exceptions.h> /* kernel_exception_init() */
 #include <Interrupt/panic.h>      /* kernel_panic() */
 
 /* RTLK configuration file */
@@ -72,7 +72,7 @@ void kernel_kickstart(void)
     #endif
 
     /* Launch CPU detection routine */
-    if(detect_cpu(1) != OS_NO_ERR)
+    if(cpu_detect(1) != OS_NO_ERR)
     {
         kernel_error("Could not detect CPU, halting.");
         return;
@@ -86,7 +86,7 @@ void kernel_kickstart(void)
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing the PIC driver\n");
     #endif
-    err = init_pic();
+    err = pic_init();
     if(err == OS_NO_ERR)
     {
         kernel_success("PIC Initialized\n");
@@ -101,7 +101,7 @@ void kernel_kickstart(void)
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing the kernel interrupt manager\n");
     #endif
-    err = init_kernel_interrupt(pic_driver);
+    err = kernel_interrupt_init(pic_driver);
     if(err == OS_NO_ERR)
     {
         kernel_success("Kernel interrupt manager Initialized\n");
@@ -121,7 +121,7 @@ void kernel_kickstart(void)
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing the kernel exception manager\n");
     #endif
-    err = init_kernel_exception();
+    err = kernel_exception_init();
     if(err == OS_NO_ERR)
     {
         kernel_success("Kernel exception manager Initialized\n");

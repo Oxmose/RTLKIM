@@ -20,7 +20,7 @@
 #include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t, PANIC_INT_LINE */
 #include <IO/kernel_output.h>     /* kernel_printf */
 #include <Lib/stdint.h>           /* Generic int types */
-#include <Cpu/cpu.h>              /* hlt cli */
+#include <Cpu/cpu.h>              /* hlt cpu_cli */
 #include <Drivers/graphic.h>      /* color_scheme_t */
 
 /* RTLK configuration file */
@@ -228,8 +228,8 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     /* We will never return from interrupt */
     while(1)
     {
-        cli();
-        hlt();
+        cpu_cli();
+        cpu_hlt();
     }
 }
 

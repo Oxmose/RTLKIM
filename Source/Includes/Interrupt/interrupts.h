@@ -176,7 +176,7 @@ struct interrupt_driver
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
      */
-    OS_RETURN_E (*driver_set_IRQ_mask)(const uint32_t irq_number, 
+    OS_RETURN_E (*driver_set_irq_mask)(const uint32_t irq_number, 
                                        const uint32_t enabled);
 
     /**
@@ -190,7 +190,7 @@ struct interrupt_driver
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
      */
-    OS_RETURN_E (*driver_set_IRQ_EOI)(const uint32_t irq_number);
+    OS_RETURN_E (*driver_set_irq_eoi)(const uint32_t irq_number);
 
     /**
      * @brief The function should check if the serviced interrupt is a spurious 
@@ -230,7 +230,7 @@ typedef struct interrupt_driver interrupt_driver_t;
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the driver's functions are null.
  */
-OS_RETURN_E init_kernel_interrupt(const interrupt_driver_t driver);
+OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t driver);
 
 /** 
  * @brief Set the driver to be used by the kernel to manage interrupts.
@@ -244,7 +244,7 @@ OS_RETURN_E init_kernel_interrupt(const interrupt_driver_t driver);
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the driver's functions are null.
  */
-OS_RETURN_E set_interrupt_driver(const interrupt_driver_t driver);
+OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t driver);
 
 /**
  * @brief Registers a new interrupt handler for the desired interrupt line.
@@ -265,7 +265,7 @@ OS_RETURN_E set_interrupt_driver(const interrupt_driver_t driver);
  * - OS_ERR_INTERRUPT_ALREADY_REGISTERED is returned if a 
  * handler is already registered for this interrupt line.
  */
-OS_RETURN_E register_interrupt_handler(const uint32_t interrupt_line,
+OS_RETURN_E kernel_interrupt_register_handler(const uint32_t interrupt_line,
                                        void(*handler)(
                                              cpu_state_t*,
                                              uint32_t,
@@ -289,7 +289,7 @@ OS_RETURN_E register_interrupt_handler(const uint32_t interrupt_line,
  * - OS_ERR_INTERRUPT_NOT_REGISTERED is returned if the interrupt line has no
  * handler attached.
  */
-OS_RETURN_E remove_interrupt_handler(const uint32_t interrupt_line);
+OS_RETURN_E kernel_interrupt_remode_handler(const uint32_t interrupt_line);
 
 /**
  * @brief Restores the CPU interrupts state.
@@ -298,14 +298,14 @@ OS_RETURN_E remove_interrupt_handler(const uint32_t interrupt_line);
  *
  * @param[in] prev_state The previous interrupts state that has to be retored.
  */
-void restore_local_interrupt(const uint32_t prev_state);
+void kernel_interrupt_restore(const uint32_t prev_state);
 
 /* Disable CPU interrupt (SW/HW)
  * We keep track of the interrupt state nesting and disable interrupts in all
  * cases.
  *
  * @returns  The interupt state prior to disabling interrupts, to be used with
- * restore_local_interrupt
+ * kernel_interrupt_restore
  */
 
 /**
@@ -316,7 +316,7 @@ void restore_local_interrupt(const uint32_t prev_state);
  * @return The current interrupt state is returned to be restored latter in the
  * execution of the kernel.
  */
-uint32_t disable_local_interrupt(void);
+uint32_t kernel_interrupt_disable(void);
 
 /** 
  * @brief Tells if the interrupts are enabled for the current CPU.
@@ -326,7 +326,7 @@ uint32_t disable_local_interrupt(void);
  * @return The functions returns 1 if the interrupts are enabled, every other
  * values are considered as false.
  */
-uint32_t get_local_interrupt_state(void);
+uint32_t kernel_interrupt_get_state(void);
 
 /**
  * @brief Sets the IRQ mask for the IRQ number given as parameter.
@@ -341,7 +341,7 @@ uint32_t get_local_interrupt_state(void);
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
  */
-OS_RETURN_E set_IRQ_mask(const uint32_t irq_number, const uint8_t enabled);
+OS_RETURN_E kernel_interrupt_set_irq_mask(const uint32_t irq_number, const uint8_t enabled);
 
 /**
  * @brief Acknowleges an IRQ.
@@ -354,7 +354,7 @@ OS_RETURN_E set_IRQ_mask(const uint32_t irq_number, const uint8_t enabled);
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
  */
-OS_RETURN_E set_IRQ_EOI(const uint32_t irq_number);
+OS_RETURN_E kernel_interrupt_set_irq_eoi(const uint32_t irq_number);
 
 
 #endif /* __INTERRUPTS_H_ */

@@ -21,9 +21,9 @@
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Lib/string.h>       /* memset */
-#include <Drivers/pic.h>      /* set_IRQ_PIC_EOI, set_IRQ_PIC_mask */
+#include <Drivers/pic.h>      /* pic_set_irq_eoi, pic_set_irq_mask */
 #include <Cpu/cpu_settings.h> /* IDT_ENTRY_COUNT */
-#include <Cpu/cpu.h>          /* sti cli */
+#include <Cpu/cpu.h>          /* sti cpu_cli */
 #include <IO/kernel_output.h> /* kernel_success */
 #include <Interrupt/panic.h>  /* panic () */
 
@@ -133,10 +133,10 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
     handler(&cpu_state, int_id, &stack_state);
 }
 
-OS_RETURN_E init_kernel_interrupt(const interrupt_driver_t driver)
+OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t driver)
 {
-    if(driver.driver_set_IRQ_EOI == NULL || 
-       driver.driver_set_IRQ_mask == NULL ||
+    if(driver.driver_set_irq_eoi == NULL || 
+       driver.driver_set_irq_mask == NULL ||
        driver.driver_handle_spurious == NULL)
     {
         return OS_ERR_NULL_POINTER;
@@ -151,7 +151,7 @@ OS_RETURN_E init_kernel_interrupt(const interrupt_driver_t driver)
     kernel_interrupt_handlers[PANIC_INT_LINE].handler = panic;
 
     /* Init state */
-    disable_local_interrupt();
+    kernel_interrupt_disable();
     spurious_interrupt = 0;
 
     /* Set interrupt driver */ 
@@ -164,10 +164,10 @@ OS_RETURN_E init_kernel_interrupt(const interrupt_driver_t driver)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E set_interrupt_driver(const interrupt_driver_t driver)
+OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t driver)
 {
-    if(driver.driver_set_IRQ_EOI == NULL || 
-       driver.driver_set_IRQ_mask == NULL ||
+    if(driver.driver_set_irq_eoi == NULL || 
+       driver.driver_set_irq_mask == NULL ||
        driver.driver_handle_spurious == NULL)
     {
         return OS_ERR_NULL_POINTER;
@@ -182,7 +182,7 @@ OS_RETURN_E set_interrupt_driver(const interrupt_driver_t driver)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E register_interrupt_handler(const uint32_t interrupt_line,
+OS_RETURN_E kernel_interrupt_register_handler(const uint32_t interrupt_line,
                                        void(*handler)(
                                              cpu_state_t*,
                                              uint32_t,
@@ -217,7 +217,7 @@ OS_RETURN_E register_interrupt_handler(const uint32_t interrupt_line,
     return OS_NO_ERR;
 }
 
-OS_RETURN_E remove_interrupt_handler(const uint32_t interrupt_line)
+OS_RETURN_E kernel_interrupt_remode_handler(const uint32_t interrupt_line)
 {
     if(interrupt_line < MIN_INTERRUPT_LINE ||
        interrupt_line > MAX_INTERRUPT_LINE)
@@ -240,7 +240,7 @@ OS_RETURN_E remove_interrupt_handler(const uint32_t interrupt_line)
     return OS_NO_ERR;
 }
 
-void restore_local_interrupt(const uint32_t prev_state)
+void kernel_interrupt_restore(const uint32_t prev_state)
 {
     if(prev_state != 0)
     {
@@ -249,15 +249,15 @@ void restore_local_interrupt(const uint32_t prev_state)
         #endif
 
         int_state = 1;
-        sti();
+        cpu_sti();
     }
 }
 
-uint32_t disable_local_interrupt(void)
+uint32_t kernel_interrupt_disable(void)
 {
-    uint32_t old_state = get_local_interrupt_state();
+    uint32_t old_state = kernel_interrupt_get_state();
 
-    cli();
+    cpu_cli();
     int_state = 0;
 
     #if INTERRUPT_KERNEL_DEBUG == 1
@@ -267,26 +267,27 @@ uint32_t disable_local_interrupt(void)
     return old_state;
 }
 
-uint32_t get_local_interrupt_state(void)
+uint32_t kernel_interrupt_get_state(void)
 {
-    return ((save_flags() & CPU_EFLAGS_IF) != 0);
+    return ((cpu_save_flags() & CPU_EFLAGS_IF) != 0);
 }
 
 
-OS_RETURN_E set_IRQ_mask(const uint32_t irq_number, const uint8_t enabled)
+OS_RETURN_E kernel_interrupt_set_irq_mask(const uint32_t irq_number, 
+                                          const uint8_t enabled)
 {
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("IRQ Mask change: %d %d\n", irq_number, enabled);
     #endif
-    return interrupt_driver.driver_set_IRQ_mask(irq_number, enabled);
+    return interrupt_driver.driver_set_irq_mask(irq_number, enabled);
 }
 
-OS_RETURN_E set_IRQ_EOI(const uint32_t irq_number)
+OS_RETURN_E kernel_interrupt_set_irq_eoi(const uint32_t irq_number)
 {
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("IRQ EOI: %d\n", irq_number);
     #endif
-    return interrupt_driver.driver_set_IRQ_EOI(irq_number);
+    return interrupt_driver.driver_set_irq_eoi(irq_number);
 }
 
 

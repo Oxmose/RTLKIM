@@ -35,7 +35,7 @@ void pic_driver_test(void)
     OS_RETURN_E err;
 
     /* TEST MASK > MAX */
-    if((err = set_IRQ_PIC_mask(PIC_MAX_IRQ_LINE + 1, 0)) != 
+    if((err = pic_set_irq_mask(PIC_MAX_IRQ_LINE + 1, 0)) != 
        OS_ERR_NO_SUCH_IRQ_LINE)
     {
         kernel_error("[TESTMODE] TEST_PIC 0\n");
@@ -46,7 +46,7 @@ void pic_driver_test(void)
     }
 
     /* TEST EOI > MAX */
-    if((err = set_IRQ_PIC_EOI(PIC_MAX_IRQ_LINE + 1)) != OS_ERR_NO_SUCH_IRQ_LINE)
+    if((err = pic_set_irq_eoi(PIC_MAX_IRQ_LINE + 1)) != OS_ERR_NO_SUCH_IRQ_LINE)
     {
         kernel_error("[TESTMODE] TEST_PIC 1\n");
     }
@@ -56,13 +56,13 @@ void pic_driver_test(void)
     }
 
     /* Save current PIC mask */
-    pic0_mask_save = inb(PIC_MASTER_DATA_PORT);
-    pic1_mask_save = inb(PIC_SLAVE_DATA_PORT);
+    pic0_mask_save = cpu_inb(PIC_MASTER_DATA_PORT);
+    pic1_mask_save = cpu_inb(PIC_SLAVE_DATA_PORT);
 
     /* TEST MASK SET */
     for(i = 0; i <= PIC_MAX_IRQ_LINE; ++i)
     {
-        if((err = set_IRQ_PIC_mask(i, 1)) != OS_NO_ERR)
+        if((err = pic_set_irq_mask(i, 1)) != OS_NO_ERR)
         {
             kernel_error("[TESTMODE] TEST_PIC 2\n");
         }
@@ -72,8 +72,8 @@ void pic_driver_test(void)
         }
     }
 
-    pic0_mask = inb(PIC_MASTER_DATA_PORT);
-    pic1_mask = inb(PIC_SLAVE_DATA_PORT);
+    pic0_mask = cpu_inb(PIC_MASTER_DATA_PORT);
+    pic1_mask = cpu_inb(PIC_SLAVE_DATA_PORT);
 
     if(pic0_mask != 0 || pic1_mask != 0)
     {
@@ -87,7 +87,7 @@ void pic_driver_test(void)
     /* TEST MASK CLEAR */
     for(i = 0; i <= PIC_MAX_IRQ_LINE; ++i)
     {
-        if((err = set_IRQ_PIC_mask(i, 0)) != OS_NO_ERR)
+        if((err = pic_set_irq_mask(i, 0)) != OS_NO_ERR)
         {
             kernel_error("[TESTMODE] TEST_PIC 4\n");
         }
@@ -97,8 +97,8 @@ void pic_driver_test(void)
         }
     }
 
-    pic0_mask = inb(PIC_MASTER_DATA_PORT);
-    pic1_mask = inb(PIC_SLAVE_DATA_PORT);
+    pic0_mask = cpu_inb(PIC_MASTER_DATA_PORT);
+    pic1_mask = cpu_inb(PIC_SLAVE_DATA_PORT);
 
     if(pic0_mask != 0xFF || pic1_mask != 0xFF)
     {
@@ -110,13 +110,13 @@ void pic_driver_test(void)
     }
 
     /* Restore mask */
-    outb(pic0_mask_save, PIC_MASTER_DATA_PORT);
-    outb(pic1_mask_save, PIC_SLAVE_DATA_PORT);
+    cpu_outb(pic0_mask_save, PIC_MASTER_DATA_PORT);
+    cpu_outb(pic1_mask_save, PIC_SLAVE_DATA_PORT);
 
     /* Test spurious detection */
     for(i = 0; i < PIC_MAX_IRQ_LINE; ++i)
     {
-        INTERRUPT_TYPE_E val = handle_IRQ_PIC_spurious(i);
+        INTERRUPT_TYPE_E val = pic_handle_spurious_irq(i);
         if(i == PIC_SPURIOUS_IRQ_MASTER || i == PIC_SPURIOUS_IRQ_SLAVE)
         {
             if(val != INTERRUPT_TYPE_SPURIOUS)

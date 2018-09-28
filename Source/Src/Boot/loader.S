@@ -14,13 +14,13 @@
 ;-----------------------------------------
 ; EXTERN FUNCTIONS
 ;-----------------------------------------
-extern setup_gdt
-extern setup_idt
-extern setup_tss
+extern cpu_setup_gdt
+extern cpu_setup_idt
+extern cpu_setup_tss
 
 extern vga_clear_screen
 
-extern init_serial
+extern serial_init
 
 extern kernel_kickstart
 
@@ -99,16 +99,16 @@ section .text:
     call vga_clear_screen
 
     ; Init serial for debug
-    call init_serial
+    call serial_init
 
     ; Setup kernel GDT
-    call setup_gdt
+    call cpu_setup_gdt
 
     ; Setup kernel IDT
-    call setup_idt
+    call cpu_setup_idt
 
     ; Setup kernel TSS
-    call setup_tss
+    call cpu_setup_tss
 
     call kernel_kickstart
 

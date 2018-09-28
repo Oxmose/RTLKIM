@@ -59,12 +59,12 @@ static const uint32_t vga_color_table[16] = {
  * FUNCTIONS
  ******************************************************************************/
 
-void set_selected_driver(const GRAPHIC_DRIVER_E sel)
+void graphic_set_selected_driver(const GRAPHIC_DRIVER_E sel)
 {
 	selected_driver = sel;
 }
 
-void clear_screen(void)
+void graphic_clear_screen(void)
 {
 	vga_clear_screen();
 }

@@ -270,12 +270,12 @@ OS_RETURN_E vga_put_cursor_at(const uint8_t line, const uint8_t column)
     cursor_position = column + line * SCREEN_COL_SIZE;
 
     /* Send low part to the screen */
-    outb(CURSOR_COMM_LOW, SCREEN_COMM_PORT);
-    outb((int8_t)(cursor_position & 0x00FF), SCREEN_DATA_PORT);
+    cpu_outb(CURSOR_COMM_LOW, SCREEN_COMM_PORT);
+    cpu_outb((int8_t)(cursor_position & 0x00FF), SCREEN_DATA_PORT);
 
     /* Send high part to the screen */
-    outb(CURSOR_COMM_HIGH, SCREEN_COMM_PORT);
-    outb((int8_t)((cursor_position & 0xFF00) >> 8), SCREEN_DATA_PORT);
+    cpu_outb(CURSOR_COMM_HIGH, SCREEN_COMM_PORT);
+    cpu_outb((int8_t)((cursor_position & 0xFF00) >> 8), SCREEN_DATA_PORT);
 
     return OS_NO_ERR;
 }

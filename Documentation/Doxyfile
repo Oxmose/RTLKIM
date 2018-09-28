@@ -330,11 +330,11 @@ AUTOLINK_SUPPORT       = YES
 
 BUILTIN_STL_SUPPORT    = NO
 
-# If you use Microsoft's C++/CLI language, you should set this option to YES to
+# If you use Microsoft's C++/cpu_cli language, you should set this option to YES to
 # enable parsing support.
 # The default value is: NO.
 
-CPP_CLI_SUPPORT        = NO
+CPP_cpu_cli_SUPPORT        = NO
 
 # Set the SIP_SUPPORT tag to YES if your project consists of sip (see:
 # http://www.riverbankcomputing.co.uk/software/sip/intro) sources only. Doxygen
@@ -1433,25 +1433,25 @@ QHP_SECT_FILTER_ATTRS  =
 
 QHG_LOCATION           = 
 
-# If the GENERATE_ECLIPSEHELP tag is set to YES, additional index files will be
-# generated, together with the HTML files, they form an Eclipse help plugin. To
+# If the GENERATE_Ecpu_cliPSEHELP tag is set to YES, additional index files will be
+# generated, together with the HTML files, they form an Ecpu_clipse help plugin. To
 # install this plugin and make it available under the help contents menu in
-# Eclipse, the contents of the directory containing the HTML and XML files needs
-# to be copied into the plugins directory of eclipse. The name of the directory
-# within the plugins directory should be the same as the ECLIPSE_DOC_ID value.
-# After copying Eclipse needs to be restarted before the help appears.
+# Ecpu_clipse, the contents of the directory containing the HTML and XML files needs
+# to be copied into the plugins directory of ecpu_clipse. The name of the directory
+# within the plugins directory should be the same as the Ecpu_cliPSE_DOC_ID value.
+# After copying Ecpu_clipse needs to be restarted before the help appears.
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-GENERATE_ECLIPSEHELP   = NO
+GENERATE_Ecpu_cliPSEHELP   = NO
 
-# A unique identifier for the Eclipse help plugin. When installing the plugin
+# A unique identifier for the Ecpu_clipse help plugin. When installing the plugin
 # the directory name containing the HTML and XML files should also have this
 # name. Each documentation set should have its own identifier.
 # The default value is: org.doxygen.Project.
-# This tag requires that the tag GENERATE_ECLIPSEHELP is set to YES.
+# This tag requires that the tag GENERATE_Ecpu_cliPSEHELP is set to YES.
 
-ECLIPSE_DOC_ID         = org.doxygen.Project
+Ecpu_cliPSE_DOC_ID         = org.doxygen.Project
 
 # If you want full control over the layout of the generated HTML pages it might
 # be necessary to disable the index and replace it with your own. The
@@ -1526,7 +1526,7 @@ FORMULA_FONTSIZE       = 10
 FORMULA_TRANSPARENT    = YES
 
 # Enable the USE_MATHJAX option to render LaTeX formulas using MathJax (see
-# http://www.mathjax.org) which uses client side Javascript for the rendering
+# http://www.mathjax.org) which uses cpu_client side Javascript for the rendering
 # instead of using pre-rendered bitmaps. Use this if you do not have LaTeX
 # installed or if you want to formulas look prettier in the HTML output. When
 # enabled you may also need to install MathJax separately and configure the path
@@ -1596,7 +1596,7 @@ MATHJAX_CODEFILE       =
 SEARCHENGINE           = YES
 
 # When the SERVER_BASED_SEARCH tag is enabled the search engine will be
-# implemented using a web server instead of a web client using Javascript. There
+# implemented using a web server instead of a web cpu_client using Javascript. There
 # are two flavors of web server based searching depending on the EXTERNAL_SEARCH
 # setting. When disabled, doxygen will generate a PHP script for searching and
 # an index file used by the script. When EXTERNAL_SEARCH is enabled the indexing

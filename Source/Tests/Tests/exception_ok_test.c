@@ -22,7 +22,7 @@ static void dummy(cpu_state_t* cpu,  uint32_t int_id,
 {
     (void)cpu;
     (void)int_id;
-    stack->eip = end;
+    stack->eip = (uint32_t)end;
     kernel_printf("[TESTMODE] EXCEPTION CATCHED\n");
 }
 
@@ -32,7 +32,7 @@ void exception_ok_test(void)
 
 
     /* TEST REGISTER < MIN */
-    if((err = register_exception_handler(MIN_EXCEPTION_LINE - 1, dummy))
+    if((err = kernel_exception_register_handler(MIN_EXCEPTION_LINE - 1, dummy))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_EXC 0\n");
@@ -44,7 +44,7 @@ void exception_ok_test(void)
     }
 
     /* TEST REGISTER > MAX */
-    if((err = register_exception_handler(MAX_EXCEPTION_LINE + 1, dummy))
+    if((err = kernel_exception_register_handler(MAX_EXCEPTION_LINE + 1, dummy))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_EXC 1\n");
@@ -56,7 +56,7 @@ void exception_ok_test(void)
     }
 
     /* TEST REMOVE < MIN */
-    if((err = remove_exception_handler(MIN_EXCEPTION_LINE - 1))
+    if((err = kernel_exception_remove_handler(MIN_EXCEPTION_LINE - 1))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_EXC 2\n");
@@ -68,7 +68,7 @@ void exception_ok_test(void)
     }
 
     /* TEST REMOVE > MAX */
-    if((err = remove_exception_handler(MAX_EXCEPTION_LINE + 1))
+    if((err = kernel_exception_remove_handler(MAX_EXCEPTION_LINE + 1))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_EXC 3\n");
@@ -80,7 +80,7 @@ void exception_ok_test(void)
     }
 
     /* TEST NULL HANDLER */
-    if((err = register_exception_handler(MIN_EXCEPTION_LINE, NULL))
+    if((err = kernel_exception_register_handler(MIN_EXCEPTION_LINE, NULL))
      != OS_ERR_NULL_POINTER)
     {
         kernel_error("TEST_SW_EXC 4\n");
@@ -92,7 +92,7 @@ void exception_ok_test(void)
     }
 
     /* TEST REMOVE WHEN NOT REGISTERED */
-    if((err = remove_exception_handler(MIN_EXCEPTION_LINE))
+    if((err = kernel_exception_remove_handler(MIN_EXCEPTION_LINE))
      != OS_NO_ERR)
     {
         kernel_error("TEST_SW_EXC 5\n");
@@ -103,7 +103,7 @@ void exception_ok_test(void)
         kernel_printf("[TESTMODE] TEST_SW_EXC 5\n");
     }
      /* TEST REMOVE WHEN NOT REGISTERED */
-    if((err = remove_exception_handler(MIN_EXCEPTION_LINE))
+    if((err = kernel_exception_remove_handler(MIN_EXCEPTION_LINE))
      != OS_ERR_INTERRUPT_NOT_REGISTERED)
     {
         kernel_error("TEST_SW_EXC 7\n");
@@ -115,7 +115,7 @@ void exception_ok_test(void)
     }
 
     /* TEST REGISTER WHEN ALREADY REGISTERED */
-    if((err = register_exception_handler(MIN_EXCEPTION_LINE, dummy))
+    if((err = kernel_exception_register_handler(MIN_EXCEPTION_LINE, dummy))
      != OS_NO_ERR)
     {
         kernel_error("TEST_SW_EXC 8\n");
@@ -126,7 +126,7 @@ void exception_ok_test(void)
         kernel_printf("[TESTMODE] TEST_SW_EXC 8\n");
     }
 
-    if((err = register_exception_handler(DIV_BY_ZERO_LINE, dummy))
+    if((err = kernel_exception_register_handler(DIV_BY_ZERO_LINE, dummy))
      != OS_ERR_INTERRUPT_ALREADY_REGISTERED)
     {
         kernel_error("TEST_SW_EXC 9\n");

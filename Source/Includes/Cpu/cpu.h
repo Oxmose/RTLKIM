@@ -33,7 +33,7 @@
 #define CPU_EFLAGS_IF_SHIFT 9
 
 /** @brief CPUID capable flags. */
-#define CPU_FLAG_CPUID_CAPABLE 0x00200000
+#define CPU_FLAG_cpu_cpuid_capable 0x00200000
 
 /****************************
  * General Features 
@@ -333,10 +333,10 @@ typedef enum cpuid_requests CPUID_REQ_E;
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if info if NULL.
  * 
- * @warning The function detect_cpu() must have been called at least once before
- * using get_cpu_info. Otherwise the data gatered are undefined.
+ * @warning The function cpu_detect() must have been called at least once before
+ * using cpu_get_info. Otherwise the data gatered are undefined.
  */
-OS_RETURN_E get_cpu_info(cpu_info_t* info);
+OS_RETURN_E cpu_get_info(cpu_info_t* info);
 
 /**
  * @brief Returns 1 if the CPUID intruction is available on the CPU. 0 is 
@@ -344,7 +344,7 @@ OS_RETURN_E get_cpu_info(cpu_info_t* info);
  *
  * @return 1 if the CPUID instruction is available, 0 otherwise.
  */
-int8_t cpuid_capable(void);
+int8_t cpu_cpuid_capable(void);
 
 /**
  * @brief Detects CPU features and save then in the system's cpu_info_t 
@@ -362,7 +362,7 @@ int8_t cpuid_capable(void);
  * - OS_ERR_UNAUTHORIZED_ACTION is retuned if the kernel could not detect the 
  * CPU.
  */
-OS_RETURN_E detect_cpu(const uint8_t print);
+OS_RETURN_E cpu_detect(const uint8_t print);
 
 /**
  * @brief Returns the highest support CPUID feature request ID.
@@ -377,10 +377,10 @@ OS_RETURN_E detect_cpu(const uint8_t print);
  * @param[in] ext The opperation code for the CPUID instruction.
  * @return The highest supported input value for CPUID instruction.
  */
-__inline__ static uint32_t get_cpuid_max (const uint32_t ext)
+__inline__ static uint32_t cpu_get_cpuid_max (const uint32_t ext)
 {
     uint32_t regs[4];
-    if(cpuid_capable() == 0)
+    if(cpu_cpuid_capable() == 0)
     {
         return 0;
     }
@@ -393,7 +393,7 @@ __inline__ static uint32_t get_cpuid_max (const uint32_t ext)
 }
 
 /** 
- * @brief Returns the CPUIS data for a requested leaf.
+ * @brief Returns the CPUID data for a requested leaf.
  * 
  * @details Returns CPUID data for requested CPUID leaf, as found in returned
  * eax, ebx, ecx and edx registers.  The function checks if CPUID is
@@ -404,15 +404,15 @@ __inline__ static uint32_t get_cpuid_max (const uint32_t ext)
  * @param[out] regs The register used to store the CPUID instruction return.
  * @return 1 in case of succes, 0 otherwise.
  */
-__inline__ static int32_t cpuid (const uint32_t code,
+__inline__ static int32_t cpu_cpuid(const uint32_t code,
                                  uint32_t regs[4])
 {
-    if(cpuid_capable() == 0)
+    if(cpu_cpuid_capable() == 0)
     {
         return 0;
     }
     uint32_t ext = code & 0x80000000;
-    uint32_t maxlevel = get_cpuid_max(ext);
+    uint32_t maxlevel = cpu_get_cpuid_max(ext);
 
     if (maxlevel == 0 || maxlevel < code)
     {
@@ -424,19 +424,19 @@ __inline__ static int32_t cpuid (const uint32_t code,
 }
 
 /** @brief Clears interupt bit which results in disabling interrupts. */
-__inline__ static void cli(void)
+__inline__ static void cpu_cli(void)
 {
     __asm__ __volatile__("cli":::"memory");
 }
 
 /** @brief Sets interrupt bit which results in enabling interupts. */
-__inline__ static void sti(void)
+__inline__ static void cpu_sti(void)
 {
     __asm__ __volatile__("sti":::"memory");
 }
 
 /** @brief Halts the CPU for lower energy consuption. */
-__inline__ static void hlt(void)
+__inline__ static void cpu_hlt(void)
 {
     __asm__ __volatile__ ("hlt":::"memory");
 }
@@ -446,7 +446,7 @@ __inline__ static void hlt(void)
  *
  * @return The current CPU flags.
  */
-__inline__ static uint32_t save_flags(void)
+__inline__ static uint32_t cpu_save_flags(void)
 {
     uint32_t flags;
 
@@ -466,7 +466,7 @@ __inline__ static uint32_t save_flags(void)
  *
  * @param[in] flags The flags to be restored.
  */
-__inline__ static void restore_flags(const uint32_t flags)
+__inline__ static void cpu_restore_flags(const uint32_t flags)
 {
     __asm__ __volatile__(
         "pushl    %0\n"
@@ -483,7 +483,7 @@ __inline__ static void restore_flags(const uint32_t flags)
  * @param[in] value The value to send to the port.
  * @param[in] port The port to which the value has to be written.
  */
-__inline__ static void outb(const uint8_t value, const uint16_t port)
+__inline__ static void cpu_outb(const uint8_t value, const uint16_t port)
 {
     __asm__ __volatile__("outb %0, %1" : : "a" (value), "Nd" (port));
 }
@@ -494,7 +494,7 @@ __inline__ static void outb(const uint8_t value, const uint16_t port)
  * @param[in] value The value to send to the port.
  * @param[in] port The port to which the value has to be written.
  */
-__inline__ static void outw(const uint16_t value, const uint16_t port)
+__inline__ static void cpu_outw(const uint16_t value, const uint16_t port)
 {
     __asm__ __volatile__("outw %0, %1" : : "a" (value), "Nd" (port));
 }
@@ -505,7 +505,7 @@ __inline__ static void outw(const uint16_t value, const uint16_t port)
  * @param[in] value The value to send to the port.
  * @param[in] port The port to which the value has to be written.
  */
-__inline__ static void outl(const uint32_t value, const uint16_t port)
+__inline__ static void cpu_outl(const uint32_t value, const uint16_t port)
 {
     __asm__ __volatile__("outl %0, %1" : : "a" (value), "Nd" (port));
 }
@@ -517,7 +517,7 @@ __inline__ static void outl(const uint32_t value, const uint16_t port)
  * 
  * @param[in] port The port to which the value has to be read.
  */
-__inline__ static uint8_t inb(const uint16_t port)
+__inline__ static uint8_t cpu_inb(const uint16_t port)
 {
     uint8_t rega;
     __asm__ __volatile__("inb %1,%0" : "=a" (rega) : "Nd" (port));
@@ -531,7 +531,7 @@ __inline__ static uint8_t inb(const uint16_t port)
  * 
  * @param[in] port The port to which the value has to be read.
  */
-__inline__ static uint16_t inw(const uint16_t port)
+__inline__ static uint16_t cpu_inw(const uint16_t port)
 {
     uint16_t rega;
     __asm__ __volatile__("inw %1,%0" : "=a" (rega) : "Nd" (port));
@@ -545,7 +545,7 @@ __inline__ static uint16_t inw(const uint16_t port)
  * 
  * @param[in] port The port to which the value has to be read.
  */
-__inline__ static uint32_t inl(const uint16_t port)
+__inline__ static uint32_t cpu_inl(const uint16_t port)
 {
     uint32_t rega;
     __asm__ __volatile__("inl %1,%0" : "=a" (rega) : "Nd" (port));
@@ -603,7 +603,7 @@ __inline__ static int cpu_test_and_set(volatile uint32_t* lock)
  *
  * @return The CPU's TSC time stamp.
  */
-__inline__ static uint64_t rdtsc(void)
+__inline__ static uint64_t cpu_rdtsc(void)
 {
     uint64_t ret;
     __asm__ __volatile__ ( "rdtsc" : "=A"(ret) );

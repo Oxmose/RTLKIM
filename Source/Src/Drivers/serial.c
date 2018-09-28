@@ -37,7 +37,7 @@
  ******************************************************************************/
 
 /** @brief Stores the serial initialization state. */
-static uint8_t serial_init = 0;
+static uint8_t serial_init_done = 0;
 
 /*******************************************************************************
  * FUNCTIONS
@@ -55,7 +55,7 @@ static uint8_t serial_init = 0;
  */
 static OS_RETURN_E set_line(const uint8_t attr, const uint32_t com)
 {
-    outb(attr, SERIAL_LINE_COMMAND_PORT(com));
+    cpu_outb(attr, SERIAL_LINE_COMMAND_PORT(com));
 
     return OS_NO_ERR;
 }
@@ -72,7 +72,7 @@ static OS_RETURN_E set_line(const uint8_t attr, const uint32_t com)
  */
 static OS_RETURN_E set_buffer(const uint8_t attr, const uint32_t com)
 {
-    outb(attr, SERIAL_FIFO_COMMAND_PORT(com));
+    cpu_outb(attr, SERIAL_FIFO_COMMAND_PORT(com));
 
     return OS_NO_ERR;
 }
@@ -89,14 +89,14 @@ static OS_RETURN_E set_buffer(const uint8_t attr, const uint32_t com)
  */
 static OS_RETURN_E set_baudrate(SERIAL_BAUDRATE_E rate, const uint32_t com)
 {
-    outb(SERIAL_DLAB_ENABLED, SERIAL_LINE_COMMAND_PORT(com));
-    outb((rate >> 8) & 0x00FF, SERIAL_DATA_PORT(com));
-    outb(rate & 0x00FF, SERIAL_DATA_PORT_2(com));
+    cpu_outb(SERIAL_DLAB_ENABLED, SERIAL_LINE_COMMAND_PORT(com));
+    cpu_outb((rate >> 8) & 0x00FF, SERIAL_DATA_PORT(com));
+    cpu_outb(rate & 0x00FF, SERIAL_DATA_PORT_2(com));
 
     return OS_NO_ERR;
 }
 
-OS_RETURN_E init_serial(void)
+OS_RETURN_E serial_init(void)
 {
     OS_RETURN_E err;
     uint8_t i;
@@ -133,11 +133,11 @@ OS_RETURN_E init_serial(void)
         /* Enable interrupt on recv for COM1 and COM2 */
         if(com == SERIAL_COM1_BASE || com == SERIAL_COM2_BASE)
         {
-            outb(0x01, SERIAL_DATA_PORT_2(com));
+            cpu_outb(0x01, SERIAL_DATA_PORT_2(com));
         }
         else
         {
-            outb(0x00, SERIAL_DATA_PORT_2(com));
+            cpu_outb(0x00, SERIAL_DATA_PORT_2(com));
         }
 
         /* Init baud rate */
@@ -163,10 +163,10 @@ OS_RETURN_E init_serial(void)
         }
 
         /* Enable interrupt */
-        outb(0x0B, SERIAL_MODEM_COMMAND_PORT(com));
+        cpu_outb(0x0B, SERIAL_MODEM_COMMAND_PORT(com));
     }
 
-    serial_init = 1;
+    serial_init_done = 1;
 
     #if SERIAL_KERNEL_DEBUG == 1
     kernel_serial_debug("Serial Initialization end\n");
@@ -177,7 +177,7 @@ OS_RETURN_E init_serial(void)
 
 void serial_write(const uint32_t port, const uint8_t data)
 {
-    if(serial_init == 0)
+    if(serial_init_done == 0)
     {
         return;
     }
@@ -193,11 +193,11 @@ void serial_write(const uint32_t port, const uint8_t data)
     if(data == '\n')
     {
         serial_write(port, '\r');
-        outb('\n', port);
+        cpu_outb('\n', port);
     }
     else
     {
-        outb(data, port);
+        cpu_outb(data, port);
     }
 
     while((SERIAL_LINE_STATUS_PORT(port) & 0x20) == 0)
@@ -210,7 +210,7 @@ uint8_t serial_read(const uint32_t port)
     while (serial_received(port) == 0);
 
     /* Read available data on port */
-    return inb(SERIAL_DATA_PORT(port));
+    return cpu_inb(SERIAL_DATA_PORT(port));
 }
 
 void serial_put_string(const char* string)
@@ -230,5 +230,5 @@ void serial_put_char(const char character)
 uint8_t serial_received(const uint32_t port)
 {
     /* Read on LINE status port */
-    return inb(SERIAL_LINE_STATUS_PORT(port)) & 0x01;
+    return cpu_inb(SERIAL_LINE_STATUS_PORT(port)) & 0x01;
 }

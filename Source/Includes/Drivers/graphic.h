@@ -191,12 +191,12 @@ typedef struct colorscheme colorscheme_t;
  * 
  * @param[in] sel The driver signature to select.
  */
-void set_selected_driver(const GRAPHIC_DRIVER_E sel);
+void graphic_set_selected_driver(const GRAPHIC_DRIVER_E sel);
 
 /**
  * @brief Clears the screen, the background color is set to black.
  */
-void clear_screen(void);
+void graphic_clear_screen(void);
 
 /** 
  * @brief Places the cursor to the coordinates given as parameters.
