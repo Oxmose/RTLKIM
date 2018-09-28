@@ -54,7 +54,7 @@ extern custom_handler_t kernel_interrupt_handlers[IDT_ENTRY_COUNT];
  * error code and the eflags register value.
  */
 static void div_by_zero_handler(cpu_state_t* cpu_state, uint32_t int_id,
-                                stack_state_t* stack)
+                                stack_state_t* stack_state)
 {
     (void)cpu_state;
 
@@ -62,10 +62,10 @@ static void div_by_zero_handler(cpu_state_t* cpu_state, uint32_t int_id,
     if(int_id != DIV_BY_ZERO_LINE)
     {
         kernel_error("Divide by zero handler in wrong exception line.\n");
-        panic(cpu_state, int_id, stack);
+        panic(cpu_state, int_id, stack_state);
     }
 
-    panic(cpu_state, int_id, stack);
+    panic(cpu_state, int_id, stack_state);
 }
 
 
