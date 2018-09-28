@@ -289,7 +289,7 @@ OS_RETURN_E kernel_interrupt_register_handler(const uint32_t interrupt_line,
  * - OS_ERR_INTERRUPT_NOT_REGISTERED is returned if the interrupt line has no
  * handler attached.
  */
-OS_RETURN_E kernel_interrupt_remode_handler(const uint32_t interrupt_line);
+OS_RETURN_E kernel_interrupt_remove_handler(const uint32_t interrupt_line);
 
 /**
  * @brief Restores the CPU interrupts state.

@@ -181,7 +181,7 @@ static void test_sw_interupts_lock(void)
     }
 
 
-    if((err = kernel_interrupt_remode_handler(MIN_INTERRUPT_LINE)))
+    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE)))
     {
         kernel_error("TEST_SW_INT_LOCK 8\n");
         kernel_panic(err);
@@ -191,7 +191,7 @@ static void test_sw_interupts_lock(void)
         kernel_printf("[TESTMODE] TEST_SW_INT_LOCK 8\n");
     }
 
-    if((err = kernel_interrupt_remode_handler(MIN_INTERRUPT_LINE + 1)))
+    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE + 1)))
     {
         kernel_error("TEST_SW_INT_LOCK 9\n");
         kernel_panic(err);
@@ -240,7 +240,7 @@ void test_sw_interupts(void)
     }
 
     /* TEST REMOVE < MIN */
-    if((err = kernel_interrupt_remode_handler(MIN_INTERRUPT_LINE - 1))
+    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE - 1))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_INT 2\n");
@@ -252,7 +252,7 @@ void test_sw_interupts(void)
     }
 
     /* TEST REMOVE > MAX */
-    if((err = kernel_interrupt_remode_handler(MAX_INTERRUPT_LINE + 1))
+    if((err = kernel_interrupt_remove_handler(MAX_INTERRUPT_LINE + 1))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_INT 3\n");
@@ -276,7 +276,7 @@ void test_sw_interupts(void)
     }
 
     /* TEST REMOVE WHEN NOT REGISTERED */
-    if((err = kernel_interrupt_remode_handler(MIN_INTERRUPT_LINE))
+    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE))
      != OS_ERR_INTERRUPT_NOT_REGISTERED)
     {
         kernel_error("TEST_SW_INT 5\n");
@@ -311,7 +311,7 @@ void test_sw_interupts(void)
     }
 
     /* INIT THINGS */
-    if((err = kernel_interrupt_remode_handler(MIN_INTERRUPT_LINE)) != OS_NO_ERR)
+    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE)) != OS_NO_ERR)
     {
         kernel_error("TEST_SW_INT 8\n");
         kernel_panic(err);
@@ -591,7 +591,7 @@ void test_sw_interupts(void)
         {
             continue;
         }
-        if((err = kernel_interrupt_remode_handler(i)) != OS_NO_ERR)
+        if((err = kernel_interrupt_remove_handler(i)) != OS_NO_ERR)
         {
             kernel_error("TEST_SW_INT 11\n");
             kernel_panic(err);
@@ -868,7 +868,7 @@ void test_sw_interupts(void)
         {
             continue;
         }
-        if((err = kernel_interrupt_remode_handler(i)) != OS_NO_ERR)
+        if((err = kernel_interrupt_remove_handler(i)) != OS_NO_ERR)
         {
             kernel_error("TEST_SW_INT 14\n");
             kernel_panic(err);

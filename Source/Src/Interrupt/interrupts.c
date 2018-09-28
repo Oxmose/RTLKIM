@@ -217,7 +217,7 @@ OS_RETURN_E kernel_interrupt_register_handler(const uint32_t interrupt_line,
     return OS_NO_ERR;
 }
 
-OS_RETURN_E kernel_interrupt_remode_handler(const uint32_t interrupt_line)
+OS_RETURN_E kernel_interrupt_remove_handler(const uint32_t interrupt_line)
 {
     if(interrupt_line < MIN_INTERRUPT_LINE ||
        interrupt_line > MAX_INTERRUPT_LINE)
