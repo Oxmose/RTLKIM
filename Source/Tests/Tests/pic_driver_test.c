@@ -102,7 +102,7 @@ void pic_driver_test(void)
 
     if(pic0_mask != 0xFF || pic1_mask != 0xFF)
     {
-        kernel_error("[TESTMODE] TEST_PIC 5\n");
+        kernel_error("[TESTMODE] TEST_PIC %d %d 5\n", pic0_mask, pic1_mask);
     }
     else 
     {
@@ -112,6 +112,26 @@ void pic_driver_test(void)
     /* Restore mask */
     outb(pic0_mask_save, PIC_MASTER_DATA_PORT);
     outb(pic1_mask_save, PIC_SLAVE_DATA_PORT);
+
+    /* Test spurious detection */
+    for(i = 0; i < PIC_MAX_IRQ_LINE; ++i)
+    {
+        INTERRUPT_TYPE_E val = handle_IRQ_PIC_spurious(i);
+        if(i == PIC_SPURIOUS_IRQ_MASTER || i == PIC_SPURIOUS_IRQ_SLAVE)
+        {
+            if(val != INTERRUPT_TYPE_SPURIOUS)
+            {
+                kernel_error("[TESTMODE] TEST_PIC6\n");
+            }
+        }
+        else 
+        {
+            if(val != INTERRUPT_TYPE_REGULAR)
+            {
+                kernel_error("[TESTMODE] TEST_PIC6\n");
+            }
+        }
+    }
 
     kernel_success("[TESTMODE] PIC tests passed\n");
 }

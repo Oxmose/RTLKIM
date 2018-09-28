@@ -112,10 +112,6 @@ section .text:
 
     call kernel_kickstart
 
-  ; TODO Remove
-  global kernel_interrupt_handler
-  kernel_interrupt_handler:
-
   ; Hang forever, this should never happen
   .loop:
     cli

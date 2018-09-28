@@ -33,6 +33,9 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
+/** @brief PIC driver instance. */
+interrupt_driver_t pic_driver;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -63,6 +66,11 @@ OS_RETURN_E init_pic(void)
     outb(0xFF, PIC_MASTER_DATA_PORT);
     outb(0xFF, PIC_SLAVE_DATA_PORT);
 
+    /* Init driver */
+    pic_driver.driver_set_IRQ_mask = &set_IRQ_PIC_mask;
+    pic_driver.driver_set_IRQ_EOI  = &set_IRQ_PIC_EOI;
+    pic_driver.driver_handle_spurious = &handle_IRQ_PIC_spurious;
+
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC Initialization end\n");
     #endif
@@ -70,7 +78,7 @@ OS_RETURN_E init_pic(void)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint8_t enabled)
+OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled)
 {
     uint8_t  init_mask;
 
@@ -103,11 +111,20 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint8_t enabled)
         outb(init_mask, PIC_MASTER_DATA_PORT);
     }
 
-    /* Manage slave PIC. WARNING, cascading has to be enabled */
+    /* Manage slave PIC. WARNING, cascading will be enabled */
     if(irq_number > 7)
-    {        
+    {     
         /* Set new IRQ number */
         uint32_t cascading_number = irq_number - 8;
+
+        /* Retrieve initial mask */
+        init_mask = inb(PIC_MASTER_DATA_PORT);
+
+        /* Set new mask value */
+        init_mask &= ~(1 << PIC_CASCADING_IRQ);
+
+        /* Set new mask */
+        outb(init_mask, PIC_MASTER_DATA_PORT);
 
         /* Retrieve initial mask */
         init_mask = inb(PIC_SLAVE_DATA_PORT);
@@ -124,6 +141,19 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint8_t enabled)
 
         /* Set new mask */
         outb(init_mask, PIC_SLAVE_DATA_PORT);
+
+        /* If all is masked then disable cascading */
+        if(init_mask == 0xFF)
+        {
+            /* Retrieve initial mask */
+            init_mask = inb(PIC_MASTER_DATA_PORT);
+
+            /* Set new mask value */
+            init_mask  |= 1 << PIC_CASCADING_IRQ;
+
+            /* Set new mask */
+            outb(init_mask, PIC_MASTER_DATA_PORT);
+        }
     }
 
     #if PIC_KERNEL_DEBUG == 1
@@ -156,4 +186,59 @@ OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number)
     #endif
 
     return OS_NO_ERR;
+}
+
+INTERRUPT_TYPE_E handle_IRQ_PIC_spurious(const uint32_t irq_number)
+{
+    uint8_t isr_val;
+
+    /* Check if regular soft interrupt */
+    if(irq_number > PIC_MAX_IRQ_LINE)
+    {
+        return INTERRUPT_TYPE_REGULAR;
+    }
+
+    /* Check the PIC type */
+    if(irq_number > 7)
+    {
+        /* This is not a potential spurious irq */
+        if(irq_number != PIC_SPURIOUS_IRQ_SLAVE)
+        {
+            return INTERRUPT_TYPE_REGULAR;
+        }
+
+        /* Read the ISR mask */
+        outb(PIC_READ_ISR, PIC_SLAVE_COMM_PORT);
+        isr_val = inb(PIC_SLAVE_COMM_PORT);
+        if((isr_val & PIC_SPURIOUS_IRQ_MASK) != 0)
+        {
+            return INTERRUPT_TYPE_REGULAR;
+        }
+        else 
+        {
+            /* Send EOI on master */
+            set_IRQ_PIC_EOI(PIC_CASCADING_IRQ);
+            return INTERRUPT_TYPE_SPURIOUS;
+        }
+    }
+    else 
+    {
+        /* This is not a potential spurious irq */
+        if(irq_number != PIC_SPURIOUS_IRQ_MASTER)
+        {
+            return INTERRUPT_TYPE_REGULAR;
+        }
+
+        /* Read the ISR mask */
+        outb(PIC_READ_ISR, PIC_MASTER_COMM_PORT);
+        isr_val = inb(PIC_MASTER_COMM_PORT);
+        if((isr_val & PIC_SPURIOUS_IRQ_MASK) != 0)
+        {
+            return INTERRUPT_TYPE_REGULAR;
+        }
+        else 
+        {
+            return INTERRUPT_TYPE_SPURIOUS;
+        }
+    }
 }

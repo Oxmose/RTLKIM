@@ -76,6 +76,9 @@
 /** @brief Enables Serial driver debuging feature. */
 #define SERIAL_KERNEL_DEBUG 1
 
+/** @brief Enables Interrupt debuging feature. */
+#define INTERRUPT_KERNEL_DEBUG 1
+
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0
 

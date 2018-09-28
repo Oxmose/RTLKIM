@@ -1,0 +1,25 @@
+/**
+ * @brief Registers a custom exception handler to be executed.
+ * 
+ * @details Registers a custom exception handler to be executed. If a handler 
+ * was already set it will be overwritten.
+ * 
+ * @param[in] exception_line The exception line to attach the handler to.
+ * @param[in] handler The handler for the desired exception.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the desired
+ * interrupt line is not allowed. 
+ * - OS_ERR_NULL_POINTER is returned if the pointer
+ * to the handler is NULL.
+ */
+OS_RETURN_E register_exception_handler(const uint32_t exception_line,
+                                       void(*handler)(
+                                             cpu_state_t*,
+                                             uint32_t,
+                                             stack_state_t*
+                                             )
+                                       );
+
+                                       

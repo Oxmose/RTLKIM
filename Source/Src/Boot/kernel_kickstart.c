@@ -18,9 +18,11 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Cpu/cpu.h>          /* detect_cpu() */
-#include <IO/kernel_output.h> /* kernel_output() */
-#include <Drivers/pic.h>      /* init_pic(); */
+#include <Cpu/cpu.h>              /* detect_cpu() */
+#include <IO/kernel_output.h>     /* kernel_output() */
+#include <Drivers/pic.h>          /* init_pic(), pic_driver */
+#include <Interrupt/interrupts.h> /* init_kernel_interrupt() */
+#include <Interrupt/panic.h>      /* kernel_panic() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -93,6 +95,27 @@ void kernel_kickstart(void)
         kernel_error("PIC Initialization error [%d]\n", err);
         return;
     }
+
+    /* Init kernel's interrupt manager */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing the kernel interrupt manager\n");
+    #endif
+    err = init_kernel_interrupt(pic_driver);
+    if(err == OS_NO_ERR)
+    {
+        kernel_success("Kernel interrupt manager Initialized\n");
+    }
+    else
+    {
+        kernel_error("Kernel interrupt manager Initialization error [%d]\n", 
+                    err);
+        return;
+    }
+    #if TEST_MODE_ENABLED
+    interrupt_ok_test();
+    panic_test();
+    #endif
+    while(1);
 
     return;
 }

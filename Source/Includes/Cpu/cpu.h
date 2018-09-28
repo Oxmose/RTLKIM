@@ -27,6 +27,11 @@
  * CONSTANTS
  ******************************************************************************/
 
+/** @brief CPU flags interrupt enabled flag. */
+#define CPU_EFLAGS_IF 0x000000200
+/** @brief CPU flags interrupt enabled bit shift. */
+#define CPU_EFLAGS_IF_SHIFT 9
+
 /** @brief CPUID capable flags. */
 #define CPU_FLAG_CPUID_CAPABLE 0x00200000
 

@@ -23,7 +23,7 @@
 
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E, NULL */
-#include <Interrupt/interrupts.h> /* INT_IRQ_OFFSET */
+#include <Interrupt/interrupts.h> /* INT_IRQ_OFFSET, interrupt_driver_t */
 
 /*******************************************************************************
  * CONSTANTS
@@ -63,6 +63,9 @@
 /** @brief PIC special fully nested (not) flag. */
 #define PIC_ICW4_SFNM	    0x10
 
+/** @brief Read ISR command value */
+#define PIC_READ_ISR 0x0B
+
 /** @brief Master PIC Base interrupt line for the lowest IRQ. */
 #define PIC0_BASE_INTERRUPT_LINE INT_IRQ_OFFSET
 /** @brief Slave PIC Base interrupt line for the lowest IRQ. */
@@ -76,9 +79,19 @@
 /** @brief PIC's cascading IRQ number. */
 #define PIC_CASCADING_IRQ 2
 
+/** @brief The PIC spurious irq mask. */
+#define PIC_SPURIOUS_IRQ_MASK 0x80
+
+/** @brief Master PIC spurious IRQ number. */
+#define PIC_SPURIOUS_IRQ_MASTER 0x07
+/** @brief Slave PIC spurious IRQ number. */
+#define PIC_SPURIOUS_IRQ_SLAVE 0x0F
+
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/
+/** @brief PIC driver instance. */
+extern interrupt_driver_t pic_driver;
 
 /*******************************************************************************
  * FUNCTIONS
@@ -109,7 +122,7 @@ OS_RETURN_E init_pic(void);
  * - OS_NO_ERR is returnd if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number is not supported.
  */
-OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint8_t enabled);
+OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint32_t enabled);
 
 /**
  * @brief Acknowleges an IRQ.
@@ -123,5 +136,20 @@ OS_RETURN_E set_IRQ_PIC_mask(const uint32_t irq_number, const uint8_t enabled);
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number is not supported.
  */
 OS_RETURN_E set_IRQ_PIC_EOI(const uint32_t irq_number);
+
+/**
+ * @brief Checks if the serviced interrupt is a spurious 
+ * interrupt. The function also handles the spurious interrupt.
+ * 
+ * @details Checks if the serviced interrupt is a spurious 
+ * interrupt. The function also handles the spurious interrupt.
+ * 
+ * @param[in] irq_number The IRQ number of the interrupt to test.
+ * 
+ * @return The function will return the interrupt type.
+ * - INTERRUPT_TYPE_SPURIOUS if the current interrupt is a spurious one.
+ * - INTERRUPT_TYPE_REGULAR if the current interrupt is a regular one.
+ */
+INTERRUPT_TYPE_E handle_IRQ_PIC_spurious(const uint32_t irq_number);
 
 #endif /* __PIC_H_ */

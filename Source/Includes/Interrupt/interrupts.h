@@ -67,8 +67,6 @@
 #define SCHEDULER_SW_INT_LINE      0x21
 /** @brief Panic software interrupt line. */
 #define PANIC_INT_LINE             0x2A
-/** @brief Spurious interrupt line. */
-#define SPURIOUS_INT_LINE          (IDT_ENTRY_COUNT - 1)
 
 /*******************************************************************************
  * STRUCTURES
@@ -143,25 +141,82 @@ struct custom_handler
  */
 typedef struct custom_handler custom_handler_t;
 
+/**
+ * @brief Interrupt types enumeration.
+ */
+enum INTERRUPT_TYPE
+{
+    /** @brief Spurious interrupt type. */
+    INTERRUPT_TYPE_SPURIOUS,
+    /** @brief Regular interrupt type. */
+    INTERRUPT_TYPE_REGULAR
+};
+
+/** 
+ * @brief Defines INTERRUPT_TYPE_E type as a shorcut for enum INTERRUPT_TYPE.
+ */
+typedef enum INTERRUPT_TYPE INTERRUPT_TYPE_E;
+
+/** @brief Defines the basic interface for an interrupt management driver (let
+ * it be PIC or IO APIC for instance).
+ */
+struct interrupt_driver 
+{
+    /** @brief The function should enable or diable an IRQ given the IRQ number 
+     * used as parameter.
+     * 
+     * @details The function should enable or diable an IRQ given the IRQ number 
+     * used as parameter.
+     * 
+     * @param[in] irq_number The number of the IRQ to enable/disable.
+     * @param[in] enabled Must be set to 1 to enable the IRQ and 0 to disable
+     * the IRQ.
+     * 
+     * @return The succes state or the error code. 
+     * - OS_NO_ERR is returned if no error is encountered. 
+     * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
+     */
+    OS_RETURN_E (*driver_set_IRQ_mask)(const uint32_t irq_number, 
+                                       const uint32_t enabled);
+
+    /**
+     * @brief The function should acknowleges an IRQ.
+     *
+     * @details The function should acknowleges an IRQ.
+     * 
+     * @param[in] irq_number The irq number to acknowledge.
+     * 
+     * @return The succes state or the error code. 
+     * - OS_NO_ERR is returned if no error is encountered. 
+     * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
+     */
+    OS_RETURN_E (*driver_set_IRQ_EOI)(const uint32_t irq_number);
+
+    /**
+     * @brief The function should check if the serviced interrupt is a spurious 
+     * interrupt. It also should handle the spurious interrupt.
+     * 
+     * @details The function should check if the serviced interrupt is a 
+     * spurious interrupt. It also should handle the spurious interrupt.
+     * 
+     * @param[in] irq_number The IRQ number of the interrupt to test.
+     * 
+     * @return The function will return the interrupt type.
+     * - INTERRUPT_TYPE_SPURIOUS if the current interrupt is a spurious one.
+     * - INTERRUPT_TYPE_REGULAR if the current interrupt is a regular one.
+     */
+    INTERRUPT_TYPE_E (*driver_handle_spurious)(const uint32_t irq_number);
+};
+
+/** 
+ * @brief Defines interrupt_driver_t type as a shorcut for struct 
+ * interrupt_driver.
+ */
+typedef struct interrupt_driver interrupt_driver_t;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
-
-/**
- * @brief Kernel's main interrupt handler.
- * 
- * @details Generic and global interrupt handler. This function should only be 
- * called by an assembly interrupt handler. The function will dispatch the 
- * interrupt to the desired function to handle the interrupt.
- *
- * @param[in] cpu_state The cpu registers structure.
- * @param[in] int_id The interrupt number.
- * @param[in] stack_state The stack state before the interrupt that contain cs, 
- * eip, error code and the eflags register value.
- */
-void kernel_interrupt_handler(cpu_state_t cpu_state,
-                              uint32_t int_id,
-                              stack_state_t stack_state);
 
 /**
  * @brief Initializes the kernel's interrupt manager.
@@ -169,11 +224,27 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
  * @details Blanks the handlers memory, initializes panic and spurious interrupt 
  * lines handlers.
  * 
+* @param[in] driver The driver structure to be used by the interrupt manager.
+ * 
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
- * - No other return value is possible.
+ * - OS_ERR_NULL_POINTER is returned if the driver's functions are null.
  */
-OS_RETURN_E init_kernel_interrupt(void);
+OS_RETURN_E init_kernel_interrupt(const interrupt_driver_t driver);
+
+/** 
+ * @brief Set the driver to be used by the kernel to manage interrupts.
+ * 
+ * @details Changes the current interrupt manager by the new driver given as
+ * parameter. The old driver structure is removed from memory.
+ * 
+ * @param[in] driver The driver structure to be used by the interrupt manager.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OS_ERR_NULL_POINTER is returned if the driver's functions are null.
+ */
+OS_RETURN_E set_interrupt_driver(const interrupt_driver_t driver);
 
 /**
  * @brief Registers a new interrupt handler for the desired interrupt line.
@@ -221,30 +292,6 @@ OS_RETURN_E register_interrupt_handler(const uint32_t interrupt_line,
 OS_RETURN_E remove_interrupt_handler(const uint32_t interrupt_line);
 
 /**
- * @brief Registers a custom exception handler to be executed.
- * 
- * @details Registers a custom exception handler to be executed. If a handler 
- * was already set it will be overwritten.
- * 
- * @param[in] exception_line The exception line to attach the handler to.
- * @param[in] handler The handler for the desired exception.
- * 
- * @return The succes state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
- * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the desired
- * interrupt line is not allowed. 
- * - OS_ERR_NULL_POINTER is returned if the pointer
- * to the handler is NULL.
- */
-OS_RETURN_E register_exception_handler(const uint32_t exception_line,
-                                       void(*handler)(
-                                             cpu_state_t*,
-                                             uint32_t,
-                                             stack_state_t*
-                                             )
-                                       );
-
-/**
  * @brief Restores the CPU interrupts state.
  * 
  * @details Restores the CPU interrupts state by setting the EFLAGS accordingly.
@@ -279,7 +326,7 @@ uint32_t disable_local_interrupt(void);
  * @return The functions returns 1 if the interrupts are enabled, every other
  * values are considered as false.
  */
-uint32_t get_local_interrupt_enabled(void);
+uint32_t get_local_interrupt_state(void);
 
 /**
  * @brief Sets the IRQ mask for the IRQ number given as parameter.
@@ -309,48 +356,5 @@ OS_RETURN_E set_IRQ_mask(const uint32_t irq_number, const uint8_t enabled);
  */
 OS_RETURN_E set_IRQ_EOI(const uint32_t irq_number);
 
-/**
- * @brief Updates the kernel time counter by one tick.
- * 
- * @details Updates the kernel time counter by one tick and computes the uptime 
- * in ms.
- */
-void update_tick(void);
-
-/**
- * @brief Returns the timer IRQ number attached to the scheduler.
- * 
- * @details Returns the timer IRQ number attached to the scheduler.
- *
- * @return The IRQ number of the timer that is attached to the scheduler.
- */
-int32_t get_IRQ_SCHED_TIMER(void);
-
-/**
- * @brief Returns the timer interrupt line attached to the scheduler.
- * 
- * @details Returns the timer interrupt line attached to the scheduler.
- *
- * @return The interrupt line of the timer that is attached to the scheduler.
- */
-int32_t get_line_SCHED_HW(void);
-
-/** 
- * @brief Returns the current uptime.
- * 
- * @details Return the current uptime of the system in seconds.
- *
- * @return The current uptime in seconds.
- */
-uint32_t get_current_uptime(void);
-
-/**
- * @brief Returns the number of system ticks since the system started.
- * 
- * @details Returns the number of system ticks since the system started.
- *
- * @returns The number of system ticks since the system started.
- */
-uint32_t get_tick_count(void);
 
 #endif /* __INTERRUPTS_H_ */
