@@ -7,12 +7,23 @@
 
 #if EXCEPTION_OK_TEST == 1
 
+void end(void)
+{
+    kernel_printf("[TESTMODE] Software exception tests passed\n");
+
+    while(1)
+    {
+        __asm__ ("hlt");
+    }
+}
+
 static void dummy(cpu_state_t* cpu,  uint32_t int_id,
                                 stack_state_t* stack)
 {
     (void)cpu;
     (void)int_id;
-    (void)stack;
+    stack->eip = end;
+    kernel_printf("[TESTMODE] EXCEPTION CATCHED\n");
 }
 
 void exception_ok_test(void)
@@ -115,7 +126,7 @@ void exception_ok_test(void)
         kernel_printf("[TESTMODE] TEST_SW_EXC 8\n");
     }
 
-    if((err = register_exception_handler(MIN_EXCEPTION_LINE, dummy))
+    if((err = register_exception_handler(DIV_BY_ZERO_LINE, dummy))
      != OS_ERR_INTERRUPT_ALREADY_REGISTERED)
     {
         kernel_error("TEST_SW_EXC 9\n");
@@ -126,23 +137,12 @@ void exception_ok_test(void)
         kernel_printf("[TESTMODE] TEST_SW_EXC 9\n");
     }
 
-    /* INIT THINGS */
-    if((err = remove_exception_handler(MIN_EXCEPTION_LINE)) != OS_NO_ERR)
-    {
-        kernel_error("TEST_SW_EXC 10\n");
-        kernel_panic(err);
-    }
-    else 
-    {
-        kernel_printf("[TESTMODE] TEST_SW_EXC 10\n");
-    }
+    
+    /* Test exception */
 
-    kernel_printf("[TESTMODE] Software exception tests passed\n");
-
-    while(1)
-    {
-        __asm__ ("hlt");
-    }
+    volatile int i = 0;
+    volatile int m = 5 / i;
+    (void)m;
 }
 #else 
 void exception_ok_test(void)
