@@ -23,7 +23,7 @@ sed -i 's/TEST_MODE_ENABLED 0/TEST_MODE_ENABLED 1/g' ../Config/config.h
     cd Tests
 } > /dev/null
 # Filter output
-grep '\[TESTMODE\]' test.out > filtered.out
+grep "\[TESTMODE\]\|ERROR" test.out > filtered.out
 #Compare output
 diff filtered.out Refs/$filename.valid >> /dev/null
 if (( $? != 0 ))

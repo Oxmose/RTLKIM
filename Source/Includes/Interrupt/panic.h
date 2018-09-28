@@ -9,7 +9,7 @@
  *
  * @version 1.0
  *
- * @brief Panix feature of the kernel.
+ * @brief Panic feature of the kernel.
  * 
  * @details Kernel panic functions. Displays the CPU registers, the faulty 
  * instruction, the interrupt ID and cause.

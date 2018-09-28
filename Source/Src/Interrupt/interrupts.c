@@ -1,16 +1,21 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file interrupts.c
+ * 
+ * @see interrupts.h
  *
- * File: interrupts.c
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 14/12/2017
  *
- * Date: 14/12/2017
+ * @version 1.5
  *
- * Version: 1.5
- *
- * X86 interrupt manager. Allows to attach ISR to interrupt lines and
- * manage IRQ used by the CPU.
- * We also define the general interrupt handler here.
+ * @brief X86 interrupt manager.
+ * 
+ * @details X86 interrupt manager. Allows to attach ISR to interrupt lines and
+ * manage IRQ used by the CPU. We also define the general interrupt handler 
+ * here.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #include <Lib/stdint.h>       /* Generic int types */
@@ -33,7 +38,7 @@
  ******************************************************************************/
 
 /** @brief Stores the handlers for each interrupt. */
-static custom_handler_t kernel_interrupt_handlers[IDT_ENTRY_COUNT];
+custom_handler_t kernel_interrupt_handlers[IDT_ENTRY_COUNT];
 
 /** @brief The current interrupt driver to be used by the kernel. */
 static interrupt_driver_t interrupt_driver;
@@ -198,8 +203,6 @@ OS_RETURN_E register_interrupt_handler(const uint32_t interrupt_line,
 
     if(kernel_interrupt_handlers[interrupt_line].handler != NULL)
     {
-        
-
         return OS_ERR_INTERRUPT_ALREADY_REGISTERED;
     }
 

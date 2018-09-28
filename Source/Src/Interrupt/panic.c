@@ -1,15 +1,20 @@
-/*******************************************************************************
+/***************************************************************************//**
+ * @file panic.c
+ * 
+ * @see panic.h
  *
- * File: panic.c
+ * @author Alexy Torres Aurora Dugo
  *
- * Author: Alexy Torres Aurora Dugo
+ * @date 16/12/2017
  *
- * Date: 16/12/2017
+ * @version 1.0
  *
- * Version: 1.0
- *
- * Kernel panic functions. Displays the CPU registers, the faulty instruction
- * and the interrupt ID and cause.
+ * @brief Panic feature of the kernel.
+ * 
+ * @details Kernel panic functions. Displays the CPU registers, the faulty 
+ * instruction, the interrupt ID and cause.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t, PANIC_INT_LINE */
@@ -17,6 +22,9 @@
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Cpu/cpu.h>              /* hlt cli */
 #include <Drivers/graphic.h>      /* color_scheme_t */
+
+/* RTLK configuration file */
+#include <config.h>
 
 /* Header file */
 #include <Interrupt/panic.h>

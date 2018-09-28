@@ -22,6 +22,7 @@
 #define OUTPUT_TEST 0
 #define PIC_DRIVER_TEST 0
 #define INTERRUPT_OK_TEST 0
+#define EXCEPTION_OK_TEST 0
 #define PANIC_TEST 0
 
 /* Put tests declarations here */
@@ -31,6 +32,7 @@ void gdt_ok_test(void);
 void output_test(void);
 void pic_driver_test(void);
 void interrupt_ok_test(void);
+void exception_ok_test(void);
 void panic_test(void);
 
 #endif /* __TEST_BANK_H_ */
