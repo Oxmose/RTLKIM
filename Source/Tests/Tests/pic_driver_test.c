@@ -21,7 +21,7 @@
 #include <Interrupt/interrupts.h>
 #include <IO/kernel_output.h>
 #include <Cpu/cpu.h>
-#include <Drivers/pic.h>
+#include <BSP/pic.h>
 #include <Tests/test_bank.h>
 
 #if PIC_DRIVER_TEST == 1

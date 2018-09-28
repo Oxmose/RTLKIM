@@ -653,8 +653,8 @@ static void format_gdt_entry(uint64_t* entry,
  * @param[in] type  The type of segment for the IDT entry.
  * @param[in] flags The flags to be set for the IDT entry.
  */
-static void format_idt_entry(volatile uint64_t* entry,
-                             volatile uint32_t handler,
+static void format_idt_entry(uint64_t* entry,
+                             const uint32_t handler,
                              const unsigned char type, const uint32_t flags)
 {
     uint32_t lo_part = 0;

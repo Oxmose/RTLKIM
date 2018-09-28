@@ -17,7 +17,8 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t, PANIC_INT_LINE */
+#include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t, 
+                                   * PANIC_INT_LINE */
 #include <IO/kernel_output.h>     /* kernel_printf */
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Cpu/cpu.h>              /* hlt cpu_cli */

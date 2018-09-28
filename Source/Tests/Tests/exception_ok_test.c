@@ -3,7 +3,7 @@
 #include <IO/kernel_output.h>
 #include <Cpu/cpu.h>
 #include <Tests/test_bank.h>
-#include <Drivers/pic.h>
+#include <BSP/pic.h>
 
 #if EXCEPTION_OK_TEST == 1
 

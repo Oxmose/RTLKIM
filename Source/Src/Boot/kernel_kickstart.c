@@ -20,7 +20,8 @@
 
 #include <Cpu/cpu.h>              /* cpu_detect() */
 #include <IO/kernel_output.h>     /* kernel_output() */
-#include <Drivers/pic.h>          /* pic_init(), pic_driver */
+#include <BSP/pic.h>              /* pic_init(), pic_driver */
+#include <BSP/pit.h>              /* pit_init() */
 #include <Interrupt/interrupts.h> /* kernel_interrupt_init() */
 #include <Interrupt/exceptions.h> /* kernel_exception_init() */
 #include <Interrupt/panic.h>      /* kernel_panic() */

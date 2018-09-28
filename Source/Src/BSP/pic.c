@@ -17,7 +17,6 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-
 #include <Cpu/cpu.h>          /* outb */
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E, NULL */
@@ -27,7 +26,7 @@
 #include <config.h>
 
 /* Header file */
-#include <Drivers/pic.h>
+#include <BSP/pic.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

@@ -21,7 +21,7 @@
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Lib/string.h>       /* memset */
-#include <Drivers/pic.h>      /* pic_set_irq_eoi, pic_set_irq_mask */
+#include <BSP/pic.h>      /* pic_set_irq_eoi, pic_set_irq_mask */
 #include <Cpu/cpu_settings.h> /* IDT_ENTRY_COUNT */
 #include <Cpu/cpu.h>          /* sti cpu_cli */
 #include <IO/kernel_output.h> /* kernel_success */

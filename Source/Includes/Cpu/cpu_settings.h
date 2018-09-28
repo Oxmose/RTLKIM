@@ -151,8 +151,8 @@
  ******************************************************************************/
 
 /**  
- * @brief CPU TSS abstraction structure. This is the representation the kernel has
- * of a intel's TSS entry.
+ * @brief CPU TSS abstraction structure. This is the representation the kernel 
+ * has of an intel's TSS entry.
  */
 struct cpu_tss_entry 
 {

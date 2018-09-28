@@ -98,8 +98,8 @@ void kernel_info(const char *fmt, ...);
 /**
  * @brief Prints the desired string to the screen. 
  * 
- * @details Prints the desired string to the screen. Adds a yellow [DEBUG] tag at 
- * the beggining of the string before printing it. This uses the generic 
+ * @details Prints the desired string to the screen. Adds a yellow [DEBUG] tag 
+ * at the beggining of the string before printing it. This uses the generic 
  * graphic driver to output data.
  *
  * @param fmt The format string to output.

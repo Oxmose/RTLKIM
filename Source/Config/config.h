@@ -79,8 +79,11 @@
 /** @brief Enables Interrupt debuging feature. */
 #define INTERRUPT_KERNEL_DEBUG 1
 
-/** @breif Enables Exception debugging feature. */
+/** @brief Enables Exception debugging feature. */
 #define EXCEPTION_KERNEL_DEBUG 1
+
+/** @brief Enables PIT driver debuging feature. */
+#define PIT_KERNEL_DEBUG 1
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0

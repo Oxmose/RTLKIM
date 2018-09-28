@@ -43,7 +43,8 @@
  * interrupts).
  *
  * @param[in] cpu_state The cpu registers structure.
- * @param[in] int_id The interrupt number, -1 if panic is called by an regular code.
+ * @param[in] int_id The interrupt number, -1 if panic is called by an regular 
+ * code.
  * @param[in] stack_state The stack state before the interrupt that contain cs, 
  * eip, error code and the eflags register value.
  * 
