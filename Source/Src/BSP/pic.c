@@ -155,7 +155,12 @@ OS_RETURN_E pic_set_irq_mask(const uint32_t irq_number, const uint32_t enabled)
         }
     }
 
+
+
     #if PIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("PIC Mask M: 0x%02x S: 0x%02x\n", 
+                        cpu_inb(PIC_MASTER_DATA_PORT),
+                         cpu_inb(PIC_SLAVE_DATA_PORT));
     kernel_serial_debug("PIC IRQ mask setting end\n");
     #endif
 

@@ -22,6 +22,7 @@
 #include <IO/kernel_output.h>     /* kernel_output() */
 #include <BSP/pic.h>              /* pic_init(), pic_driver */
 #include <BSP/pit.h>              /* pit_init() */
+#include <BSP/rtc.h>              /* rtc_init() */
 #include <Interrupt/interrupts.h> /* kernel_interrupt_init() */
 #include <Interrupt/exceptions.h> /* kernel_exception_init() */
 #include <Interrupt/panic.h>      /* kernel_panic() */
@@ -153,6 +154,24 @@ void kernel_kickstart(void)
     }
     #if TEST_MODE_ENABLED
     pit_driver_test();
+    #endif
+
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing RTC driver\n");
+    #endif
+    err = rtc_init();
+    if(err == OS_NO_ERR)
+    {
+        kernel_success("RTC driver Initialized\n");
+    }
+    else
+    {
+        kernel_error("RTC driver Initialization error [%d]\n", 
+                    err);
+        return;
+    }
+    #if TEST_MODE_ENABLED
+    rtc_driver_test();
     #endif
 
     while(1);

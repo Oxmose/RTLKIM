@@ -98,6 +98,8 @@ OS_RETURN_E cpu_detect(const uint8_t print)
             return OS_ERR_UNAUTHORIZED_ACTION;
         }
 
+        kernel_printf("\n");
+
         /* If we have general CPUID features */
         if(ret >= 0x01)
         {
@@ -111,7 +113,7 @@ OS_RETURN_E cpu_detect(const uint8_t print)
             if(print != 0)
             {
 
-                kernel_printf(" | Features: ");
+                kernel_info("CPU Features: ");
 
                 if((regs[2] & ECX_SSE3) == ECX_SSE3) 
                 { kernel_printf("SSE3 - "); }
@@ -229,6 +231,8 @@ OS_RETURN_E cpu_detect(const uint8_t print)
                 { kernel_printf("TM - "); }
                 if((regs[3] & EDX_PBE) == EDX_PBE) 
                 { kernel_printf("EDX_PBE - "); }
+
+                kernel_printf("End of features");
             }
         }
 

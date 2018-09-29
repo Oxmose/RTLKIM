@@ -50,7 +50,6 @@
 #define SERIAL_DEBUG_PORT COM1
 
 /* Screen settings */
-
 /** @brief When VESA drivers are enabled, defines the maximal supported height
  * resolution.
  */
@@ -64,6 +63,10 @@
  */
 #define MAX_SUPPORTED_BPP    32
 
+/* Other settings */
+/** @brief Defines the current year (usefull for the RTC). */
+#define CURRENT_YEAR 2018
+
 /*******************************************************************************
  * DEBUG CONFIGURATION
  ******************************************************************************/
@@ -71,19 +74,22 @@
 #define KERNEL_DEBUG 1
 
 /** @brief Enables PIC driver debuging feature. */
-#define PIC_KERNEL_DEBUG 1
+#define PIC_KERNEL_DEBUG 0
 
 /** @brief Enables Serial driver debuging feature. */
-#define SERIAL_KERNEL_DEBUG 1
+#define SERIAL_KERNEL_DEBUG 0
 
 /** @brief Enables Interrupt debuging feature. */
-#define INTERRUPT_KERNEL_DEBUG 1
+#define INTERRUPT_KERNEL_DEBUG 0
 
 /** @brief Enables Exception debugging feature. */
-#define EXCEPTION_KERNEL_DEBUG 1
+#define EXCEPTION_KERNEL_DEBUG 0
 
 /** @brief Enables PIT driver debuging feature. */
-#define PIT_KERNEL_DEBUG 1
+#define PIT_KERNEL_DEBUG 0
+
+/** @brief Enables RTC driver debuging feature. */
+#define RTC_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0

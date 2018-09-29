@@ -19,7 +19,7 @@ do
         cd ../
         make TESTS=TRUE && (make qemu-test-mode > test.out &)
         sleep 2
-        killall qemu-system-i386
+        killall qemu-system-x86_64
         mv test.out Tests/test.out
         cd Tests
     } > /dev/null
