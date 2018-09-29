@@ -134,6 +134,11 @@ void pic_driver_test(void)
     }
 
     kernel_success("[TESTMODE] PIC tests passed\n");
+
+    while(1)
+    {
+        __asm__ ("hlt");
+    }
 }
 #else 
 void pic_driver_test(void)

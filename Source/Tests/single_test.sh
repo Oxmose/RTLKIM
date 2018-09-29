@@ -17,8 +17,8 @@ sed -i 's/TEST_MODE_ENABLED 0/TEST_MODE_ENABLED 1/g' ../Config/config.h
     rm -f *.out
     cd ../
     make TESTS=TRUE && (make qemu-test-mode > test.out &)
-    sleep 2
-    killall qemu-system-i386
+    sleep 4
+    killall qemu-system-x86_64
     mv test.out Tests/test.out
     cd Tests
 } > /dev/null

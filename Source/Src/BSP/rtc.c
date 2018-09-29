@@ -42,6 +42,12 @@ static date_t date;
 /** @brief Keeps track on the RTC enabled state. */
 static uint32_t disabled_nesting;
 
+/** @brief Keeps track of the current frequency. */
+static uint32_t rtc_frequency;
+
+/** @brief RTC driver instance. */
+kernel_timer_t rtc_driver;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -52,9 +58,9 @@ static uint32_t disabled_nesting;
  * @details RTC interrupt handler set at the initialization of the RTC. 
  * Dummy routine setting EOI.
  *
- * @param[in] cpu_state The cpu registers before the interrupt.
+ * @param[in, out] cpu_state The cpu registers before the interrupt.
  * @param[in] int_id The interrupt line that called the handler.
- * @param[in] stack_state The stack state before the interrupt.
+ * @param[in, out] stack_state The stack state before the interrupt.
  */
 static void dummy_handler(cpu_state_t* cpu_state, uint32_t int_id,
                           stack_state_t* stack_state)
@@ -94,6 +100,7 @@ OS_RETURN_E rtc_init(void)
     prev_rate = cpu_inb(CMOS_DATA_PORT);
     cpu_outb((CMOS_NMI_DISABLE_BIT << 7) | CMOS_REG_A, CMOS_COMM_PORT);
     cpu_outb((prev_rate & 0xF0) | RTC_INIT_RATE, CMOS_DATA_PORT);
+    rtc_frequency = (RTC_QUARTZ_FREQ >> (RTC_INIT_RATE - 1));
     
     /* Set rtc clock interrupt handler */
     err = kernel_interrupt_register_handler(RTC_INTERRUPT_LINE,
@@ -115,6 +122,15 @@ OS_RETURN_E rtc_init(void)
     cpu_inb(CMOS_DATA_PORT);
 
     disabled_nesting = 1;
+
+    /* Init driver */
+    rtc_driver.get_frequency  = rtc_get_frequency;
+    rtc_driver.set_frequency  = rtc_set_frequency;
+    rtc_driver.enable         = rtc_enable;
+    rtc_driver.disable        = rtc_disable;
+    rtc_driver.set_handler    = rtc_set_handler;
+    rtc_driver.remove_handler = rtc_remove_handler;
+    rtc_driver.get_irq        = rtc_get_irq;
 
     err = rtc_enable();
 
@@ -161,14 +177,69 @@ OS_RETURN_E rtc_disable(void)
     return err;
 }
 
-OS_RETURN_E rtc_set_rate(const uint32_t rate)
+OS_RETURN_E rtc_set_frequency(const uint32_t frequency)
 {
     OS_RETURN_E err;
     uint32_t    prev_rate;
+    uint32_t    rate;
 
-    if(rate < RTC_MIN_RATE || rate > RTC_MAX_RATE)
+    if(frequency < RTC_MIN_FREQ || frequency > RTC_MAX_FREQ)
     {
         return OS_ERR_OUT_OF_BOUND;
+    }
+
+    /* Choose the closest rate to the frequency */
+    if(frequency < 4)
+    {
+        rate = 15;
+    }
+    else if(frequency < 8)
+    {
+        rate = 14;
+    }
+    else if(frequency < 16)
+    {
+        rate = 13;
+    }
+    else if(frequency < 32)
+    {
+        rate = 12;
+    }
+    else if(frequency < 64)
+    {
+        rate = 11;
+    }
+    else if(frequency < 128)
+    {
+        rate = 10;
+    }
+    else if(frequency < 256)
+    {
+        rate = 9;
+    }
+    else if(frequency < 512)
+    {
+        rate = 8;
+    }
+    else if(frequency < 1024)
+    {
+        rate = 7;
+    }
+    else if(frequency < 2048)
+    {
+        rate = 6;
+    }
+    else if(frequency < 4096)
+    {
+        rate = 5;
+    }
+    else if(frequency < 8192)
+    {
+        rate = 4;
+    }
+    else
+    {
+        rate = 3;
     }
 
     /* Disable RTC IRQ */
@@ -185,12 +256,19 @@ OS_RETURN_E rtc_set_rate(const uint32_t rate)
     cpu_outb((CMOS_NMI_DISABLE_BIT << 7) | CMOS_REG_A, CMOS_COMM_PORT);
     cpu_outb((prev_rate & 0xF0) | rate, CMOS_DATA_PORT);
 
+    rtc_frequency = (RTC_QUARTZ_FREQ >> (rate - 1));
+
     #if RTC_KERNEL_DEBUG == 1
-    kernel_serial_debug("New RTC rate set (%d)\n", rate);
+    kernel_serial_debug("New RTC rate set (%d: %dHz)\n", rate, rtc_frequency);
     #endif
 
     /* Enable RTC IRQ */
     return rtc_enable();
+}
+
+uint32_t rtc_get_frequency(void)
+{
+    return rtc_frequency;
 }
 
 OS_RETURN_E rtc_set_handler(void(*handler)(
@@ -350,4 +428,9 @@ void rtc_update_time(void)
     #if RTC_KERNEL_DEBUG == 1
     kernel_serial_debug("Updated RTC\n");
     #endif
+}
+
+uint32_t rtc_get_irq(void)
+{
+    return RTC_IRQ_LINE;
 }

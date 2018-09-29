@@ -1,0 +1,251 @@
+/***************************************************************************//**
+ * @file time_management.c
+ * 
+ * @see time_management.h
+ *
+ * @author Alexy Torres Aurora Dugo
+ *
+ * @date 29/09/2018
+ *
+ * @version 1.0
+ *
+ * @brief Kernel's time management methods.
+ * 
+ * @details Kernel's time management method. Allow to define timers and keep 
+ * track on the system's time.
+ * 
+ * @warning All the interrupt managers and timer sources drivers must be 
+ * initialized before using any of these functions.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
+ ******************************************************************************/
+
+#include <Lib/stdint.h>           /* Generic int types */
+#include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t */
+#include <BSP/rtc.h>              /* rtc_update_time */
+
+/* RTLK configuration file */
+#include <config.h>
+
+/* Header file */
+#include <Time/time_management.h>
+
+/*******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************/
+
+/** @brief Stores the number of main kernel's timer tick since the 
+ * initialization of the time manager.
+ */
+static uint64_t sys_tick_count;
+
+/** @brief The kernel's main timer interrupt source.
+ * 
+ *  @details The kernel's main timer interrupt source. If it's function pointers
+ * are NULL, the driver is not initialized.
+ */
+static kernel_timer_t sys_main_timer = {NULL};
+
+/** @brief The kernel's RTC timer interrupt source.
+ * 
+ *  @details The kernel's RTC timer interrupt source. If it's function pointers
+ * are NULL, the driver is not initialized.
+ */
+static kernel_timer_t sys_rtc_timer = {NULL};
+
+/** @brief The kernel's auxiliary timer interrupt source.
+ * 
+ *  @details The kernel's auxiliary timer interrupt source. If it's function 
+ * pointers are NULL, the driver is not initialized.
+ */
+static kernel_timer_t sys_aux_timer = {NULL};
+
+/** @brief NULL timer driver. */
+kernel_timer_t null_timer = {NULL};
+
+/*******************************************************************************
+ * FUNCTIONS
+ ******************************************************************************/
+
+OS_RETURN_E time_init(const kernel_timer_t main_timer,
+                      const kernel_timer_t rtc_timer,
+                      const kernel_timer_t aux_timer)
+{
+    OS_RETURN_E err;
+
+    /* Check the main timer integrity */
+    if(main_timer.get_frequency == NULL || 
+       main_timer.set_frequency == NULL || 
+       main_timer.enable == NULL || 
+       main_timer.disable == NULL || 
+       main_timer.set_handler == NULL || 
+       main_timer.remove_handler == NULL ||
+       main_timer.get_irq == NULL)
+
+    {
+        return OS_ERR_NULL_POINTER;
+    }
+    sys_main_timer = main_timer;
+
+    /* Check the rtc timer integrity */
+    if(rtc_timer.get_frequency != NULL &&
+          rtc_timer.set_frequency != NULL &&
+          rtc_timer.enable != NULL &&
+          rtc_timer.disable != NULL && 
+          rtc_timer.set_handler != NULL && 
+          rtc_timer.remove_handler != NULL &&
+          rtc_timer.get_irq != NULL)
+    {
+        sys_rtc_timer = rtc_timer;
+    } 
+
+    /* Check the aux timer integrity */
+    if(aux_timer.get_frequency != NULL || 
+        aux_timer.set_frequency != NULL || 
+        aux_timer.enable != NULL || 
+        aux_timer.disable != NULL || 
+        aux_timer.set_handler != NULL || 
+        aux_timer.remove_handler != NULL ||
+        aux_timer.get_irq != NULL)
+    {
+
+        sys_aux_timer = aux_timer;
+    }
+
+    /* Init he system's values */
+    sys_tick_count = 0;
+
+    /* Sets all the possible timer interrutps */
+    err = sys_main_timer.set_frequency(KERNEL_MAIN_TIMER_FREQ);
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+    err = sys_main_timer.set_handler(time_main_timer_handler);
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    if(sys_rtc_timer.set_frequency != NULL)
+    {
+        err = sys_rtc_timer.set_frequency(KERNEL_RTC_TIMER_FREQ);
+        if(err != OS_NO_ERR)
+        {
+            return err;
+        }
+        err = sys_rtc_timer.set_handler(time_rtc_timer_handler);
+        if(err != OS_NO_ERR)
+        {
+            return err;
+        }
+    }
+
+    if(sys_aux_timer.set_frequency != NULL)
+    {
+        err = sys_aux_timer.set_frequency(KERNEL_AUX_TIMER_FREQ);
+        if(err != OS_NO_ERR)
+        {
+            return err;
+        }
+        err = sys_aux_timer.set_handler(time_aux_timer_handler);
+        if(err != OS_NO_ERR)
+        {
+            return err;
+        }
+    }
+
+    /* Enables all the possible timers */
+    err = sys_main_timer.enable();
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+    if(sys_rtc_timer.set_frequency != NULL)
+    {
+        err = sys_rtc_timer.enable();
+        if(err != OS_NO_ERR)
+        {
+            return err;
+        }
+    }
+    if(sys_aux_timer.set_frequency != NULL)
+    {
+        err = sys_aux_timer.enable();
+        if(err != OS_NO_ERR)
+        {
+            return err;
+        }
+    }
+
+    #if TIME_KERNEL_DEBUG == 1
+    kernel_serial_debug("Time manager Initialization\n");
+    #endif
+
+    return OS_NO_ERR;
+}
+
+void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
+                             stack_state_t* stack)
+{
+    (void)cpu_state;
+    (void)int_id;
+    (void)stack;
+
+    /* Add a tick count */
+    ++sys_tick_count;
+
+    #if TIME_KERNEL_DEBUG == 1
+    kernel_serial_debug("Time manager main handler\n");
+    #endif
+
+    /* EOI */
+    kernel_interrupt_set_irq_eoi(sys_main_timer.get_irq());
+}
+
+void time_rtc_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
+                            stack_state_t* stack)
+{
+    (void)cpu_state;
+    (void)int_id;
+    (void)stack;
+    
+    rtc_update_time();
+
+    #if TIME_KERNEL_DEBUG == 1
+    kernel_serial_debug("Time manager RTC handler\n");
+    #endif
+
+    /* EOI */
+    kernel_interrupt_set_irq_eoi(RTC_IRQ_LINE);
+}
+
+void time_aux_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
+                            stack_state_t* stack)
+{
+    (void)cpu_state;
+    (void)int_id;
+    (void)stack;
+
+    #if TIME_KERNEL_DEBUG == 1
+    kernel_serial_debug("Time manager AUX handler\n");
+    #endif
+    
+    /* EOI */
+    kernel_interrupt_set_irq_eoi(sys_main_timer.get_irq());
+}
+
+uint64_t time_get_current_uptime(void)
+{
+    if(sys_main_timer.get_frequency == NULL)
+    {
+        return 0;
+    }
+
+    return (1000 / sys_main_timer.get_frequency()) * sys_tick_count;
+}
+
+uint64_t time_get_tick_count(void)
+{
+    return sys_tick_count;
+}

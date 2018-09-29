@@ -154,7 +154,7 @@ void rtc_driver_test(void)
     }
 
 
-    if((err = rtc_set_rate(RTC_INIT_RATE)) != OS_NO_ERR)
+    if((err = rtc_set_frequency(RTC_INIT_RATE)) != OS_NO_ERR)
     {
         kernel_error("TEST_RTC 8\n");
         kernel_panic(err);
@@ -165,7 +165,7 @@ void rtc_driver_test(void)
     }
 
 
-    if((err = rtc_set_rate(RTC_MIN_RATE - 1)) != OS_ERR_OUT_OF_BOUND)
+    if((err = rtc_set_frequency(RTC_MIN_FREQ - 1)) != OS_ERR_OUT_OF_BOUND)
     {
         kernel_error("TEST_RTC 9\n");
         kernel_panic(err);
@@ -176,7 +176,7 @@ void rtc_driver_test(void)
     }
 
 
-    if((err = rtc_set_rate(RTC_MAX_RATE + 1)) != OS_ERR_OUT_OF_BOUND)
+    if((err = rtc_set_frequency(RTC_MAX_FREQ + 1)) != OS_ERR_OUT_OF_BOUND)
     {
         kernel_error("TEST_RTC 10\n");
         kernel_panic(err);
@@ -216,6 +216,11 @@ void rtc_driver_test(void)
 
     rtc_enable();
     kernel_interrupt_disable();
+
+     while(1)
+    {
+        __asm__ ("hlt");
+    }
 }
 #else
 void rtc_driver_test(void)

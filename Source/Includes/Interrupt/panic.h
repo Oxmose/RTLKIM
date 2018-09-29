@@ -42,10 +42,10 @@
  * and the stack state before the panic occured (panic is usually called by 
  * interrupts).
  *
- * @param[in] cpu_state The cpu registers structure.
- * @param[in] int_id The interrupt number, -1 if panic is called by an regular 
- * code.
- * @param[in] stack_state The stack state before the interrupt that contain cs, 
+ * @param[in, out] cpu_state The cpu registers structure.
+ * @param[in] int_id The interrupt number, -1 if panic is called by an 
+ * regular code.
+ * @param[in,out] stack_state The stack state before the interrupt that contain cs, 
  * eip, error code and the eflags register value.
  * 
  * @warning Panic should never be called, it must only be used as an interrupt 

@@ -153,7 +153,7 @@ void pit_driver_test(void)
     }
 
 
-    if((err = pit_set_freq(PIT_INIT_FREQ)) != OS_NO_ERR)
+    if((err = pit_set_frequency(PIT_INIT_FREQ)) != OS_NO_ERR)
     {
         kernel_error("TEST_PIT 8\n");
         kernel_panic(err);
@@ -164,7 +164,7 @@ void pit_driver_test(void)
     }
 
 
-    if((err = pit_set_freq(PIT_MIN_FREQ - 1)) != OS_ERR_OUT_OF_BOUND)
+    if((err = pit_set_frequency(PIT_MIN_FREQ - 1)) != OS_ERR_OUT_OF_BOUND)
     {
         kernel_error("TEST_PIT 9\n");
         kernel_panic(err);
@@ -175,7 +175,7 @@ void pit_driver_test(void)
     }
 
 
-    if((err = pit_set_freq(PIT_MAX_FREQ + 1)) != OS_ERR_OUT_OF_BOUND)
+    if((err = pit_set_frequency(PIT_MAX_FREQ + 1)) != OS_ERR_OUT_OF_BOUND)
     {
         kernel_error("TEST_PIT 10\n");
         kernel_panic(err);
@@ -215,6 +215,11 @@ void pit_driver_test(void)
 
     pit_enable();
     kernel_interrupt_disable();
+
+     while(1)
+    {
+        __asm__ ("hlt");
+    }
 }
 #else
 void pit_driver_test(void)

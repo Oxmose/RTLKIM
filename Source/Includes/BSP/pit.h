@@ -24,6 +24,7 @@
 #include <Lib/stdint.h>           /* Generioc int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E, OS_EVENT_ID*/
 #include <Interrupt/interrupts.h> /* Interrupts handler prototype */
+#include <Time/time_management.h> /* kernel_timer_t */
 
 /*******************************************************************************
  * CONSTANTS
@@ -47,6 +48,8 @@
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/
+/** @brief PIT driver instance. */
+extern kernel_timer_t pit_driver;
 
 /*******************************************************************************
  * FUNCTIONS
@@ -105,7 +108,16 @@ OS_RETURN_E pit_disable(void);
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the PIT is not 
  *   supported.
  */
-OS_RETURN_E pit_set_freq(const uint32_t freq);
+OS_RETURN_E pit_set_frequency(const uint32_t freq);
+
+/**
+ * @brief Returns the PIT tick frequency in Hz.
+ * 
+ * @details Returns the PIT tick frequency in Hz.
+ * 
+ * @return The PIT tick frequency in Hz.
+ */
+uint32_t pit_get_frequency(void);
 
 /**
  * @brief Sets the PIT tick handler.
@@ -143,5 +155,14 @@ OS_RETURN_E pit_set_handler(void(*handler)(
  * attached.
  */
 OS_RETURN_E pit_remove_handler(void);
+
+/**
+ * @brief Returns the PIT IRQ number.
+ * 
+ * @details Returns the PIT IRQ number.
+ * 
+ * @return The PIT IRQ number.
+ */
+uint32_t pit_get_irq(void);
 
 #endif /* __PIT_H_ */

@@ -26,6 +26,7 @@
 #define PANIC_TEST 0
 #define PIT_DRIVER_TEST 0
 #define RTC_DRIVER_TEST 0
+#define TIME_OK_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -38,5 +39,6 @@ void exception_ok_test(void);
 void panic_test(void);
 void pit_driver_test(void);
 void rtc_driver_test(void);
+void time_ok_test(void);
 
 #endif /* __TEST_BANK_H_ */

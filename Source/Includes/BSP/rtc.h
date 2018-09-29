@@ -23,6 +23,7 @@
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E */
 #include <Interrupt/interrupts.h> /* Interrupts handler prototype */
+#include <Time/time_management.h> /* kernel_timer_t */
 
 /*******************************************************************************
  * CONSTANTS
@@ -30,12 +31,15 @@
 
 /* RTC settings */
 
-/** @brief RTC tick rate divider. */
-#define RTC_INIT_RATE 5
-/** @brief RTC minimal rate. */
-#define RTC_MIN_RATE 2
-/** @brief RTC maximal rate. */
-#define RTC_MAX_RATE 15
+/** @brief Initial RTC tick rate. */
+#define RTC_INIT_RATE 10
+/** @brief RTC minimal frequency. */
+#define RTC_MIN_FREQ 2
+/** @brief RTC maximal frequency. */
+#define RTC_MAX_FREQ 8192
+
+/** @brief RTC quartz frequency. */
+#define RTC_QUARTZ_FREQ 32768
 
 /* CMOS registers  */
 /** @brief CMOS seconds register id. */
@@ -94,6 +98,9 @@ struct date
  */
 typedef struct date date_t;
 
+/** @brief RTC driver instance. */
+extern kernel_timer_t rtc_driver;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -110,6 +117,7 @@ typedef struct date date_t;
  *   supported.
  */
 OS_RETURN_E rtc_init(void);
+
 /**
  * @brief Enables RTC ticks.
  * 
@@ -135,22 +143,33 @@ OS_RETURN_E rtc_enable(void);
 OS_RETURN_E rtc_disable(void);
 
 /** 
- * @brief Sets the RTC's tick rate.
+ * @brief Sets the RTC's tick frequency.
  * 
- * @details Sets the RTC's tick rate. The value must be between 20Hz and 
- * 8000Hz.
+ * @details Sets the RTC's tick frequency. The value must be between 2Hz and 
+ * 8192Hz.
  * 
- * @warning The value must be between 20Hz and 8000Hz
+ * @warning The value must be between 2Hz and 8192Hz. The lower boundary RTC
+ * frequency will be selected (refer to the code to understand the 14 available
+ * frequencies).
  *
- * @param[in] rate The new rate to be set to the RTC.
+ * @param[in] frequency The new frequency to be set to the RTC.
  * 
  * @return The succes state or the error code. 
- * - OS_NO_ERR is returned if no error is rate. 
- * - OS_ERR_OUT_OF_BOUND is returned if the rate is out of bounds.
+ * - OS_NO_ERR is returned if no error is detected. 
+ * - OS_ERR_OUT_OF_BOUND is returned if the frequency is out of bounds.
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the RTC is not 
  *   supported.
  */
-OS_RETURN_E rtc_set_rate(const uint32_t rate);
+OS_RETURN_E rtc_set_frequency(const uint32_t frequency);
+
+/**
+ * @brief Returns the RTC tick frequency in Hz.
+ * 
+ * @details Returns the RTC tick frequency in Hz.
+ * 
+ * @return The RTC tick frequency in Hz.
+ */
+uint32_t rtc_get_frequency(void);
 
 /**
  * @brief Sets the RTC tick handler.
@@ -163,11 +182,11 @@ OS_RETURN_E rtc_set_rate(const uint32_t rate);
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the handler is NULL.
-  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the RTC interrupt line
-  * is not allowed. 
+ * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the RTC interrupt line
+ *   is not allowed. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the handler is NULL. 
  * - OS_ERR_INTERRUPT_ALREADY_REGISTERED is returned if a handler is already 
- * registered for the RTC.
+ *   registered for the RTC.
  */
 OS_RETURN_E rtc_set_handler(void(*handler)(
                                  cpu_state_t*,
@@ -218,5 +237,14 @@ uint32_t rtc_get_current_daytime(void);
  * never raise interrupt again.
  */
 void rtc_update_time(void);
+
+/**
+ * @brief Returns the RTC IRQ number.
+ * 
+ * @details Returns the RTC IRQ number.
+ * 
+ * @return The RTC IRQ number.
+ */
+uint32_t rtc_get_irq(void);
 
 #endif /* __RTC_H_ */

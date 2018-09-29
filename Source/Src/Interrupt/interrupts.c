@@ -79,9 +79,9 @@ static void spurious_handler(void)
  * called by an assembly interrupt handler. The function will dispatch the 
  * interrupt to the desired function to handle the interrupt.
  *
- * @param[in] cpu_state The cpu registers structure.
+ * @param[in, out] cpu_state The cpu registers structure.
  * @param[in] int_id The interrupt number.
- * @param[in] stack_state The stack state before the interrupt that contain cs, 
+ * @param[in, out] stack_state The stack state before the interrupt that contain cs, 
  * eip, error code and the eflags register value.
  */
 void kernel_interrupt_handler(cpu_state_t cpu_state,

@@ -41,6 +41,9 @@ static uint32_t disabled_nesting;
 /** @brief Keeps track of the PIT tick frequency. */
 static uint32_t tick_freq;
 
+/** @brief PIT driver instance. */
+kernel_timer_t pit_driver;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -51,9 +54,9 @@ static uint32_t tick_freq;
  * @details PIT interrupt handler set at the initialization of the PIT. 
  * Dummy routine setting EOI.
  *
- * @param[in] cpu_state The cpu registers before the interrupt.
+ * @param[in, out] cpu_state The cpu registers before the interrupt.
  * @param[in] int_id The interrupt line that called the handler.
- * @param[in] stack_state The stack state before the interrupt.
+ * @param[in, out] stack_state The stack state before the interrupt.
  */
 static void dummy_handler(cpu_state_t* cpu_state, uint32_t int_id,
                           stack_state_t* stack_state)
@@ -74,7 +77,7 @@ OS_RETURN_E pit_init(void)
     disabled_nesting = 1;
 
     /* Set PIT frequency */
-    err = pit_set_freq(PIT_INIT_FREQ);
+    err = pit_set_frequency(PIT_INIT_FREQ);
     if(err != OS_NO_ERR)
     {
         return err;
@@ -87,7 +90,16 @@ OS_RETURN_E pit_init(void)
         return err;
     }
 
-    #ifdef PIT_KERNEL_DEBUG
+    /* Init driver */
+    pit_driver.get_frequency  = pit_get_frequency;
+    pit_driver.set_frequency  = pit_set_frequency;
+    pit_driver.enable         = pit_enable;
+    pit_driver.disable        = pit_disable;
+    pit_driver.set_handler    = pit_set_handler;
+    pit_driver.remove_handler = pit_remove_handler;
+    pit_driver.get_irq        = pit_get_irq;
+
+    #if PIT_KERNEL_DEBUG == 1
     kernel_serial_debug("PIT Initialization\n");
     #endif
 
@@ -103,7 +115,7 @@ OS_RETURN_E pit_enable(void)
     }
     if(disabled_nesting == 0)
     {
-        #ifdef PIT_KERNEL_DEBUG
+        #if PIT_KERNEL_DEBUG == 1
         kernel_serial_debug("Enable PIT\n");
         #endif
         return kernel_interrupt_set_irq_mask(PIT_IRQ_LINE, 1);
@@ -121,7 +133,7 @@ OS_RETURN_E pit_disable(void)
         ++disabled_nesting;
     }
 
-    #ifdef PIT_KERNEL_DEBUG
+    #if PIT_KERNEL_DEBUG == 1
     kernel_serial_debug("Disable PIT (%d)\n", disabled_nesting);
     #endif
     err = kernel_interrupt_set_irq_mask(PIT_IRQ_LINE, 0);
@@ -129,7 +141,7 @@ OS_RETURN_E pit_disable(void)
     return err;
 }
 
-OS_RETURN_E pit_set_freq(const uint32_t freq)
+OS_RETURN_E pit_set_frequency(const uint32_t freq)
 {
     OS_RETURN_E err;
 
@@ -154,12 +166,17 @@ OS_RETURN_E pit_set_freq(const uint32_t freq)
     cpu_outb(tick_freq >> 8, PIT_DATA_PORT);
 
 
-    #ifdef PIT_KERNEL_DEBUG
+    #if PIT_KERNEL_DEBUG == 1
     kernel_serial_debug("New PIT frequency set (%d)\n", freq);
     #endif
 
     /* Enable PIT IRQ */
     return pit_enable();
+}
+
+uint32_t pit_get_frequency(void)
+{
+    return tick_freq;
 }
 
 OS_RETURN_E pit_set_handler(void(*handler)(
@@ -196,7 +213,7 @@ OS_RETURN_E pit_set_handler(void(*handler)(
         return err;
     }
 
-    #ifdef PIT_KERNEL_DEBUG
+    #if PIT_KERNEL_DEBUG == 1
     kernel_serial_debug("New PIT handler set (0x%08x)\n", handler);
     #endif
 
@@ -205,8 +222,13 @@ OS_RETURN_E pit_set_handler(void(*handler)(
 
 OS_RETURN_E pit_remove_handler(void)
 {
-    #ifdef PIT_KERNEL_DEBUG
+    #if PIT_KERNEL_DEBUG == 1
     kernel_serial_debug("Default PIT handler set\n");
     #endif
     return pit_set_handler(dummy_handler);
+}
+
+uint32_t pit_get_irq(void)
+{
+    return PIT_IRQ_LINE;
 }

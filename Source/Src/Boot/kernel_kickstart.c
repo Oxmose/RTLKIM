@@ -174,6 +174,27 @@ void kernel_kickstart(void)
     rtc_driver_test();
     #endif
 
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing time manager\n");
+    #endif
+
+    err = time_init(pit_driver, rtc_driver, null_timer);
+    if(err == OS_NO_ERR)
+    {
+        kernel_success("Time manager Initialized\n");
+    }
+    else
+    {
+        kernel_error("Time manager Initialization error [%d]\n", 
+                    err);
+        return;
+    }
+    #if TEST_MODE_ENABLED
+    time_ok_test();
+    #endif
+
+    kernel_interrupt_restore(1);
+
     while(1);
 
     return;
