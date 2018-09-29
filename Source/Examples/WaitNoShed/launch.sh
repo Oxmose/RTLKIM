@@ -1,3 +1,4 @@
+#!/bin/bash
 dir=$PWD
 cp main.c ../../Src/User/main.c
 cd ../../
