@@ -24,6 +24,7 @@
 #define INTERRUPT_OK_TEST 0
 #define EXCEPTION_OK_TEST 0
 #define PANIC_TEST 0
+#define PIT_DRIVER_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -34,5 +35,6 @@ void pic_driver_test(void);
 void interrupt_ok_test(void);
 void exception_ok_test(void);
 void panic_test(void);
+void pit_driver_test(void);
 
 #endif /* __TEST_BANK_H_ */

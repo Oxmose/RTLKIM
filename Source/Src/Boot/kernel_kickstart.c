@@ -137,6 +137,24 @@ void kernel_kickstart(void)
     exception_ok_test();
     #endif
 
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing PIT driver\n");
+    #endif
+    err = pit_init();
+    if(err == OS_NO_ERR)
+    {
+        kernel_success("PIT driver Initialized\n");
+    }
+    else
+    {
+        kernel_error("PIT driver Initialization error [%d]\n", 
+                    err);
+        return;
+    }
+    #if TEST_MODE_ENABLED
+    pit_driver_test();
+    #endif
+
     while(1);
 
     return;

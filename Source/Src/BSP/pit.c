@@ -162,7 +162,7 @@ OS_RETURN_E pit_set_freq(const uint32_t freq)
     return pit_enable();
 }
 
-OS_RETURN_E set_pit_handler(void(*handler)(
+OS_RETURN_E pit_set_handler(void(*handler)(
                                  cpu_state_t*,
                                  uint32_t,
                                  stack_state_t*
@@ -203,10 +203,10 @@ OS_RETURN_E set_pit_handler(void(*handler)(
     return pit_enable();
 }
 
-OS_RETURN_E remove_pit_handler(void)
+OS_RETURN_E pit_remove_handler(void)
 {
     #ifdef PIT_KERNEL_DEBUG
     kernel_serial_debug("Default PIT handler set\n");
     #endif
-    return set_pit_handler(dummy_handler);
+    return pit_set_handler(dummy_handler);
 }
