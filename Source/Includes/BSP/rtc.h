@@ -121,7 +121,7 @@ OS_RETURN_E rtc_init(void);
 /**
  * @brief Enables RTC ticks.
  * 
- * @detail Enables RTC ticks by clearing the RTC's IRQ mask.
+ * @details Enables RTC ticks by clearing the RTC's IRQ mask.
  *
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
@@ -133,7 +133,7 @@ OS_RETURN_E rtc_enable(void);
 /**
  * @brief Disables RTC ticks.
  * 
- * @detail Disables RTC ticks by setting the RTC's IRQ mask.
+ * @details Disables RTC ticks by setting the RTC's IRQ mask.
  *
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 

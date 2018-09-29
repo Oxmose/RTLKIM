@@ -71,7 +71,7 @@ OS_RETURN_E pit_init(void);
 /**
  * @brief Enables PIT ticks.
  * 
- * @detail Enables PIT ticks by clearing the PIT's IRQ mask.
+ * @details Enables PIT ticks by clearing the PIT's IRQ mask.
  *
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
@@ -83,7 +83,7 @@ OS_RETURN_E pit_enable(void);
 /**
  * @brief Disables PIT ticks.
  * 
- * @detail Disables PIT ticks by setting the PIT's IRQ mask.
+ * @details Disables PIT ticks by setting the PIT's IRQ mask.
  *
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 

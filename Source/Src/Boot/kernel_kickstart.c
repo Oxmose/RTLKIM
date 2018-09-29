@@ -37,6 +37,9 @@
 /*******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************/
+/** @brief Used for test purposes, this has to be deleted in the final version 
+ */
+extern int main(void);
 
 /*******************************************************************************
  * FUNCTIONS
@@ -198,6 +201,8 @@ void kernel_kickstart(void)
     #endif
 
     kernel_interrupt_restore(1);
+
+    main();
 
     return;
 }

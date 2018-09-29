@@ -70,7 +70,7 @@ struct kernel_timer
     /**
      * @brief The function should enable the timer's inetrrupt.
      * 
-     * @detail The function should enable the timer's inetrrupt.
+     * @details The function should enable the timer's inetrrupt.
      *
      * @return The succes state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
@@ -82,7 +82,7 @@ struct kernel_timer
     /**
      * @brief The function should disable the timer's inetrrupt.
      * 
-     * @detail The function should disable the timer's inetrrupt.
+     * @details The function should disable the timer's inetrrupt.
      *
      * @return The succes state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
@@ -163,7 +163,6 @@ extern kernel_timer_t null_timer;
  * @warning All the interrupt managers and timer sources drivers must be 
  * initialized before using this function.
  * 
- *  * 
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER if the main timer driver has NULL function
@@ -185,7 +184,7 @@ OS_RETURN_E time_init(const kernel_timer_t main_timer,
  * 
  * @param[in, out] cpu_state The cpu registers before the interrupt.
  * @param[in] int_id The interrupt line that called the handler.
- * @param[in, out] stack_state The stack state before the interrupt.
+ * @param[in, out] stack The stack state before the interrupt.
  */
 void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
                              stack_state_t* stack);
@@ -198,7 +197,7 @@ void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
  * 
  * @param[in, out] cpu_state The cpu registers before the interrupt.
  * @param[in] int_id The interrupt line that called the handler.
- * @param[in, out] stack_state The stack state before the interrupt.
+ * @param[in, out] stack The stack state before the interrupt.
  */
 void time_rtc_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
                             stack_state_t* stack);
@@ -211,7 +210,7 @@ void time_rtc_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
  * 
  * @param[in, out] cpu_state The cpu registers before the interrupt.
  * @param[in] int_id The interrupt line that called the handler.
- * @param[in, out] stack_state The stack state before the interrupt.
+ * @param[in, out] stack The stack state before the interrupt.
  */
 void time_aux_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
                             stack_state_t* stack);
