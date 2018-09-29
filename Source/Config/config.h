@@ -79,7 +79,7 @@
  * DEBUG CONFIGURATION
  ******************************************************************************/
 /** @brief Enables kernel debuging features. */
-#define KERNEL_DEBUG 0
+#define KERNEL_DEBUG 1
 
 /** @brief Enables PIC driver debuging feature. */
 #define PIC_KERNEL_DEBUG 0

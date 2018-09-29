@@ -26,6 +26,7 @@
 #include <Interrupt/interrupts.h> /* kernel_interrupt_init() */
 #include <Interrupt/exceptions.h> /* kernel_exception_init() */
 #include <Interrupt/panic.h>      /* kernel_panic() */
+#include <Memory/meminfo.h>       /* memory_map_init() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -83,9 +84,12 @@ void kernel_kickstart(void)
         return;
     }
 
-    #if TEST_MODE_ENABLED
-    pic_driver_test();
-    #endif
+    /* Detect memory */
+    if(memory_map_init() != OS_NO_ERR)
+    {
+        kernel_error("Could not detect memory, halting.");
+        return;
+    }
 
     /* Init PIC */
     #if KERNEL_DEBUG == 1
@@ -101,6 +105,10 @@ void kernel_kickstart(void)
         kernel_error("PIC Initialization error [%d]\n", err);
         return;
     }
+
+    #if TEST_MODE_ENABLED
+    pic_driver_test();
+    #endif
 
     /* Init kernel's interrupt manager */
     #if KERNEL_DEBUG == 1
@@ -141,6 +149,7 @@ void kernel_kickstart(void)
     exception_ok_test();
     #endif
 
+    /* Init PIT driver */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing PIT driver\n");
     #endif
@@ -159,6 +168,7 @@ void kernel_kickstart(void)
     pit_driver_test();
     #endif
 
+    /* Init RTC driver */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing RTC driver\n");
     #endif
@@ -177,6 +187,7 @@ void kernel_kickstart(void)
     rtc_driver_test();
     #endif
 
+    /* Init time manager */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing time manager\n");
     #endif

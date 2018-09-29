@@ -2,7 +2,7 @@ ENTRY(loader)                /* the name of the entry label */
 SECTIONS
 {
     /* Kernel starts at 2M */
-    . = 0x200000;
+    . = 0x00200000;
     _start = .;
 
     /* Put the multiboot header */
@@ -42,7 +42,7 @@ SECTIONS
     _end = .;
 
     /* Beginning of kernel memory heap */
-    kernel_heap_start = _end;
+    kernel_heap_start = 0x00300000;
 
     /* End of kernel memory heap */
     kernel_heap_end = 0x3000000;
