@@ -292,11 +292,14 @@ void rtc_update_time(void)
     date.year = cpu_inb(CMOS_DATA_PORT);
 
     /* Select CMOS century register and read */
-
     if(CMOS_CENTURY_REGISTER != 0)
     {
         cpu_outb(nmi_info | CMOS_CENTURY_REGISTER, CMOS_COMM_PORT);
         century = cpu_inb(CMOS_DATA_PORT);
+    }
+    else 
+    {
+        century = CURRENT_YEAR / 100;
     }
 
     /* Convert BCD to binary if necessary */
