@@ -32,6 +32,11 @@ void time_ok_test(void)
                       tick_count, daytime, new_tick_count, new_daytime);
     }
 
+    time_wait_no_sched(5000);
+
+    kernel_error("Should not have printed that (Qemu should be killed within 4"
+                 " seconds).\n");
+
     kernel_interrupt_disable();
      while(1)
     {

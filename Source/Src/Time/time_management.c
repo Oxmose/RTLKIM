@@ -63,6 +63,9 @@ static kernel_timer_t sys_aux_timer = {NULL};
 /** @brief NULL timer driver. */
 kernel_timer_t null_timer = {NULL};
 
+/** @brief Active wait counter. */
+static volatile uint32_t active_wait;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -195,6 +198,19 @@ void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
     /* Add a tick count */
     ++sys_tick_count;
 
+    if(active_wait > 0)
+    {
+        uint32_t time_slice = 1000 / sys_main_timer.get_frequency();
+        if(active_wait >= time_slice)
+        {
+            active_wait -= time_slice;
+        }
+        else 
+        {
+            active_wait = 0;
+        }
+    }
+
     #if TIME_KERNEL_DEBUG == 1
     kernel_serial_debug("Time manager main handler\n");
     #endif
@@ -248,4 +264,11 @@ uint64_t time_get_current_uptime(void)
 uint64_t time_get_tick_count(void)
 {
     return sys_tick_count;
+}
+
+void time_wait_no_sched(const uint32_t ms)
+{
+    /* TODO: Check if the scheduler is enabled */
+    active_wait = ms;
+    while(active_wait > 0);
 }

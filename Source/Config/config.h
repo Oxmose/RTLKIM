@@ -69,7 +69,7 @@
 
 /** @brief  Defines the kernel's main timer frequency. This will set the maximal 
  * scheduling frequency. */
-#define KERNEL_MAIN_TIMER_FREQ 20
+#define KERNEL_MAIN_TIMER_FREQ 100
 /** @brief  Defines the kernel's auxiliary timer frequency. */
 #define KERNEL_AUX_TIMER_FREQ 100
 /** @brief  Defines the kernel's rtc timer frequency. */
@@ -82,7 +82,7 @@
 #define KERNEL_DEBUG 1
 
 /** @brief Enables PIC driver debuging feature. */
-#define PIC_KERNEL_DEBUG 1
+#define PIC_KERNEL_DEBUG 0
 
 /** @brief Enables Serial driver debuging feature. */
 #define SERIAL_KERNEL_DEBUG 0
@@ -94,13 +94,13 @@
 #define EXCEPTION_KERNEL_DEBUG 0
 
 /** @brief Enables PIT driver debuging feature. */
-#define PIT_KERNEL_DEBUG 1
+#define PIT_KERNEL_DEBUG 0
 
 /** @brief Enables RTC driver debuging feature. */
-#define RTC_KERNEL_DEBUG 1
+#define RTC_KERNEL_DEBUG 0
 
 /** @brief Enables timers debuging feature. */
-#define TIME_KERNEL_DEBUG 1
+#define TIME_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0

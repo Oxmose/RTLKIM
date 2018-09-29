@@ -193,9 +193,11 @@ void kernel_kickstart(void)
     time_ok_test();
     #endif
 
-    kernel_interrupt_restore(1);
+    #if TEST_MODE_ENABLED
+    bios_call_test();
+    #endif
 
-    while(1);
+    kernel_interrupt_restore(1);
 
     return;
 }

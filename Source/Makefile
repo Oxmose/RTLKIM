@@ -71,7 +71,12 @@ init:
 	@mkdir -p $(OBJ_DIRS)
 	@mkdir -p $(BIN_DIR)
 
-	echo $(C_SRCS)
+	@echo "C Sources:"
+	@echo $(C_SRCS)
+	@echo 
+	@echo "ASM Sources:"
+	@echo $(A_SRCS)
+	@echo 
 
 # kernel generation
 kernel.bin: $(LINKER_FILE) compile_asm compile_cc

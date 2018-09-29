@@ -234,4 +234,15 @@ uint64_t time_get_current_uptime(void);
  */
 uint64_t time_get_tick_count(void);
 
+/**
+ * @brief Performs a wait for ms milliseconds.
+ * 
+ * @details Performs a wait for ms milliseconds based on the kernel's main
+ * timer.
+ * 
+ * @warning This function must only be called and run when the scheduler is 
+ * disabled.
+ */
+void time_wait_no_sched(const uint32_t ms);
+
 #endif /* __TIME_MANAGEMENT_H_ */
