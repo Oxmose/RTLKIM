@@ -13,7 +13,6 @@ void bios_call_test(void)
     uint32_t i;
     bios_int_regs_t regs;
     char* str = "BIOS Real Mode Calls tests passed\0";
-    kernel_printf("[TESTMODE] ");
 
     cursor_t cursor;
     vga_save_cursor(&cursor);
@@ -38,6 +37,9 @@ void bios_call_test(void)
 
     kernel_printf("\n");
     kernel_printf("[TESTMODE] Bios call success");
+
+    while(1);
+    
 }
 #else
 void bios_call_test(void)
