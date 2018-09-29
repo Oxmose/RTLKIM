@@ -16,7 +16,7 @@ cache:
         - $HOME/qemu
 
 env:
-    - TRAVIS_ARCH=386 QEMU_ARCHES=i386
+    - TRAVIS_ARCH=386 QEMU_ARCHES=x86_64
 
 matrix:
   include:
@@ -31,7 +31,7 @@ before_script:
     - chmod +x travis-qemu/travis-qemu.sh
     - bash -e travis-qemu/travis-qemu.sh
     - export PATH=$PATH:$HOME/qemu/bin
-    - qemu-system-i386 --version
+    - qemu-system-x86_64 --version
     - if [ "$COMPILER" = "g++-7"        ]; then export CXX="g++-7" CC="gcc-7";              fi
 
 script: ./.build-travis.sh
