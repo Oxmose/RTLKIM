@@ -46,7 +46,16 @@ static uint32_t disabled_nesting;
 static uint32_t rtc_frequency;
 
 /** @brief RTC driver instance. */
-kernel_timer_t rtc_driver;
+kernel_timer_t rtc_driver = {
+    .get_frequency  = rtc_get_frequency,
+    .set_frequency  = rtc_set_frequency,
+    .enable         = rtc_enable,
+    .disable        = rtc_disable,
+    .set_handler    = rtc_set_handler,
+    .remove_handler = rtc_remove_handler,
+    .get_irq        = rtc_get_irq
+
+};
 
 /*******************************************************************************
  * FUNCTIONS
@@ -122,15 +131,6 @@ OS_RETURN_E rtc_init(void)
     cpu_inb(CMOS_DATA_PORT);
 
     disabled_nesting = 1;
-
-    /* Init driver */
-    rtc_driver.get_frequency  = rtc_get_frequency;
-    rtc_driver.set_frequency  = rtc_set_frequency;
-    rtc_driver.enable         = rtc_enable;
-    rtc_driver.disable        = rtc_disable;
-    rtc_driver.set_handler    = rtc_set_handler;
-    rtc_driver.remove_handler = rtc_remove_handler;
-    rtc_driver.get_irq        = rtc_get_irq;
 
     err = rtc_enable();
 

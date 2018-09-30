@@ -19,11 +19,12 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Lib/string.h>      /* memset, strlen */
-#include <Lib/stdlib.h>      /* uitoa, itoa */
-#include <Drivers/graphic.h> /* save_color_scheme, set_color_sheme,
-                              * screen_put_char, screen_put_string */
-#include <Drivers/serial.h>  /* serial_put_char, serial_put_string */
+#include <Lib/string.h>       /* memset, strlen */
+#include <Lib/stdlib.h>       /* uitoa, itoa */
+#include <Drivers/graphic.h>  /* graphic_save_color_scheme, set_color_sheme,
+                               * graphic_put_char, graphic_put_string */
+#include <Drivers/vga_text.h> /* vga_text_driver */
+#include <Drivers/serial.h>   /* serial_put_char, serial_put_string */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -371,8 +372,8 @@ void kernel_printf(const char* fmt, ...)
 
     /* Prtinf format string */
     __builtin_va_start(args, fmt);
-    current_output.putc = screen_put_char;
-    current_output.puts = screen_put_string;
+    current_output.putc = graphic_put_char;
+    current_output.puts = graphic_put_string;
     kprint_fmt(fmt, args);
     __builtin_va_end(args);
 }
@@ -392,20 +393,20 @@ void kernel_error(const char* fmt, ...)
     new_scheme.background = BG_BLACK;
     new_scheme.vga_color  = 1;
 
-    current_output.putc = screen_put_char;
-    current_output.puts = screen_put_string;
+    current_output.putc = graphic_put_char;
+    current_output.puts = graphic_put_string;
 
     /* No need to test return value */
-    save_color_scheme(&buffer);
+    graphic_save_color_scheme(&buffer);
 
     /* Set REG on BLACK color scheme */
-    set_color_scheme(new_scheme);
+    graphic_set_color_scheme(new_scheme);
 
     /* Print tag */
     tag_printf("[ERROR] ");
 
     /* Restore original screen color scheme */
-    set_color_scheme(buffer);
+    graphic_set_color_scheme(buffer);
 
     /* Printf format string */
     __builtin_va_start(args, fmt);
@@ -428,20 +429,20 @@ void kernel_success(const char* fmt, ...)
     new_scheme.background = BG_BLACK;
     new_scheme.vga_color  = 1;
 
-    current_output.putc = screen_put_char;
-    current_output.puts = screen_put_string;
+    current_output.putc = graphic_put_char;
+    current_output.puts = graphic_put_string;
 
     /* No need to test return value */
-    save_color_scheme(&buffer);
+    graphic_save_color_scheme(&buffer);
 
     /* Set REG on BLACK color scheme */
-    set_color_scheme(new_scheme);
+    graphic_set_color_scheme(new_scheme);
 
     /* Print tag */
     tag_printf("[OK] ");
 
     /* Restore original screen color scheme */
-    set_color_scheme(buffer);
+    graphic_set_color_scheme(buffer);
 
     /* Printf format string */
     __builtin_va_start(args, fmt);
@@ -464,20 +465,20 @@ void kernel_info(const char* fmt, ...)
     new_scheme.background = BG_BLACK;
     new_scheme.vga_color  = 1;
 
-    current_output.putc = screen_put_char;
-    current_output.puts = screen_put_string;
+    current_output.putc = graphic_put_char;
+    current_output.puts = graphic_put_string;
 
     /* No need to test return value */
-    save_color_scheme(&buffer);
+    graphic_save_color_scheme(&buffer);
 
     /* Set REG on BLACK color scheme */
-    set_color_scheme(new_scheme);
+    graphic_set_color_scheme(new_scheme);
 
     /* Print tag */
     tag_printf("[INFO] ");
 
     /* Restore original screen color scheme */
-    set_color_scheme(buffer);
+    graphic_set_color_scheme(buffer);
 
     /* Printf format string */
     __builtin_va_start(args, fmt);
@@ -500,20 +501,20 @@ void kernel_debug(const char* fmt, ...)
     new_scheme.background = BG_BLACK;
     new_scheme.vga_color  = 1;
 
-    current_output.putc = screen_put_char;
-    current_output.puts = screen_put_string;
+    current_output.putc = graphic_put_char;
+    current_output.puts = graphic_put_string;
 
     /* No need to test return value */
-    save_color_scheme(&buffer);
+    graphic_save_color_scheme(&buffer);
 
     /* Set REG on BLACK color scheme */
-    set_color_scheme(new_scheme);
+    graphic_set_color_scheme(new_scheme);
 
     /* Print tag */
     tag_printf("[DEBUG] ");
 
     /* Restore original screen color scheme */
-    set_color_scheme(buffer);
+    graphic_set_color_scheme(buffer);
 
     /* Printf format string */
     __builtin_va_start(args, fmt);
@@ -548,7 +549,7 @@ void kernel_doprint(const char* str, __builtin_va_list args)
         return;
     }
 
-    current_output.putc = screen_put_char;
-    current_output.puts = screen_put_string;
+    current_output.putc = graphic_put_char;
+    current_output.puts = graphic_put_string;
     kprint_fmt(str, args);
 }

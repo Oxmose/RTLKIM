@@ -133,11 +133,12 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
     handler(&cpu_state, int_id, &stack_state);
 }
 
-OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t driver)
+OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)
 {
-    if(driver.driver_set_irq_eoi == NULL || 
-       driver.driver_set_irq_mask == NULL ||
-       driver.driver_handle_spurious == NULL)
+    if(driver == NULL || 
+       driver->driver_set_irq_eoi == NULL || 
+       driver->driver_set_irq_mask == NULL ||
+       driver->driver_handle_spurious == NULL)
     {
         return OS_ERR_NULL_POINTER;
     }
@@ -155,7 +156,7 @@ OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t driver)
     spurious_interrupt = 0;
 
     /* Set interrupt driver */ 
-    interrupt_driver = driver;
+    interrupt_driver = *driver;
 
      #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Initialized interrupt manager.\n");
@@ -164,16 +165,17 @@ OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t driver)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t driver)
+OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t* driver)
 {
-    if(driver.driver_set_irq_eoi == NULL || 
-       driver.driver_set_irq_mask == NULL ||
-       driver.driver_handle_spurious == NULL)
+    if(driver == NULL ||
+       driver->driver_set_irq_eoi == NULL || 
+       driver->driver_set_irq_mask == NULL ||
+       driver->driver_handle_spurious == NULL)
     {
         return OS_ERR_NULL_POINTER;
     }
 
-    interrupt_driver = driver;
+    interrupt_driver = *driver;
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Set new interrupt driver.\n");

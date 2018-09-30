@@ -107,21 +107,6 @@
  ******************************************************************************/
 
 /**
- * @brief Graphic driver selection enumeration. Enumerates all the supported 
- * drivers.
- */
-enum GRAPHIC_DRIVER
-{
-    VGA_DRIVER  = VGA_DRIVER_SELECTED,
-    VESA_DRIVER = VESA_DRIVER_SELECTED
-};
-
-/** 
- * @brief Defines GRAPHIC_DRIVER_E type as a shorcut for enum GRAPHIC_DRIVER.
- */
-typedef enum GRAPHIC_DRIVER GRAPHIC_DRIVER_E;
-
-/**
  * @brief Screen cursor representation for the driver. The structures contains 
  * the required data to keep track of the current cursor's position.
  */
@@ -179,6 +164,140 @@ struct colorscheme
  */
 typedef struct colorscheme colorscheme_t;
 
+/** 
+ * @brief The kernel's graphic driver abstraction.
+ */
+struct kernel_graphic_driver
+{
+    /**
+     * @brief Clears the screen, the background color is set to black.
+     */
+    void (*clear_screen)(void);
+
+    /** 
+     * @brief Places the cursor to the coordinates given as parameters.
+     * 
+     * @details The function places the screen cursor at the desired coordinates
+     * based on the line and column parameter.
+     *
+     * @param[in] line The line index where to place the cursor.
+     * @param[in] column The column index where to place the cursor.
+     * 
+     * @return The succes state or the error code.
+     * - OS_NO_ERR is returned if no error is encountered.  
+     * - OS_ERR_OUT_OF_BOUND is returned if the parameters are out of bound.
+     */
+    OS_RETURN_E (*put_cursor_at)(const uint32_t line, const uint32_t column);
+
+    /**
+     * @brief Saves the cursor attributes in the buffer given as paramter.
+     * 
+     * @details Fills the buffer given s parameter with the current value of the 
+     * cursor.
+     *
+     * @param[out] buffer The cursor buffer in which the current cursor position 
+     * is going to be saved.
+     * 
+     * @return The succes state or the error code. 
+     * - OS_NO_ERR is returned if no error is encountered. 
+     * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
+     */
+    OS_RETURN_E (*save_cursor)(cursor_t* buffer);
+
+    /**
+     * @brief Restores the cursor attributes from the buffer given as parameter.
+     *
+     * @details The function will restores the cursor attributes from the buffer 
+     * given as parameter.
+     * 
+     * @param[in] buffer The buffer containing the cursor's attributes.
+     * 
+     * @return The succes state or the error code. 
+     * - OS_NO_ERR is returned if no error is encountered. 
+     * - OS_ERR_OUT_OF_BOUND is returned if the positions of the buffer are out 
+     * of bound.
+     */
+    OS_RETURN_E (*restore_cursor)(const cursor_t buffer);
+
+    /**
+     * @brief Scrolls in the desired direction of lines_count lines.
+     * 
+     * @details The function will use the driver to scroll of lines_count line 
+     * in the desired direction.
+     *
+     * @param[in] direction The direction to which the screen should be 
+     * scrolled.
+     * @param[in] lines_count The number of lines to scroll.
+     */
+    void (*scroll)(const SCROLL_DIRECTION_E direction,
+                   const uint32_t lines_count);
+
+    /**
+     * @brief Sets the color scheme of the screen.
+     * 
+     * @details Replaces the curent color scheme used t output data with the new
+     * one given as parameter.
+     *
+     * @param[in] color_scheme The new color scheme to apply to the screen.
+     */
+    void (*set_color_scheme)(const colorscheme_t color_scheme);
+
+    /** 
+     * @brief Saves the color scheme in the buffer given as parameter.
+     * 
+     * @details Fills the buffer given as parameter with the current screen's 
+     * color scheme value.
+     *
+     * @param[out] buffer The buffer that will receive the current color scheme 
+     * used by the screen.
+     * 
+     * @return The succes state or the error code. 
+     * - OS_NO_ERR is returned if no error is encountered. 
+     * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
+     */
+    OS_RETURN_E (*save_color_scheme)(colorscheme_t* buffer);
+
+    /**
+     * ­@brief Put a string to screen.
+     * 
+     * @details The function will display the string given as parameter to the 
+     * screen using the selected driver.
+     *
+     * @param[in] str The string to display on the screen.
+     * 
+     * @warning string must be NULL terminated.
+     */
+    void (*put_string)(const char* str);
+
+    /**
+     * ­@brief Put a character to screen.
+     * 
+     * @details The function will display the character given as parameter to 
+     * the screen using the selected driver.
+     * 
+     * @param[in] character The char to display on the screen.
+     */
+    void (*put_char)(const char character);
+
+    /**
+     * @brief Used by the kernel to display strings on the screen from a 
+     * keyboard input.
+     * 
+     * @details Display a character from the keyboard input. This allows 
+     * the kernel to know these character can be backspaced later.
+     *
+     * @param[in] str The string to display on the screen from a keybaord input.
+     * @param[in] len The length of the string to display.
+     */
+    void (*console_write_keyboard)(const char* str, const uint32_t len);
+};
+
+/** 
+ * @brief Defines kernel_graphic_driver type as a shorcut for struct 
+ * kernel_graphic_driver.
+ */
+typedef struct kernel_graphic_driver kernel_graphic_driver_t;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -187,11 +306,16 @@ typedef struct colorscheme colorscheme_t;
  * @brief Sets the current selected driver.
  *
  * @details Changes the current selected driver to ouput data with the new one
- * as defined by the parameter sel.
+ * as defined by the parameter driver.
  * 
- * @param[in] sel The driver signature to select.
+ * @param[in] driver The driver to select.
+ * 
+ * @return The succes state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NULL_POINTER if the graphic driver is NULL or has NULL function 
+ * pointers. 
  */
-void graphic_set_selected_driver(const GRAPHIC_DRIVER_E sel);
+OS_RETURN_E graphic_set_selected_driver(const kernel_graphic_driver_t* driver);
 
 /**
  * @brief Clears the screen, the background color is set to black.
@@ -211,7 +335,7 @@ void graphic_clear_screen(void);
  * - OS_NO_ERR is returned if no error is encountered.  
  * - OS_ERR_OUT_OF_BOUND is returned if the parameters are out of bound.
  */
-OS_RETURN_E put_cursor_at(const uint32_t line, const uint32_t column);
+OS_RETURN_E graphic_put_cursor_at(const uint32_t line, const uint32_t column);
 
 /**
  * @brief Saves the cursor attributes in the buffer given as paramter.
@@ -226,7 +350,7 @@ OS_RETURN_E put_cursor_at(const uint32_t line, const uint32_t column);
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
  */
-OS_RETURN_E save_cursor(cursor_t* buffer);
+OS_RETURN_E graphic_save_cursor(cursor_t* buffer);
 
 /**
  * @brief Restores the cursor attributes from the buffer given as parameter.
@@ -241,7 +365,7 @@ OS_RETURN_E save_cursor(cursor_t* buffer);
  * - OS_ERR_UNAUTHORIZED_ACTION is returned if the positions of the buffer are
  * out of bound.
  */
-OS_RETURN_E restore_cursor(const cursor_t buffer);
+OS_RETURN_E graphic_restore_cursor(const cursor_t buffer);
 
 /**
  * @brief Scrolls in the desired direction of lines_count lines.
@@ -252,8 +376,8 @@ OS_RETURN_E restore_cursor(const cursor_t buffer);
  * @param[in] direction The direction to which the screen should be scrolled.
  * @param[in] lines_count The number of lines to scroll.
  */
-void scroll(const SCROLL_DIRECTION_E direction,
-            const uint32_t lines_count);
+void graphic_scroll(const SCROLL_DIRECTION_E direction,
+                    const uint32_t lines_count);
 
 /**
  * @brief Sets the color scheme of the screen.
@@ -263,7 +387,7 @@ void scroll(const SCROLL_DIRECTION_E direction,
  *
  * @param[in] color_scheme The new color scheme to apply to the screen.
  */
-void set_color_scheme(const colorscheme_t color_scheme);
+void graphic_set_color_scheme(const colorscheme_t color_scheme);
 
 /** 
  * @brief Saves the color scheme in the buffer given as parameter.
@@ -278,7 +402,7 @@ void set_color_scheme(const colorscheme_t color_scheme);
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
  */
-OS_RETURN_E save_color_scheme(colorscheme_t* buffer);
+OS_RETURN_E graphic_save_color_scheme(colorscheme_t* buffer);
 
 /**
  * ­@brief Put a string to screen.
@@ -290,7 +414,7 @@ OS_RETURN_E save_color_scheme(colorscheme_t* buffer);
  * 
  * @warning string must be NULL terminated.
  */
-void screen_put_string(const char* str);
+void graphic_put_string(const char* str);
 
 /**
  * ­@brief Put a character to screen.
@@ -300,7 +424,7 @@ void screen_put_string(const char* str);
  * 
  * @param[in] character The char to display on the screen.
  */
-void screen_put_char(const char character);
+void graphic_put_char(const char character);
 
 /**
  * @brief Used by the kernel to display strings on the screen from a keyboard 
@@ -312,6 +436,6 @@ void screen_put_char(const char character);
  * @param[in] str The string to display on the screen from a keybaord input.
  * @param[in] len The length of the string to display.
  */
-void console_write_keyboard(const char* str, const uint32_t len);
+void graphic_console_write_keyboard(const char* str, const uint32_t len);
 
 #endif /* __GRAPHIC_H_ */

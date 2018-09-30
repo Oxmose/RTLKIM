@@ -59,11 +59,13 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     uint32_t current_cpu_id = 0;
     colorscheme_t panic_scheme;
 
+    /* TODO Switch to 80x25 */
+
     panic_scheme.background = BG_RED;
     panic_scheme.foreground = FG_WHITE;
     panic_scheme.vga_color  = 1;
 
-    set_color_scheme(panic_scheme);
+    graphic_set_color_scheme(panic_scheme);
 
     /* Test mode probing */
     if(panic_code == 666)

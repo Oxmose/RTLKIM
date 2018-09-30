@@ -54,6 +54,11 @@
  * STRUCTURES
  ******************************************************************************/
 
+/**
+ * @brief VGA text driver instance.
+ */
+extern kernel_graphic_driver_t vga_text_driver;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -92,7 +97,7 @@ void vga_clear_screen(void);
  * - OS_ERR_OUT_OF_BOUND is returned if the coordinates are
  * out of bound.
  */
-OS_RETURN_E vga_put_cursor_at(const uint8_t line, const uint8_t column);
+OS_RETURN_E vga_put_cursor_at(const uint32_t line, const uint32_t column);
 
 /**
  * @brief Saves the cursor attributes in the buffer given as parameter.
@@ -120,8 +125,8 @@ OS_RETURN_E vga_save_cursor(cursor_t* buffer);
  * 
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
- * - OS_ERR_UNAUTHORIZED_ACTION is returned if the coordinates set in the buffer 
- * are out of bound.
+ * - OS_ERR_OUT_OF_BOUND is returned if the coordinates set in the buffer are 
+ * out of bound.
  */
 OS_RETURN_E vga_restore_cursor(const cursor_t buffer);
 
@@ -134,7 +139,7 @@ OS_RETURN_E vga_restore_cursor(const cursor_t buffer);
  * @param[in] direction The direction to whoch the console should be scrolled.
  * @param[in] lines_count The number of lines to scroll.
  */
-void vga_scroll(const SCROLL_DIRECTION_E direction, const uint8_t lines_count);
+void vga_scroll(const SCROLL_DIRECTION_E direction, const uint32_t lines_count);
 
 /**
  * @brief Sets the color scheme of the screen.

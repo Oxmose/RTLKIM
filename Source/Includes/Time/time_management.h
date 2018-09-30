@@ -165,16 +165,17 @@ extern kernel_timer_t null_timer;
  * 
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
- * - OS_ERR_NULL_POINTER if the main timer driver has NULL function
- *   pointers. 
+ * - OS_ERR_NULL_POINTER if the main timer driver is NULL or has NULL function
+ *   pointers. This value is also returned is the RTC or AUX driver is not NULL
+ *   but contains NULL function pointers.
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the kernel timers
  *   sources are not supported.
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the interrupt lines of 
  *   the kernel timers sources are not supported.
  */
-OS_RETURN_E time_init(const kernel_timer_t main_timer,
-                      const kernel_timer_t rtc_timer,
-                      const kernel_timer_t aux_timer);
+OS_RETURN_E time_init(const kernel_timer_t* main_timer,
+                      const kernel_timer_t* rtc_timer,
+                      const kernel_timer_t* aux_timer);
 
 /**
  * @brief The kernel's main timer interrupt handler.

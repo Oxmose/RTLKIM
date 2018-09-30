@@ -32,85 +32,93 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-/** @brief Stores the currently selected driver. */
-uint8_t selected_driver = VGA_DRIVER_SELECTED;
-
-#if 0
-static const uint32_t vga_color_table[16] = {
-    0xFF000000,
-    0xFF0000AA,
-    0xFF00AA00,
-    0xFF00AAAA,
-    0xFFAA0000,
-    0xFFAA00AA,
-    0xFFAA5500,
-    0xFFAAAAAA,
-    0xFF555555,
-    0xFF5555FF,
-    0xFF55FF55,
-    0xFF55FFFF,
-    0xFFFF5555,
-    0xFFFF55FF,
-    0xFFFFFF55,
-    0xFFFFFFFF
+/** @brief Stores the currently selected driver. Default is VGA text driver */
+static kernel_graphic_driver_t graphic_driver = {
+    .clear_screen = vga_clear_screen,
+    .put_cursor_at = vga_put_cursor_at,
+    .save_cursor = vga_save_cursor,
+    .restore_cursor = vga_restore_cursor,
+    .scroll = vga_scroll,
+    .set_color_scheme = vga_set_color_scheme,
+    .save_color_scheme = vga_save_color_scheme,
+    .put_string = vga_put_string,
+    .put_char = vga_put_char,
+    .console_write_keyboard = vga_console_write_keyboard
 };
-#endif
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
 
-void graphic_set_selected_driver(const GRAPHIC_DRIVER_E sel)
+OS_RETURN_E graphic_set_selected_driver(const kernel_graphic_driver_t* driver)
 {
-	selected_driver = sel;
+    if(driver == NULL ||
+       driver->clear_screen == NULL ||
+       driver->put_cursor_at == NULL ||
+       driver->save_cursor == NULL ||
+       driver->restore_cursor == NULL ||
+       driver->scroll == NULL ||
+       driver->set_color_scheme == NULL ||
+       driver->save_color_scheme == NULL ||
+       driver->put_string == NULL ||
+       driver->put_char == NULL ||
+       driver->console_write_keyboard == NULL)
+    {
+        return OS_ERR_NULL_POINTER;
+    }
+
+	graphic_driver = *driver;
+
+    return OS_NO_ERR;
 }
 
 void graphic_clear_screen(void)
 {
-	vga_clear_screen();
+	graphic_driver.clear_screen();
 }
 
-OS_RETURN_E put_cursor_at(const uint32_t line, const uint32_t column)
+OS_RETURN_E graphic_put_cursor_at(const uint32_t line, const uint32_t column)
 {
-	return vga_put_cursor_at(line, column);
+	return graphic_driver.put_cursor_at(line, column);
 }
 
-OS_RETURN_E save_cursor(cursor_t* buffer)
+OS_RETURN_E graphic_save_cursor(cursor_t* buffer)
 {
-	return vga_save_cursor(buffer);
+	return graphic_driver.save_cursor(buffer);
 }
 
-OS_RETURN_E restore_cursor(const cursor_t buffer)
+OS_RETURN_E graphic_restore_cursor(const cursor_t buffer)
 {
-	return vga_restore_cursor(buffer);
+	return graphic_driver.restore_cursor(buffer);
 }
 
-void scroll(const SCROLL_DIRECTION_E direction,
-            const uint32_t lines_count)
+void graphic_scroll(const SCROLL_DIRECTION_E direction,
+                    const uint32_t lines_count)
 {
-	vga_scroll(direction, lines_count);
+	graphic_driver.scroll(direction, lines_count);
 }
 
-void set_color_scheme(colorscheme_t color_scheme)
+void graphic_set_color_scheme(colorscheme_t color_scheme)
 {
-	vga_set_color_scheme(color_scheme);
+	graphic_driver.set_color_scheme(color_scheme);
 }
 
-OS_RETURN_E save_color_scheme(colorscheme_t* buffer)
+OS_RETURN_E graphic_save_color_scheme(colorscheme_t* buffer)
 {
-	return vga_save_color_scheme(buffer);
+	return graphic_driver.save_color_scheme(buffer);
 }
 
-void screen_put_string(const char* str)
+void graphic_put_string(const char* str)
 {
-	vga_put_string(str);
+	graphic_driver.put_string(str);
 }
 
-void screen_put_char(const char character)
+void graphic_put_char(const char character)
 {
-    vga_put_char(character);
+    graphic_driver.put_char(character);
 }
 
-void console_write_keyboard(const char* str, const uint32_t len)
+void graphic_console_write_keyboard(const char* str, const uint32_t len)
 {
-	vga_console_write_keyboard(str, len);
+	graphic_driver.console_write_keyboard(str, len);
 }

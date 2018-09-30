@@ -115,7 +115,7 @@ void kernel_kickstart(void)
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing the kernel interrupt manager\n");
     #endif
-    err = kernel_interrupt_init(pic_driver);
+    err = kernel_interrupt_init(&pic_driver);
     if(err == OS_NO_ERR)
     {
         kernel_success("Kernel interrupt manager Initialized\n");
@@ -193,7 +193,7 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing time manager\n");
     #endif
 
-    err = time_init(pit_driver, rtc_driver, null_timer);
+    err = time_init(&pit_driver, &rtc_driver, NULL);
     if(err == OS_NO_ERR)
     {
         kernel_success("Time manager Initialized\n");

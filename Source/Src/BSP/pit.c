@@ -42,7 +42,15 @@ static uint32_t disabled_nesting;
 static uint32_t tick_freq;
 
 /** @brief PIT driver instance. */
-kernel_timer_t pit_driver;
+kernel_timer_t pit_driver = {
+    .get_frequency  = pit_get_frequency,
+    .set_frequency  = pit_set_frequency,
+    .enable         = pit_enable,
+    .disable        = pit_disable,
+    .set_handler    = pit_set_handler,
+    .remove_handler = pit_remove_handler,
+    .get_irq        = pit_get_irq
+};
 
 /*******************************************************************************
  * FUNCTIONS
@@ -89,15 +97,6 @@ OS_RETURN_E pit_init(void)
     {
         return err;
     }
-
-    /* Init driver */
-    pit_driver.get_frequency  = pit_get_frequency;
-    pit_driver.set_frequency  = pit_set_frequency;
-    pit_driver.enable         = pit_enable;
-    pit_driver.disable        = pit_disable;
-    pit_driver.set_handler    = pit_set_handler;
-    pit_driver.remove_handler = pit_remove_handler;
-    pit_driver.get_irq        = pit_get_irq;
 
     #if PIT_KERNEL_DEBUG == 1
     kernel_serial_debug("PIT Initialization\n");

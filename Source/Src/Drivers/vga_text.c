@@ -56,6 +56,22 @@ static cursor_t      last_printed_cursor;
  */
 static uint8_t last_columns[SCREEN_LINE_SIZE] = {0};
 
+/**
+ * @brief VGA text driver instance.
+ */
+kernel_graphic_driver_t vga_text_driver = {
+    .clear_screen = vga_clear_screen,
+    .put_cursor_at = vga_put_cursor_at,
+    .save_cursor = vga_save_cursor,
+    .restore_cursor = vga_restore_cursor,
+    .scroll = vga_scroll,
+    .set_color_scheme = vga_set_color_scheme,
+    .save_color_scheme = vga_save_color_scheme,
+    .put_string = vga_put_string,
+    .put_char = vga_put_char,
+    .console_write_keyboard = vga_console_write_keyboard
+};
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -252,7 +268,7 @@ void vga_clear_screen(void)
     }
 }
 
-OS_RETURN_E vga_put_cursor_at(const uint8_t line, const uint8_t column)
+OS_RETURN_E vga_put_cursor_at(const uint32_t line, const uint32_t column)
 {
     int16_t cursor_position;
 
@@ -306,9 +322,9 @@ OS_RETURN_E vga_restore_cursor(const cursor_t buffer)
     return OS_NO_ERR;
 }
 
-void vga_scroll(const SCROLL_DIRECTION_E direction, const uint8_t lines_count)
+void vga_scroll(const SCROLL_DIRECTION_E direction, const uint32_t lines_count)
 {
-    uint8_t to_scroll;
+    uint32_t to_scroll;
 
     if(SCREEN_LINE_SIZE < lines_count)
     {
@@ -322,8 +338,8 @@ void vga_scroll(const SCROLL_DIRECTION_E direction, const uint8_t lines_count)
     /* Select scroll direction */
     if(direction == SCROLL_DOWN)
     {
-        uint8_t i;
-        uint8_t j;
+        uint32_t i;
+        uint32_t j;
         
         /* For each line scroll we want */
         for(j = 0; j < to_scroll; ++j)

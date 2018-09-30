@@ -26,7 +26,7 @@
  ******************************************************************************/
 
 extern void kernel_doprint(const char* str, __builtin_va_list args);
-extern void screen_put_char(const char character);
+extern void graphic_put_char(const char character);
 
 int vprintf(const char *fmt, __builtin_va_list args)
 {    
@@ -51,7 +51,7 @@ int printf(const char *fmt, ...)
 
 int putchar(int c)
 {
-    screen_put_char((char)c);
+    graphic_put_char((char)c);
     return (unsigned char)c;
 }
 

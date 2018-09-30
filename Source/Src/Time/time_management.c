@@ -60,9 +60,6 @@ static kernel_timer_t sys_rtc_timer = {NULL};
  */
 static kernel_timer_t sys_aux_timer = {NULL};
 
-/** @brief NULL timer driver. */
-kernel_timer_t null_timer = {NULL};
-
 /** @brief Active wait counter. */
 static volatile uint32_t active_wait;
 
@@ -70,49 +67,64 @@ static volatile uint32_t active_wait;
  * FUNCTIONS
  ******************************************************************************/
 
-OS_RETURN_E time_init(const kernel_timer_t main_timer,
-                      const kernel_timer_t rtc_timer,
-                      const kernel_timer_t aux_timer)
+OS_RETURN_E time_init(const kernel_timer_t* main_timer,
+                      const kernel_timer_t* rtc_timer,
+                      const kernel_timer_t* aux_timer)
 {
     OS_RETURN_E err;
 
     /* Check the main timer integrity */
-    if(main_timer.get_frequency == NULL || 
-       main_timer.set_frequency == NULL || 
-       main_timer.enable == NULL || 
-       main_timer.disable == NULL || 
-       main_timer.set_handler == NULL || 
-       main_timer.remove_handler == NULL ||
-       main_timer.get_irq == NULL)
+    if(main_timer == NULL ||
+       main_timer->get_frequency == NULL || 
+       main_timer->set_frequency == NULL || 
+       main_timer->enable == NULL || 
+       main_timer->disable == NULL || 
+       main_timer->set_handler == NULL || 
+       main_timer->remove_handler == NULL ||
+       main_timer->get_irq == NULL)
 
     {
         return OS_ERR_NULL_POINTER;
     }
-    sys_main_timer = main_timer;
+    sys_main_timer = *main_timer;
 
     /* Check the rtc timer integrity */
-    if(rtc_timer.get_frequency != NULL &&
-          rtc_timer.set_frequency != NULL &&
-          rtc_timer.enable != NULL &&
-          rtc_timer.disable != NULL && 
-          rtc_timer.set_handler != NULL && 
-          rtc_timer.remove_handler != NULL &&
-          rtc_timer.get_irq != NULL)
+    if(rtc_timer != NULL)
     {
-        sys_rtc_timer = rtc_timer;
-    } 
+        if(rtc_timer->get_frequency != NULL &&
+           rtc_timer->set_frequency != NULL &&
+           rtc_timer->enable != NULL &&
+           rtc_timer->disable != NULL && 
+           rtc_timer->set_handler != NULL && 
+           rtc_timer->remove_handler != NULL &&
+           rtc_timer->get_irq != NULL)
+        {
+            sys_rtc_timer = *rtc_timer;
+        } 
+        else 
+        {
+            return OS_ERR_NULL_POINTER;
+        }
+    }
 
     /* Check the aux timer integrity */
-    if(aux_timer.get_frequency != NULL || 
-        aux_timer.set_frequency != NULL || 
-        aux_timer.enable != NULL || 
-        aux_timer.disable != NULL || 
-        aux_timer.set_handler != NULL || 
-        aux_timer.remove_handler != NULL ||
-        aux_timer.get_irq != NULL)
+    if(aux_timer != NULL)
     {
+        if(aux_timer->get_frequency != NULL || 
+           aux_timer->set_frequency != NULL || 
+           aux_timer->enable != NULL || 
+           aux_timer->disable != NULL || 
+           aux_timer->set_handler != NULL || 
+           aux_timer->remove_handler != NULL ||
+           aux_timer->get_irq != NULL)
+        {
 
-        sys_aux_timer = aux_timer;
+            sys_aux_timer = *aux_timer;
+        }
+        else 
+        {
+            return OS_ERR_NULL_POINTER;
+        }
     }
 
     /* Init he system's values */

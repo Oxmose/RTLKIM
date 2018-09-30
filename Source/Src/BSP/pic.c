@@ -33,7 +33,11 @@
  ******************************************************************************/
 
 /** @brief PIC driver instance. */
-interrupt_driver_t pic_driver;
+interrupt_driver_t pic_driver = {
+    .driver_set_irq_mask    = pic_set_irq_mask,
+    .driver_set_irq_eoi     = pic_set_irq_eoi,
+    .driver_handle_spurious = pic_handle_spurious_irq
+};
 
 /*******************************************************************************
  * FUNCTIONS
@@ -63,12 +67,7 @@ OS_RETURN_E pic_init(void)
 
     /* Disable all IRQs */
     cpu_outb(0xFF, PIC_MASTER_DATA_PORT);
-    cpu_outb(0xFF, PIC_SLAVE_DATA_PORT);
-
-    /* Init driver */
-    pic_driver.driver_set_irq_mask    = pic_set_irq_mask;
-    pic_driver.driver_set_irq_eoi     = pic_set_irq_eoi;
-    pic_driver.driver_handle_spurious = pic_handle_spurious_irq;
+    cpu_outb(0xFF, PIC_SLAVE_DATA_PORT);    
 
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC Initialization end\n");
