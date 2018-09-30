@@ -21,6 +21,7 @@
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Drivers/vga_text.h> /* VGA drivers */
+#include <BSP/bios_call.h>    /* bios_call() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -45,6 +46,21 @@ static kernel_graphic_driver_t graphic_driver = {
     .put_char = vga_put_char,
     .console_write_keyboard = vga_console_write_keyboard
 };
+
+/** @brief Stores the fallback display driver. Default is VGA text driver */
+static kernel_graphic_driver_t fallback_graphic_driver = {
+    .clear_screen = vga_clear_screen,
+    .put_cursor_at = vga_put_cursor_at,
+    .save_cursor = vga_save_cursor,
+    .restore_cursor = vga_restore_cursor,
+    .scroll = vga_scroll,
+    .set_color_scheme = vga_set_color_scheme,
+    .save_color_scheme = vga_save_color_scheme,
+    .put_string = vga_put_string,
+    .put_char = vga_put_char,
+    .console_write_keyboard = vga_console_write_keyboard
+};
+
 
 /*******************************************************************************
  * FUNCTIONS
@@ -121,4 +137,16 @@ void graphic_put_char(const char character)
 void graphic_console_write_keyboard(const char* str, const uint32_t len)
 {
 	graphic_driver.console_write_keyboard(str, len);
+}
+
+void graphic_fallback(void)
+{
+    /* Do the switch */
+    bios_int_regs_t regs;
+
+    regs.ax = BIOS_CALL_SET_VGA_TEXT_MODE;
+    bios_call(BIOS_INTERRUPT_VGA, &regs);
+
+
+    graphic_driver = fallback_graphic_driver;
 }

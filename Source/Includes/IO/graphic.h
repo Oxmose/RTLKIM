@@ -28,14 +28,6 @@
  * CONSTANTS
  ******************************************************************************/
 
-/** 
- * @brief Driver selection value for selection the VGA text 80x25 driver for
- * output.
- */
-#define VGA_DRIVER_SELECTED  0x01
-/** @brief Driver selection value for selection the VESA driver for output. */
-#define VESA_DRIVER_SELECTED 0x02
-
 /** @brief VGA background color definition: black. */
 #define BG_BLACK            0x00
 /** @brief VGA background color definition: blue. */
@@ -101,6 +93,11 @@
 #define FG_YELLOW           0x0E
 /** @brief VGA foreground color definition: white. */
 #define FG_WHITE            0x0F
+
+/** @brief BIOS call interrupt id to set VGA mode. */
+#define BIOS_INTERRUPT_VGA          0x10
+/** @brief BIOS call id to set 80x25 vga text mode. */
+#define BIOS_CALL_SET_VGA_TEXT_MODE 0x03
 
 /*******************************************************************************
  * STRUCTURES
@@ -437,5 +434,16 @@ void graphic_put_char(const char character);
  * @param[in] len The length of the string to display.
  */
 void graphic_console_write_keyboard(const char* str, const uint32_t len);
+
+/** 
+ * @brief Activates fallback display method.
+ * 
+ * @details Activates fallback display method, using VGA 80x25 mode with the VGA
+ * text driver.
+ * 
+ * @warning This function will not deallocate resource used by the previously
+ * selected driver.
+ */
+void graphic_fallback(void);
 
 #endif /* __GRAPHIC_H_ */

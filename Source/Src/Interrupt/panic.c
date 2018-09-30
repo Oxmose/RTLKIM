@@ -59,7 +59,7 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     uint32_t current_cpu_id = 0;
     colorscheme_t panic_scheme;
 
-    /* TODO Switch to 80x25 */
+    graphic_fallback();
 
     panic_scheme.background = BG_RED;
     panic_scheme.foreground = FG_WHITE;
