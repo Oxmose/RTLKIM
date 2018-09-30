@@ -21,9 +21,9 @@
 #ifndef __VGA_TEXT_H_
 #define __VGA_TEXT_H_
 
-#include <Lib/stdint.h>      /* Generic int types */
-#include <Lib/stddef.h>      /* OS_RETURN_E */
-#include <Drivers/graphic.h> /* Graphic API */
+#include <Lib/stdint.h> /* Generic int types */
+#include <Lib/stddef.h> /* OS_RETURN_E */
+#include <IO/graphic.h> /* Graphic API */
 
 /*******************************************************************************
  * CONSTANTS

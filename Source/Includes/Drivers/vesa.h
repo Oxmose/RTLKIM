@@ -21,9 +21,9 @@
 #ifndef __VESA_H_
 #define __VESA_H_
 
-#include <Lib/stdint.h>      /* Generic int types */
-#include <Lib/stddef.h>      /* OS_RETURN_E */
-#include <Drivers/graphic.h> /* structures */
+#include <Lib/stdint.h> /* Generic int types */
+#include <Lib/stddef.h> /* OS_RETURN_E */
+#include <IO/graphic.h> /* structures */
 
 /*******************************************************************************
  * CONSTANTS

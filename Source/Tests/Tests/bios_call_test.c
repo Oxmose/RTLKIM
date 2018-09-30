@@ -3,7 +3,7 @@
 #include <Cpu/cpu.h>
 #include <BSP/bios_call.h>
 #include <Tests/test_bank.h>
-#include <Drivers/graphic.h>
+#include <IO/graphic.h>
 #include <Drivers/vga_text.h>
 #include <Lib/string.h>
 

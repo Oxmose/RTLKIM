@@ -26,7 +26,7 @@
 #include <config.h>
 
 /* Header file */
-#include <Drivers/graphic.h>
+#include <IO/graphic.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

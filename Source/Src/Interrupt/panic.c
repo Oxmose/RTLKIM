@@ -22,7 +22,7 @@
 #include <IO/kernel_output.h>     /* kernel_printf */
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Cpu/cpu.h>              /* hlt cpu_cli */
-#include <Drivers/graphic.h>      /* color_scheme_t */
+#include <IO/graphic.h>           /* color_scheme_t */
 
 /* RTLK configuration file */
 #include <config.h>

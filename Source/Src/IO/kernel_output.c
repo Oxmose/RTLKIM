@@ -21,7 +21,7 @@
 
 #include <Lib/string.h>       /* memset, strlen */
 #include <Lib/stdlib.h>       /* uitoa, itoa */
-#include <Drivers/graphic.h>  /* graphic_save_color_scheme, set_color_sheme,
+#include <IO/graphic.h>       /* graphic_save_color_scheme, set_color_sheme,
                                * graphic_put_char, graphic_put_string */
 #include <Drivers/vga_text.h> /* vga_text_driver */
 #include <Drivers/serial.h>   /* serial_put_char, serial_put_string */

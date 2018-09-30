@@ -27,7 +27,7 @@
 #include <Cpu/cpu.h>          /* inb  */
 #include <Drivers/vga_text.h> /* vga_get_framebuffer */
 #include <Drivers/serial.h>   /* serial_write */
-#include <Drivers/graphic.h>  /* structures */
+#include <IO/graphic.h>       /* structures */
 
 /* RTLK configuration file */
 #include <config.h>
