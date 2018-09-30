@@ -293,7 +293,7 @@ struct kernel_graphic_driver
 };
 
 /** 
- * @brief Defines kernel_graphic_driver type as a shorcut for struct 
+ * @brief Defines kernel_graphic_driver_t type as a shorcut for struct 
  * kernel_graphic_driver.
  */
 typedef struct kernel_graphic_driver kernel_graphic_driver_t;

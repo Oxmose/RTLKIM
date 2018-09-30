@@ -35,20 +35,20 @@
 #define VGA_TEXT_FRAMEBUFFER   0xB8000
 
 /** @brief VGA CPU management data port. */
-#define SCREEN_DATA_PORT       0x3D5
+#define VGA_TEXT_SCREEN_DATA_PORT       0x3D5
 /** @brief VGA CPU management command port. */
-#define SCREEN_COMM_PORT       0x3D4
+#define VGA_TEXT_SCREEN_COMM_PORT       0x3D4
 /** @brief VGA screen width. */
-#define SCREEN_COL_SIZE        80
+#define VGA_TEXT_SCREEN_COL_SIZE        80
 /** @brief VGA screen height. */
-#define SCREEN_LINE_SIZE       25
+#define VGA_TEXT_SCREEN_LINE_SIZE       25
 
 /* CURSOR SETTINGS */
 
 /** @brief VGA cursor position command low. */
-#define CURSOR_COMM_LOW  0x0F
+#define VGA_TEXT_CURSOR_COMM_LOW  0x0F
 /** @brief VGA cursor position command high. */
-#define CURSOR_COMM_HIGH 0x0E
+#define VGA_TEXT_CURSOR_COMM_HIGH 0x0E
 
 /*******************************************************************************
  * STRUCTURES

@@ -54,7 +54,7 @@ static cursor_t      last_printed_cursor;
  * @brief Stores the column index of the last printed character for each lines
  * of the screen.
  */
-static uint8_t last_columns[SCREEN_LINE_SIZE] = {0};
+static uint8_t last_columns[VGA_TEXT_SCREEN_LINE_SIZE] = {0};
 
 /**
  * @brief VGA text driver instance.
@@ -95,7 +95,8 @@ static OS_RETURN_E vga_print_char(const uint8_t line, const uint8_t column,
 {
     uint16_t* screen_mem;
 
-    if(line > SCREEN_LINE_SIZE - 1 || column > SCREEN_COL_SIZE - 1)
+    if(line > VGA_TEXT_SCREEN_LINE_SIZE - 1 || 
+       column > VGA_TEXT_SCREEN_COL_SIZE - 1)
     {
         return OS_ERR_OUT_OF_BOUND;
     }
@@ -135,14 +136,14 @@ static void vga_process_char(const char character)
                 character);
 
         /* Manage end of line cursor position */
-        if(screen_cursor.x > SCREEN_COL_SIZE - 1)
+        if(screen_cursor.x > VGA_TEXT_SCREEN_COL_SIZE - 1)
         {
             vga_put_cursor_at(screen_cursor.y + 1, 0);
             last_columns[screen_cursor.y] = screen_cursor.x;
         }
 
         /* Manage end of screen cursor position */
-        if(screen_cursor.y >= SCREEN_LINE_SIZE)
+        if(screen_cursor.y >= VGA_TEXT_SCREEN_LINE_SIZE)
         {
             vga_scroll(SCROLL_DOWN, 1);
 
@@ -181,10 +182,10 @@ static void vga_process_char(const char character)
                     else
                     {
                         if(last_columns[screen_cursor.y - 1] >=
-                               SCREEN_COL_SIZE)
+                              VGA_TEXT_SCREEN_COL_SIZE)
                         {
                             last_columns[screen_cursor.y - 1] =
-                                SCREEN_COL_SIZE - 1;
+                               VGA_TEXT_SCREEN_COL_SIZE - 1;
                         }
 
                         vga_put_cursor_at(screen_cursor.y - 1,
@@ -195,7 +196,7 @@ static void vga_process_char(const char character)
                 break;
             /* Tab */
             case '\t':
-                if(screen_cursor.x + 8 < SCREEN_COL_SIZE - 1)
+                if(screen_cursor.x + 8 < VGA_TEXT_SCREEN_COL_SIZE - 1)
                 {
                     vga_put_cursor_at(screen_cursor.y,
                             screen_cursor.x  +
@@ -204,13 +205,13 @@ static void vga_process_char(const char character)
                 else
                 {
                     vga_put_cursor_at(screen_cursor.y,
-                            SCREEN_COL_SIZE - 1);
+                           VGA_TEXT_SCREEN_COL_SIZE - 1);
                 }
                 last_columns[screen_cursor.y] = screen_cursor.x;
                 break;
             /* Line feed */
             case '\n':
-                if(screen_cursor.y < SCREEN_LINE_SIZE - 1)
+                if(screen_cursor.y < VGA_TEXT_SCREEN_LINE_SIZE - 1)
                 {
                     vga_put_cursor_at(screen_cursor.y + 1, 0);
                     last_columns[screen_cursor.y] = screen_cursor.x;
@@ -239,14 +240,15 @@ static void vga_process_char(const char character)
 uint16_t* vga_get_framebuffer(const uint8_t line, const uint8_t column)
 {
     /* Avoid overflow on text mode */
-    if(line > SCREEN_LINE_SIZE - 1 || column > SCREEN_COL_SIZE -1)
+    if(line > VGA_TEXT_SCREEN_LINE_SIZE - 1 || 
+       column > VGA_TEXT_SCREEN_COL_SIZE -1)
     {
         return (uint16_t*)(VGA_TEXT_FRAMEBUFFER);
     }
 
     /* Returns the mem adress of the coordinates */
     return (uint16_t*)(VGA_TEXT_FRAMEBUFFER + 2 *
-           (column + line * SCREEN_COL_SIZE));
+           (column + line * VGA_TEXT_SCREEN_COL_SIZE));
 }
 
 void vga_clear_screen(void)
@@ -258,9 +260,9 @@ void vga_clear_screen(void)
                      ((screen_scheme.foreground << 8) & 0x0F00);
 
     /* Clear all screen cases */
-    for(i = 0; i < SCREEN_LINE_SIZE; ++i)
+    for(i = 0; i < VGA_TEXT_SCREEN_LINE_SIZE; ++i)
     {
-        for(j = 0; j < SCREEN_COL_SIZE; ++j)
+        for(j = 0; j < VGA_TEXT_SCREEN_COL_SIZE; ++j)
         {
             *(vga_get_framebuffer(i, j)) = blank;
         }
@@ -273,7 +275,8 @@ OS_RETURN_E vga_put_cursor_at(const uint32_t line, const uint32_t column)
     int16_t cursor_position;
 
     /* Checks the values of line and column */
-    if(column > SCREEN_COL_SIZE || line > SCREEN_LINE_SIZE)
+    if(column > VGA_TEXT_SCREEN_COL_SIZE || 
+       line > VGA_TEXT_SCREEN_LINE_SIZE)
     {
         return OS_ERR_OUT_OF_BOUND;
     }
@@ -283,15 +286,16 @@ OS_RETURN_E vga_put_cursor_at(const uint32_t line, const uint32_t column)
     screen_cursor.y = line;
 
     /* Display new position on screen */
-    cursor_position = column + line * SCREEN_COL_SIZE;
+    cursor_position = column + line * VGA_TEXT_SCREEN_COL_SIZE;
 
     /* Send low part to the screen */
-    cpu_outb(CURSOR_COMM_LOW, SCREEN_COMM_PORT);
-    cpu_outb((int8_t)(cursor_position & 0x00FF), SCREEN_DATA_PORT);
+    cpu_outb(VGA_TEXT_CURSOR_COMM_LOW, VGA_TEXT_SCREEN_COMM_PORT);
+    cpu_outb((int8_t)(cursor_position & 0x00FF), VGA_TEXT_SCREEN_DATA_PORT);
 
     /* Send high part to the screen */
-    cpu_outb(CURSOR_COMM_HIGH, SCREEN_COMM_PORT);
-    cpu_outb((int8_t)((cursor_position & 0xFF00) >> 8), SCREEN_DATA_PORT);
+    cpu_outb(VGA_TEXT_CURSOR_COMM_HIGH, VGA_TEXT_SCREEN_COMM_PORT);
+    cpu_outb((int8_t)((cursor_position & 0xFF00) >> 8), 
+             VGA_TEXT_SCREEN_DATA_PORT);
 
     return OS_NO_ERR;
 }
@@ -312,7 +316,8 @@ OS_RETURN_E vga_save_cursor(cursor_t* buffer)
 
 OS_RETURN_E vga_restore_cursor(const cursor_t buffer)
 {
-    if(buffer.x >= SCREEN_COL_SIZE || buffer.y >= SCREEN_LINE_SIZE)
+    if(buffer.x >= VGA_TEXT_SCREEN_COL_SIZE || 
+       buffer.y >= VGA_TEXT_SCREEN_LINE_SIZE)
     {
         return OS_ERR_OUT_OF_BOUND;
     }
@@ -326,9 +331,9 @@ void vga_scroll(const SCROLL_DIRECTION_E direction, const uint32_t lines_count)
 {
     uint32_t to_scroll;
 
-    if(SCREEN_LINE_SIZE < lines_count)
+    if(VGA_TEXT_SCREEN_LINE_SIZE < lines_count)
     {
-        to_scroll = SCREEN_LINE_SIZE;
+        to_scroll = VGA_TEXT_SCREEN_LINE_SIZE;
     }
     else
     {
@@ -345,24 +350,24 @@ void vga_scroll(const SCROLL_DIRECTION_E direction, const uint32_t lines_count)
         for(j = 0; j < to_scroll; ++j)
         {
             /* Copy all the lines to the above one */
-            for(i = 0; i < SCREEN_LINE_SIZE - 1; ++i)
+            for(i = 0; i < VGA_TEXT_SCREEN_LINE_SIZE - 1; ++i)
             {
                 memmove(vga_get_framebuffer(i, 0),
                         vga_get_framebuffer(i + 1, 0),
-                        sizeof(uint16_t) * SCREEN_COL_SIZE);
+                        sizeof(uint16_t) * VGA_TEXT_SCREEN_COL_SIZE);
                 last_columns[i] = last_columns[i+1];
             }
-            last_columns[SCREEN_LINE_SIZE - 1] = 0;
+            last_columns[VGA_TEXT_SCREEN_LINE_SIZE - 1] = 0;
         }
         /* Clear last line */
-        for(i = 0; i < SCREEN_COL_SIZE; ++i)
+        for(i = 0; i < VGA_TEXT_SCREEN_COL_SIZE; ++i)
         {
-            vga_print_char(SCREEN_LINE_SIZE - 1, i, ' ');
+            vga_print_char(VGA_TEXT_SCREEN_LINE_SIZE - 1, i, ' ');
         }
     }
 
     /* Replace cursor */
-    vga_put_cursor_at(SCREEN_LINE_SIZE - to_scroll, 0);
+    vga_put_cursor_at(VGA_TEXT_SCREEN_LINE_SIZE - to_scroll, 0);
 
     if(to_scroll <= last_printed_cursor.y)
     {

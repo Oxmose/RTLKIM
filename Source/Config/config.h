@@ -35,7 +35,7 @@
 #define ENABLE_SMP        0
 
 /** @brief Enables VESA support for graphic drivers. */
-#define ENABLE_VESA       0
+#define ENABLE_VESA       1
 
 /** @brief Enables ATA drivers support. */
 #define ENABLE_ATA        0

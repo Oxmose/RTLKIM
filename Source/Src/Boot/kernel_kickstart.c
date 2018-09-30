@@ -27,6 +27,7 @@
 #include <Interrupt/exceptions.h> /* kernel_exception_init() */
 #include <Interrupt/panic.h>      /* kernel_panic() */
 #include <Memory/meminfo.h>       /* memory_map_init() */
+#include <Drivers/vesa.h>         /* init_vesa(), vesa_text_vga_to_vesa() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -69,7 +70,27 @@ void kernel_kickstart(void)
     gdt_ok_test();
     output_test();
     kheap_test();
+    vga_text_test();
+    
     #endif
+
+
+    #if ENABLE_VESA == 1
+    /* Init VESA */
+    err = vesa_init();
+    if(err == OS_NO_ERR)
+    {
+        kernel_success("VESA Initialized\n");
+    }
+    else
+    {
+        kernel_error("VESA Initialization error [%d]\n", err);
+    }
+    #if TEST_MODE_ENABLED
+    vesa_text_test();
+    #endif
+    #endif
+    
 
     kernel_printf("------------------------------ Kickstarting RTLK -----------"
                   "--------------------\n");
