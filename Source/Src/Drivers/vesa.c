@@ -326,6 +326,10 @@ OS_RETURN_E vesa_init(void)
     uint16_t*       modes;
     vesa_mode_t*    new_mode;
 
+    #if VESA_KERNEL_DEBUG == 1
+    kernel_serial_debug("VESA Initialization start\n");
+    #endif
+
     /* Init data */
     mode_count     = 0;
     vesa_supported = 0;
@@ -417,6 +421,10 @@ OS_RETURN_E vesa_init(void)
     {
         return OS_ERR_VESA_NOT_SUPPORTED;
     }
+
+    #if VESA_KERNEL_DEBUG == 1
+    kernel_serial_debug("VESA Initialization end\n");
+    #endif
 
     return OS_NO_ERR;
 }
@@ -526,6 +534,11 @@ OS_RETURN_E vesa_text_vga_to_vesa(void)
 
     /* Restore previous screen scheme */
     screen_scheme = old_colorscheme;
+
+    #if VESA_KERNEL_DEBUG == 1
+    kernel_serial_debug("VESA VGA Text to VESA\n");
+    #endif
+
     return OS_NO_ERR;
 }
 
@@ -623,6 +636,10 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
 
     /* Tell generic driver we loaded a VESA mode, ID mapped */
     graphic_set_selected_driver(&vesa_driver);
+
+    #if VESA_KERNEL_DEBUG == 1
+    kernel_serial_debug("VESA Mode set %d\n", mode.mode_id);
+    #endif
 
     return OS_NO_ERR;
 }

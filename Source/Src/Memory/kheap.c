@@ -25,6 +25,9 @@
 #include <Lib/string.h>       /* memset */
 #include <IO/kernel_output.h> /* kernel_success */
 
+/* RTLK configuration file */
+#include <config.h>
+
 /* Header file */
 #include <Memory/kheap.h>
 
@@ -381,6 +384,13 @@ void* kmalloc(uint32_t size)
     mem_free -= size2;
     mem_used += size2 - len - HEADER_SIZE;
 
+    #if KHEAP_KERNEL_DEBUG == 1
+    kernel_serial_debug("Kheap allocated 0x%8x -> %dB (%dB free, %dB used)\n", 
+                        chunk->data, 
+                        size2 - len - HEADER_SIZE, 
+                        mem_free, mem_used);
+    #endif
+
     return chunk->data;
 }
 
@@ -391,11 +401,14 @@ void kfree(void* ptr)
         return;
     }
 
+    uint32_t used;
+
     mem_chunk_t *chunk = (mem_chunk_t*)((int8_t*)ptr - HEADER_SIZE);
     mem_chunk_t *next = CONTAINER(mem_chunk_t, all, chunk->all.next);
     mem_chunk_t *prev = CONTAINER(mem_chunk_t, all, chunk->all.prev);
 
-    mem_used -= memory_chunk_size(chunk);
+    used = memory_chunk_size(chunk);
+    mem_used -= used;
 
     if (next->used == 0)
     {
@@ -421,4 +434,8 @@ void kfree(void* ptr)
 		LIST_INIT(chunk, free);
 		push_free(chunk);
     }
+
+    #if KHEAP_KERNEL_DEBUG == 1
+    kernel_serial_debug("Kheap freed 0x%8x -> %d\n", ptr, used);
+    #endif
 }

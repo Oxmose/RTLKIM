@@ -102,6 +102,12 @@
 /** @brief Enables timers debuging feature. */
 #define TIME_KERNEL_DEBUG 0
 
+/** @brief Enables VESA driver debuging feature. */
+#define VESA_KERNEL_DEBUG 0
+
+/** @brief Enabled kernel heap debuging feature. */
+#define KHEAP_KERNEL_DEBUG 1
+
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0
 

@@ -89,6 +89,11 @@ void kernel_kickstart(void)
     #if TEST_MODE_ENABLED
     vesa_text_test();
     #endif
+    err = vesa_text_vga_to_vesa();
+    if(err != OS_NO_ERR)
+    {
+        kernel_error("VESA switch error [%d]\n", err);
+    }
     #endif
     
 
