@@ -17,7 +17,7 @@
 extern cpu_setup_gdt
 extern cpu_setup_idt
 extern cpu_setup_tss
-
+extern setup_kheap
 extern vga_clear_screen
 
 extern serial_init
@@ -110,6 +110,10 @@ section .text:
     ; Setup kernel TSS
     call cpu_setup_tss
 
+    ; Setup the kernel heap 
+    call setup_kheap
+
+    ; Kickstart the kernel
     call kernel_kickstart
 
   ; Hang forever, this should never happen

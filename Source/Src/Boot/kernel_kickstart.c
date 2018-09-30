@@ -68,6 +68,7 @@ void kernel_kickstart(void)
     idt_ok_test();
     gdt_ok_test();
     output_test();
+    kheap_test();
     #endif
 
     kernel_printf("------------------------------ Kickstarting RTLK -----------"
