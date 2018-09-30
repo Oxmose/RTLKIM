@@ -70,7 +70,7 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     /* Test mode probing */
     if(panic_code == 666)
     {
-        kernel_printf("[TESTMODE] PANIC\n");
+        kernel_printf("\n[TESTMODE] PANIC\n");
     }
 
     kernel_printf("#=============================    KERNEL PANIC    =========="
