@@ -18,13 +18,13 @@ extern cpu_setup_gdt
 extern cpu_setup_idt
 extern cpu_setup_tss
 extern setup_kheap
-extern vga_clear_screen
+extern graphic_clear_screen
 
 extern serial_init
 
 extern kernel_kickstart
 
-extern _edata
+extern __bss_start
 extern kernel_heap_end
 
 extern multiboot_data_ptr
@@ -74,7 +74,7 @@ section .text:
     xor ebp, ebp
 
     ; Blank all uninitialized memory
-    mov  edi, _edata
+    mov  edi, __bss_start
     xor  eax, eax
     blank_mem:
         mov  [edi], eax
@@ -96,7 +96,7 @@ section .text:
     call get_cpuid_flag ; Get CPUID instruction availability
 
     ; Clear screen
-    call vga_clear_screen
+    call graphic_clear_screen
 
     ; Init serial for debug
     call serial_init

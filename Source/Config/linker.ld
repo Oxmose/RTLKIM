@@ -27,8 +27,9 @@ SECTIONS
     .data ALIGN(4K) :
     {
         *(.data)
-        _edata  =  .;
     }
+
+    /* FROM HERE EVERYTHING IS ZEROED */
 
     /* Read-write data and stack */
     .bss ALIGN(4K) :
@@ -46,6 +47,8 @@ SECTIONS
 
     /* End of kernel memory heap */
     kernel_heap_end = 0x3000000;
+
+    /* END OF ZEROING ZONE */
 
     /**********************************************
      * SPECIFIC DATA STRUCTURES BASE ADDRESS
