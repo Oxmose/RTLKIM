@@ -25,8 +25,6 @@
 /*******************************************************************************
  * CONSTANTS
  ******************************************************************************/
-/** @brief Maximal number od IO-APICs supported by the kernel. */
-#define MAX_IO_APIC_COUNT            1
 
 /* APIC structure types */
 /** @brief APIC type: local APIC. */
@@ -53,6 +51,9 @@
 #define ACPI_APIC_SIG 0x43495041
 /** @brief ACPI memory signature: DSDT. */
 #define ACPI_DSDT_SIG 0x54445344
+
+/** @brief Maximal number od IO-APICs supported by the kernel. */
+#define MAX_IO_APIC_COUNT 1
 
 /*******************************************************************************
  * STRUCTURES

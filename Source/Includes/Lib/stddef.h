@@ -156,8 +156,9 @@ enum OS_RETURN
     /** @brief RTLK Error value. */
     OS_ERR_BAD_FILE_NAME                   = 57,
     /** @brief RTLK Error value. */
-    OS_ERR_PERMISSION_DENIED               = 58
+    OS_ERR_PERMISSION_DENIED               = 58,
     /** @brief RTLK Error value. */
+    OS_ERR_NOT_SUPPORTED                   = 59
 };
 
 /** 

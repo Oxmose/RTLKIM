@@ -28,10 +28,20 @@
  */
 #define KERNEL_STACK_SIZE 16384
 
+/*******************************************************************************
+ * Features settings 
+ ******************************************************************************/
 /** @brief Maximal number of CPU to be supported by the kernel. */
 #define MAX_CPU_COUNT     1
 
-/** @brief Enables SMP support. */
+/** @brief Enables the use of an IO-APIC instead of the PIC if present if the 
+ * system.
+ */
+#define ENABLE_IO_APIC    1
+
+/** @brief Enables SMP support. IO-APIC must be enable and supported to enable 
+ * SMP.
+ */
 #define ENABLE_SMP        0
 
 /** @brief Enables VESA support for graphic drivers. */
@@ -49,7 +59,9 @@
 /** @brief Defines which serial port is used for debug purposes. */
 #define SERIAL_DEBUG_PORT COM1
 
-/* Screen settings */
+/*******************************************************************************
+ * Screen settings 
+ ******************************************************************************/
 /** @brief When VESA drivers are enabled, defines the maximal supported height
  * resolution.
  */
@@ -63,7 +75,9 @@
  */
 #define MAX_SUPPORTED_BPP    32
 
-/* Timers settings */
+/*******************************************************************************
+ * Timers settings 
+ ******************************************************************************/
 /** @brief Defines the current year (usefull for the RTC). */
 #define CURRENT_YEAR 2018
 
@@ -105,11 +119,14 @@
 /** @brief Enables VESA driver debuging feature. */
 #define VESA_KERNEL_DEBUG 0
 
-/** @brief Enabled kernel heap debuging feature. */
+/** @brief Enables kernel heap debuging feature. */
 #define KHEAP_KERNEL_DEBUG 0
 
-/** @brief Enabled kernel acpi debuging feature. */
-#define ACPI_KERNEL_DEBUG 1
+/** @brief Enables kernel acpi debuging feature. */
+#define ACPI_KERNEL_DEBUG 0
+
+/** @biref Enables kernel io apic debuging feature. */
+#define IOAPIC_KERNEL_DEBUG 1
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0

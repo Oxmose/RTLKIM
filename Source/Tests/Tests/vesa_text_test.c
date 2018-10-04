@@ -90,27 +90,6 @@ void vesa_text_test(void)
         }
     }
 
-    #if 0
-    for(uint16_t i = 0; i < 256; i += 5)
-    {
-        for(uint16_t j = 0; j < 256; j += 5)
-        {
-            for(uint16_t k = 0; k < 256; k += 5)
-            {
-                vesa_draw_pixel(x, y, 0xFF, i, j, k);
-                if(++x == 1000)
-                {
-                    ++y;
-                    x = 0;
-                }
-
-                /* WAIT */
-                for(volatile uint32_t u = 0; u < 1000; ++u);
-            }
-        }
-    }
-    #endif
-
 
     while(1)
     {

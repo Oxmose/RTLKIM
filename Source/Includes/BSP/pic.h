@@ -90,6 +90,7 @@
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/
+
 /** @brief PIC driver instance. */
 extern interrupt_driver_t pic_driver;
 
@@ -101,7 +102,7 @@ extern interrupt_driver_t pic_driver;
  * @brief Initializes the PIC.
  * 
  * @details  Initializes the PIC by remapping the IRQ interrupts.
- * Disable al IRQ by reseting the IRQs mask.
+ * Disable all IRQ by reseting the IRQs mask.
  * 
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 

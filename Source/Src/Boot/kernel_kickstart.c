@@ -21,6 +21,7 @@
 #include <Cpu/cpu.h>              /* cpu_detect() */
 #include <IO/kernel_output.h>     /* kernel_output() */
 #include <BSP/pic.h>              /* pic_init(), pic_driver */
+#include <BSP/io_apic.h>          /* io-apic_init(), io_apic_driver */
 #include <BSP/pit.h>              /* pit_init() */
 #include <BSP/rtc.h>              /* rtc_init() */
 #include <BSP/acpi.h>             /* acpi_init() */
@@ -87,14 +88,12 @@ void kernel_kickstart(void)
     vga_text_test();
     #endif
 
-
-    #if ENABLE_VESA == 1
     /* Init VESA */
     err = vesa_init();
+    #if ENABLE_VESA == 1
     if(err == OS_NO_ERR)
     {
         kernel_success("VESA Initialized\n");
-
         #if TEST_MODE_ENABLED == 1
         vesa_text_test();
         #else
@@ -145,6 +144,19 @@ void kernel_kickstart(void)
              "Error while initializing PIC: %d. HALTING\n", err);
     #if TEST_MODE_ENABLED
     pic_driver_test();
+    #endif
+
+    /* Init IO-APIC */
+    #if ENABLE_IO_APIC !=  0
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing the IO-APIC driver\n");
+    #endif
+    err = io_apic_init();
+    INIT_MSG("IO-APIC Initialized\n", 
+             "Error while initializing IO-APIC: %d. HALTING\n", err);
+    #if TEST_MODE_ENABLED
+    io_apic_driver_test();
+    #endif
     #endif
 
     /* Init kernel's interrupt manager */

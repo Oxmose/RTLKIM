@@ -31,6 +31,7 @@
 #define KHEAP_TEST 0
 #define VGA_TEXT_TEST 0
 #define VESA_TEXT_TEST 0
+#define IO_APIC_DRIVER_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -48,5 +49,6 @@ void bios_call_test(void);
 void kheap_test(void);
 void vga_text_test(void);
 void vesa_text_test(void);
+void io_apic_driver_test(void);
 
 #endif /* __TEST_BANK_H_ */
