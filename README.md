@@ -1,30 +1,21 @@
-
-  
-
 # Real Time Little Kernel
 
 * RTLK is a simple x86 kernel created for training and educational purposes. The final version is aimed to supports multicore (SMP) architectures. RTLK is is designed to execute in kernel mode with paging disable. However one of the roadmap objective is to bring paging to the kernel to allows it to become a higher-half kernel. The code of the kernel is not made to be efficient but to be readable and understandable.
 
 * RTLK has a configuration file allowing the kernel to be customizable depending on the system it will run.
-  
 
 ----------
 
-  
-
 *RTLK Build status*
 
-  
 
-| Status | Master | Dev |
-
+| Status | Master | Dev | 
 | --- | --- | --- |
-
 | Travis CI | [![Build Status](https://travis-ci.org/Oxmose/RTLKIM.svg?branch=master)](https://travis-ci.org/Oxmose/RTLKIM) | [![Build Status](https://travis-ci.org/Oxmose/RTLKIM.svg?branch=dev)](https://travis-ci.org/Oxmose/RTLKIM) |
-
 | Codacy | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/14abd7a3d98d40d1abeb2ba71a06e054)](https://www.codacy.com/app/Oxmose/RTLKIM?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Oxmose/RTLKIM&amp;utm_campaign=Badge_Grade)| N/A |
 
-  ----------
+
+----------
 
 ## Features
 
@@ -67,7 +58,7 @@
 * RTLK API
 * POSIX API may be added at some point.
 * C standard library may be added at some point.
-* 
+
 ## TODOs
 
 There is still a lot of work to be done on this kernel, you can, of course, help
