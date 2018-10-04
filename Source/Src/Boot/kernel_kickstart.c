@@ -23,11 +23,13 @@
 #include <BSP/pic.h>              /* pic_init(), pic_driver */
 #include <BSP/pit.h>              /* pit_init() */
 #include <BSP/rtc.h>              /* rtc_init() */
+#include <BSP/acpi.h>             /* acpi_init() */
 #include <Interrupt/interrupts.h> /* kernel_interrupt_init() */
 #include <Interrupt/exceptions.h> /* kernel_exception_init() */
 #include <Interrupt/panic.h>      /* kernel_panic() */
 #include <Memory/meminfo.h>       /* memory_map_init() */
 #include <Drivers/vesa.h>         /* init_vesa(), vesa_text_vga_to_vesa() */
+#include <Lib/string.h>           /* strlen() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -35,6 +37,18 @@
 #if TEST_MODE_ENABLED
 #include <Tests/test_bank.h>
 #endif
+
+#define INIT_MSG(msg_success, msg_error, error) {     \
+    if(error != OS_NO_ERR)                            \
+    {                                                 \
+        kernel_error(msg_error, error);               \
+        kernel_panic(error);                          \
+    }                                                 \
+    else if(strlen(msg_success) != 0)                 \
+    {                                                 \
+        kernel_success(msg_success);                  \
+    }                                                 \
+}
 
 /*******************************************************************************
  * GLOBAL VARIABLES
@@ -80,60 +94,55 @@ void kernel_kickstart(void)
     if(err == OS_NO_ERR)
     {
         kernel_success("VESA Initialized\n");
+
+        #if TEST_MODE_ENABLED == 1
+        vesa_text_test();
+        #else
+        err = vesa_text_vga_to_vesa();
+        if(err != OS_NO_ERR)
+        {
+            kernel_error("VESA switch error [%d]\n", err);
+        }
+        #endif
     }
     else
     {
         kernel_error("VESA Initialization error [%d]\n", err);
     }
-    #if TEST_MODE_ENABLED
-    vesa_text_test();
-    #endif
-    #if TEST_MODE_ENABLED == 0
-    err = vesa_text_vga_to_vesa();
-    if(err != OS_NO_ERR)
-    {
-        kernel_error("VESA switch error [%d]\n", err);
-    }
-    #endif
     #endif
     
+    kernel_printf("\n==== Kickstarting RTLK ====\n");
 
-    kernel_printf("------------------------------ Kickstarting RTLK -----------"
-                  "--------------------\n");
-
+    /* Detect CPU */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Detecting CPU\n");
     #endif
-
-    /* Launch CPU detection routine */
-    if(cpu_detect(1) != OS_NO_ERR)
-    {
-        kernel_error("Could not detect CPU, halting.");
-        return;
-    }
+    err = cpu_detect(1);
+    INIT_MSG("", "Error while detecting CPU: %d. HALTING\n", err);
 
     /* Detect memory */
-    if(memory_map_init() != OS_NO_ERR)
-    {
-        kernel_error("Could not detect memory, halting.");
-        return;
-    }
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Detecting memory\n");
+    #endif
+    err = memory_map_init();
+    INIT_MSG("", "Error while detecting memory: %d. HALTING\n", err);
+
+    /* Initialize ACPI */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing ACPI\n");
+    #endif
+    err = acpi_init();
+    INIT_MSG("ACPI Initialized\n", 
+            "Error while initializing ACPI: %d. HALTING\n", 
+             err);
 
     /* Init PIC */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing the PIC driver\n");
     #endif
     err = pic_init();
-    if(err == OS_NO_ERR)
-    {
-        kernel_success("PIC Initialized\n");
-    }
-    else
-    {
-        kernel_error("PIC Initialization error [%d]\n", err);
-        return;
-    }
-
+    INIT_MSG("PIC Initialized\n", 
+             "Error while initializing PIC: %d. HALTING\n", err);
     #if TEST_MODE_ENABLED
     pic_driver_test();
     #endif
@@ -143,16 +152,9 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing the kernel interrupt manager\n");
     #endif
     err = kernel_interrupt_init(&pic_driver);
-    if(err == OS_NO_ERR)
-    {
-        kernel_success("Kernel interrupt manager Initialized\n");
-    }
-    else
-    {
-        kernel_error("Kernel interrupt manager Initialization error [%d]\n", 
-                    err);
-        return;
-    }
+    INIT_MSG("Kernel Interrupt Manager Initialized\n", 
+             "Error while initializing Kernel Interrupt Manager: %d. HALTING\n", 
+             err);
     #if TEST_MODE_ENABLED
     interrupt_ok_test();
     panic_test();
@@ -163,16 +165,9 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing the kernel exception manager\n");
     #endif
     err = kernel_exception_init();
-    if(err == OS_NO_ERR)
-    {
-        kernel_success("Kernel exception manager Initialized\n");
-    }
-    else
-    {
-        kernel_error("Kernel exception manager Initialization error [%d]\n", 
-                    err);
-        return;
-    }
+    INIT_MSG("Kernel Exception Manager Initialized\n", 
+             "Error while initializing Kernel Exception Manager: %d. HALTING\n", 
+             err);
     #if TEST_MODE_ENABLED
     exception_ok_test();
     #endif
@@ -182,16 +177,9 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing PIT driver\n");
     #endif
     err = pit_init();
-    if(err == OS_NO_ERR)
-    {
-        kernel_success("PIT driver Initialized\n");
-    }
-    else
-    {
-        kernel_error("PIT driver Initialization error [%d]\n", 
-                    err);
-        return;
-    }
+    INIT_MSG("PIT Initialized\n", 
+             "Error while initializing PIT: %d. HALTING\n", 
+             err);
     #if TEST_MODE_ENABLED
     pit_driver_test();
     #endif
@@ -201,16 +189,9 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing RTC driver\n");
     #endif
     err = rtc_init();
-    if(err == OS_NO_ERR)
-    {
-        kernel_success("RTC driver Initialized\n");
-    }
-    else
-    {
-        kernel_error("RTC driver Initialization error [%d]\n", 
-                    err);
-        return;
-    }
+    INIT_MSG("RTC Initialized\n", 
+             "Error while initializing RTC: %d. HALTING\n", 
+             err);
     #if TEST_MODE_ENABLED
     rtc_driver_test();
     #endif
@@ -219,18 +200,10 @@ void kernel_kickstart(void)
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing time manager\n");
     #endif
-
     err = time_init(&pit_driver, &rtc_driver, NULL);
-    if(err == OS_NO_ERR)
-    {
-        kernel_success("Time manager Initialized\n");
-    }
-    else
-    {
-        kernel_error("Time manager Initialization error [%d]\n", 
-                    err);
-        return;
-    }
+    INIT_MSG("Time Manager Initialized\n", 
+             "Error while initializing Time Manager: %d. HALTING\n", 
+             err);
     #if TEST_MODE_ENABLED
     time_ok_test();
     #endif

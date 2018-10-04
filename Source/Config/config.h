@@ -106,7 +106,10 @@
 #define VESA_KERNEL_DEBUG 0
 
 /** @brief Enabled kernel heap debuging feature. */
-#define KHEAP_KERNEL_DEBUG 1
+#define KHEAP_KERNEL_DEBUG 0
+
+/** @brief Enabled kernel acpi debuging feature. */
+#define ACPI_KERNEL_DEBUG 1
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0

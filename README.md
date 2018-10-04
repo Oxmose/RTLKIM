@@ -1,8 +1,8 @@
 # Real Time Little Kernel
 
-* RTLK is a simple x86 kernel created for training and educational purposes. The final version is aimed to supports multicore (SMP) architectures. RTLK is is designed to execute in kernel mode with paging disable. However one of the roadmap objective is to bring paging to the kernel to allows it to become a higher-half kernel. The code of the kernel is not made to be efficient but to be readable and understandable.
+* RTLK is a x86 kernel created for training and educational purposes. The final version is aimed to support multicore (SMP) architectures. RTLK is designed to execute in kernel mode with paging disabled at the moment. However one of the roadmap objective is to bring paging to the kernel to make it a higher-half kernel. The code of the kernel is not made to be efficient but to be readable and understandable.
 
-* RTLK has a configuration file allowing the kernel to be customizable depending on the system it will run.
+* RTLK has a configuration file allowing the kernel to be customized depending on the system it will run on.
 
 ----------
 
@@ -22,8 +22,8 @@
 ### Synchronization
 
 * Mutex: Non recursive/Recursive - Priority inheritance capable.
-* Semaphore: FIFO based, priority of the locking threads are not relevant to select the next thread to unlock.
-* Spinlocks: Disable interrupt on monocore systems, Test And Set on multicore systems.
+* Semaphore: FIFO based, priority of the locking thread is not relevant to select the next thread to unlock.
+* Spinlocks: Disables interrupt on monocore systems, Test And Set on multicore systems.
 * Message queues and mailboxes
 
 ### Scheduler
