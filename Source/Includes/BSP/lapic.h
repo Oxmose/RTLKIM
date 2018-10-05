@@ -33,70 +33,116 @@
 /*******************************************************************************
  * CONSTANTS
  ******************************************************************************/
+
+/** @brief LAPIC ID register's offset. */
 #define LAPIC_ID                        0x0020
+/** @brief LAPIC version register's offset. */
 #define LAPIC_VER                       0x0030
+/** @brief LAPIC trask priority register's offset. */
 #define LAPIC_TPR                       0x0080
+/** @brief LAPIC arbitration policy register's offset. */
 #define LAPIC_APR                       0x0090
+/** @brief LAPIC processor priority register's offset. */
 #define LAPIC_PPR                       0x00A0
+/** @brief LAPIC EOI register's offset. */
 #define LAPIC_EOI                       0x00B0
+/** @brief LAPIC remote read register's offset. */
 #define LAPIC_RRD                       0x00C0
+/** @brief LAPIC logical destination register's offset. */
 #define LAPIC_LDR                       0x00D0
+/** @brief LAPIC destination format register's offset. */
 #define LAPIC_DFR                       0x00E0
+/** @brief LAPIC Spurious interrupt vector register's offset. */
 #define LAPIC_SVR                       0x00F0
+/** @brief LAPIC in service register's offset. */
 #define LAPIC_ISR                       0x0100
+/** @brief LAPIC trigger mode register's offset. */
 #define LAPIC_TMR                       0x0180
+/** @brief LAPIC interrupt request register's offset. */
 #define LAPIC_IRR                       0x0200
+/** @brief LAPIC error status register's offset. */
 #define LAPIC_ESR                       0x0280
+/** @brief LAPIC interrupt command (low) register's offset. */
 #define LAPIC_ICRLO                     0x0300
+/** @brief LAPIC interrupt command (high) register's offset. */
 #define LAPIC_ICRHI                     0x0310
+/** @brief LAPIC local vector table timer register's offset. */
 #define LAPIC_TIMER                     0x0320
+/** @brief LAPIC local vector table thermal sensor register's offset. */
 #define LAPIC_THERMAL                   0x0330
+/** @brief LAPIC local vector table PMC register's offset. */
 #define LAPIC_PERF                      0x0340
+/** @brief LAPIC local vector table lint0 register's offset. */
 #define LAPIC_LINT0                     0x0350
+/** @brief LAPIC local vector table lint1 register's offset. */
 #define LAPIC_LINT1                     0x0360
+/** @brief LAPIC local vector table error register's offset. */
 #define LAPIC_ERROR                     0x0370
+/** @brief LAPIC timer initial count register's offset. */
 #define LAPIC_TICR                      0x0380
+/** @brief LAPIC timer current count register's offset. */
 #define LAPIC_TCCR                      0x0390
+/** @brief LAPIC timer devide configuration register's offset. */
 #define LAPIC_TDCR                      0x03E0
 
 /* Delivery Mode */
+/** @brief LAPIC delivery mode fixed. */
 #define ICR_FIXED                       0x00000000
+/** @brief LAPIC delivery mode lowest priority. */
 #define ICR_LOWEST                      0x00000100
+/** @brief LAPIC delivery mode SMI. */
 #define ICR_SMI                         0x00000200
+/** @brief LAPIC delivery mode NMI. */
 #define ICR_NMI                         0x00000400
+/** @brief LAPIC delivery mode init IPI. */
 #define ICR_INIT                        0x00000500
+/** @brief LAPIC delivery mode startup IPI. */
 #define ICR_STARTUP                     0x00000600
+/** @brief LAPIC delivery mode external. */
+#define ICR_EXTERNAL                    0x00000700
 
-/* Destination Mode */
+/** @brief LAPIC destination mode physical. */
 #define ICR_PHYSICAL                    0x00000000
+/** @brief LAPIC destination mode logical. */
 #define ICR_LOGICAL                     0x00000800
 
-/* Delivery Status */
+/** @brief LAPIC Delivery status idle. */
 #define ICR_IDLE                        0x00000000
+/** @brief LAPIC Delivery status pending. */
 #define ICR_SEND_PENDING                0x00001000
 
-/* Level */
+/** @brief LAPIC Level deassert enable flag. */
 #define ICR_DEASSERT                    0x00000000
+/** @brief LAPIC Level deassert disable flag. */
 #define ICR_ASSERT                      0x00004000
 
-/* Trigger Mode */
+/** @brief LAPIC trigger mode edge. */
 #define ICR_EDGE                        0x00000000
+/** @brief LAPIC trigger mode level. */
 #define ICR_LEVEL                       0x00008000
 
-/* Destination Shorthand */
+/** @brief LAPIC destination shorthand none. */
 #define ICR_NO_SHORTHAND                0x00000000
+/** @brief LAPIC destination shorthand self only. */
 #define ICR_SELF                        0x00040000
+/** @brief LAPIC destination shorthand all and self. */
 #define ICR_ALL_INCLUDING_SELF          0x00080000
+/** @brief LAPIC destination shorthand all but self. */
 #define ICR_ALL_EXCLUDING_SELF          0x000C0000
 
-/* Destination Field */
+/** @brief LAPIC destination flag shift. */
 #define ICR_DESTINATION_SHIFT           24
 
+/** @brief LAPIC Timer mode flag: periodic. */
 #define LAPIC_TIMER_MODE_PERIODIC       0x20000
+/** @brief LAPIC Timer divider value. */
 #define LAPIC_DIVIDER_16                0x3
+/** @brief LAPIC Timer initial frequency. */
 #define LAPIC_INIT_FREQ                 100
-#define APIC_LVT_INT_MASKED             0x10000
+/** @biref LAPIC Timer vector interrupt masked. */
+#define LAPIC_LVT_INT_MASKED             0x10000
 
+/** @brief LAPIC spurious interrupt vector. */
 #define LAPIC_SPURIOUS_INT_LINE MAX_INTERRUPT_LINE
 
 /*******************************************************************************
@@ -111,61 +157,129 @@ extern kernel_timer_t lapic_timer_driver;
  * FUNCTIONS
  ******************************************************************************/
 
-/* Init CPU Local APIC
+/**
+ * @brief Initializes the CPU Local APIC.
+ * 
+ * @details Initializes the CPU Local APIC. The function initializes the LAPIC 
+ * interrupts (enables them), set the LAPIC destination mode and sets the 
+ * spurious vector.
  *
- * @return OS_NO_ERR on succes, an error otherwise.
+ * @return The succes state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.  
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ * current system.
  */
 OS_RETURN_E lapic_init(void);
 
-/* Init CPU Local APIC TIMER
+/**
+ * @brief Initializes the CPU Local APIC Timer.
+ * 
+ * @details Initializes the CPU Local APIC Timer. The function initializes the 
+ * LAPIC Timer and its interrupt. The Timer is then set to its initial frequency
+ * by the driver.
+ * 
+ * @warning This function is not to be used by Application Processors, please
+ * use lapic_ap_timer_init for this purpose.
  *
- * @return OS_NO_ERR on succes, an error otherwise.
+ * @return The succes state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.  
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ * current system.
  */
 OS_RETURN_E lapic_timer_init(void);
 
 
-/* Init AP CPU Local APIC TIMER
+/**
+ * @brief Initializes the CPU Local APIC Timer for application processor.
+ * 
+ * @details Initializes the CPU Local APIC Timer. The function initializes the 
+ * LAPIC Timer and its interrupt. The Timer is then set to its initial frequency
+ * by the driver. This function is to be used for Application Processors only.
  *
- * @return OS_NO_ERR on succes, an error otherwise.
+ * @warning This function is to be used by Application Processors only.
+ * 
+ * @return The succes state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.  
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ * current system.
  */
 OS_RETURN_E lapic_ap_timer_init(void);
 
-/* Returns the current CPU Local APIC ID.
+/**
+ * @brief Returns the current CPU Local APIC ID.
+ * 
+ * @details Returns the current CPU Local APIC ID. The current CPU is the CPU on
+ * which the function is called.
  *
- * @returns The current CPU Local APIC ID.
+ * @returns The current CPU Local APIC ID. -1 is returned on error.
  */
-uint32_t lapic_get_id(void);
+int32_t lapic_get_id(void);
 
-/* Send an INIT IPI to the CPU deisgned by the Local APIC ID given as parameter.
- * The ID is checked before sending the IPI.
+/**
+ * @brief Send an INIT IPI to the corresponding LAPIC.
+ * 
+ * @details Sends an INIT IPI to the CPU deisgned by the Local APIC ID given as 
+ * parameter.The ID is checked before sending the IPI.
  *
- * @param lapic_id The Local APIC ID of the CPU to send the IPI to.
- * @return OS_NO_ERR on success, an error otherwise.
+ * @param[in] lapic_id The Local APIC ID of the CPU to send the IPI to.
+ * 
+ * @return The succes state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.  
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ * current system.
+ * - OS_ERR_NO_SUCH_LAPIC_ID is returned if the given LAPIC ID does not exist.
  */
 OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id);
 
-/* Send an STARTUP IPI to the CPU deisgned by the Local APIC ID given as 
- * parameter. The ID is checked before sending the IPI.
+/**
+ * @brief Sends a STARTUP IPI to the corresponding LAPIC.
+ * 
+ * @details Sends an STARTUP IPI to the CPU deisgned by the Local APIC ID given 
+ * as parameter. The ID is checked before sending the IPI.
  *
- * @param lapic_id The Local APIC ID of the CPU to send the IPI to.
- * @param vector The startup IPI vector.
- * @return OS_NO_ERR on success, an error otherwise.
+ * @param[in] lapic_id The Local APIC ID of the CPU to send the IPI to.
+ * @param[in] vector The startup IPI vector.
+ * 
+ * @return The succes state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.  
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ * current system.
+ * - OS_ERR_NO_SUCH_LAPIC_ID is returned if the given LAPIC ID does not exist.
  */
 OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
                                    const uint32_t vector);
 
-/* Send an IPI to the CPU deisgned by the Local APIC ID given as parameter.
- * The ID is checked before sending the IPI.
+/**
+ * @brief Sends an IPI to the corresponding LAPIC.
+ * 
+ * @details Send an IPI to the CPU deisgned by the Local APIC ID given as 
+ * parameter.The ID is checked before sending the IPI.
  *
- * @param lapic_id The Local APIC ID of the CPU to send the IPI to.
- * @return OS_NO_ERR on success, an error otherwise.
+ * @param[in] lapic_id The Local APIC ID of the CPU to send the IPI to.
+ * @param[in] vector The IPI vector.
+ * 
+ * @return The succes state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.  
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ * current system.
+ * - OS_ERR_NO_SUCH_LAPIC_ID is returned if the given LAPIC ID does not exist.
  */
-OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id);
+OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id,
+                           const uint32_t vector);
 
-/* Set END OF INTERRUPT for the current CPU Local APIC.
+/**
+ * @brief Sets END OF INTERRUPT for the current CPU Local APIC.
  *
- * @param interrupt_line The intrrupt line for which the EOI should be set.
- * @return OS_NO_ERR on success, an error otherwise.
+ * @details Sets END OF INTERRUPT for the current CPU Local APIC.
+ * 
+ * @param[in] interrupt_line The intrrupt line for which the EOI should be set.
+ * 
+ * @return The succes state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.  
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ * current system.
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the interurpt number is not 
+ * supported.
  */
 OS_RETURN_E lapic_set_int_eoi(const uint32_t interrupt_line);
 

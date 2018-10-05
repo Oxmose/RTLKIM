@@ -126,7 +126,7 @@ static void lapic_init_pit_handler(cpu_state_t* cpu_state, uint32_t int_id,
     else if(wait_int == 2)
     {
         /* Stop the LAPIC timer */
-        lapic_write(LAPIC_TIMER, APIC_LVT_INT_MASKED);
+        lapic_write(LAPIC_TIMER, LAPIC_LVT_INT_MASKED);
         wait_int = 0;
     }
 
@@ -163,8 +163,17 @@ OS_RETURN_E lapic_init(void)
     return OS_NO_ERR;
 }
 
-uint32_t lapic_get_id(void)
+int32_t lapic_get_id(void)
 {
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return -1;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return -1;
+    }
+
     return (lapic_read(LAPIC_ID) >> 24);
 }
 
@@ -175,6 +184,18 @@ OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id)
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Send INIT IPI\n");
     #endif
+
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return OS_ERR_NOT_SUPPORTED;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return OS_ERR_NOT_SUPPORTED;
+    }
 
     /* Check LACPI id */
     err = acpi_check_lapic_id(lapic_id);
@@ -204,6 +225,17 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
     kernel_serial_debug("LAPIC Send STARTUP IPI\n");
     #endif
     
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return OS_ERR_NOT_SUPPORTED;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return OS_ERR_NOT_SUPPORTED;
+    }
 
     /* Check LACPI id */
     err = acpi_check_lapic_id(lapic_id);
@@ -214,7 +246,7 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
 
     /* Send IPI */
     lapic_write(LAPIC_ICRHI, lapic_id << ICR_DESTINATION_SHIFT);
-    lapic_write(LAPIC_ICRLO, vector | ICR_STARTUP | ICR_PHYSICAL |
+    lapic_write(LAPIC_ICRLO, (vector & 0xFF) | ICR_STARTUP | ICR_PHYSICAL |
                 ICR_ASSERT | ICR_EDGE | ICR_NO_SHORTHAND);
 
     /* Wait for pending sends */
@@ -224,13 +256,25 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
     return err;
 }
 
-OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id)
+OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id, const uint32_t vector)
 {
     OS_RETURN_E err;
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Send IPI\n");
     #endif
+
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return OS_ERR_NOT_SUPPORTED;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return OS_ERR_NOT_SUPPORTED;
+    }
     
 
     /* Check LACPI id */
@@ -242,7 +286,7 @@ OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id)
 
     /* Send IPI */
     lapic_write(LAPIC_ICRHI, lapic_id << ICR_DESTINATION_SHIFT);
-    lapic_write(LAPIC_ICRLO, ICR_NMI | ICR_PHYSICAL |
+    lapic_write(LAPIC_ICRLO, (vector & 0xFF) | ICR_PHYSICAL |
                 ICR_ASSERT | ICR_EDGE | ICR_NO_SHORTHAND);
 
     /* Wait for pending sends */
@@ -276,8 +320,10 @@ OS_RETURN_E lapic_timer_init(void)
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer Initialization\n");
     #endif
-    
 
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -285,7 +331,7 @@ OS_RETURN_E lapic_timer_init(void)
     if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
     {
         return OS_ERR_NOT_SUPPORTED;
-    }
+    } 
 
     /* Init LAPIC TIMER */
     wait_int = 1;
@@ -361,7 +407,18 @@ OS_RETURN_E lapic_ap_timer_init(void)
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer AP Initialization\n");
     #endif
-    
+
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return OS_ERR_NOT_SUPPORTED;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return OS_ERR_NOT_SUPPORTED;
+    }    
 
     /* Init LAPIC TIMER */
     lapic_write(LAPIC_TDCR, LAPIC_DIVIDER_16);
@@ -387,6 +444,18 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer set frequency %d\n", frequency);
     #endif
+
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return OS_ERR_NOT_SUPPORTED;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return OS_ERR_NOT_SUPPORTED;
+    }
     
     /* Compute the new tick count */
     global_lapic_freq = init_lapic_timer_frequency / frequency;
@@ -403,6 +472,18 @@ OS_RETURN_E lapic_timer_enable(void)
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer enable\n");
     #endif
+
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return OS_ERR_NOT_SUPPORTED;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return OS_ERR_NOT_SUPPORTED;
+    }
     
     /* Enable interrupt */
     lapic_write(LAPIC_TIMER, LAPIC_TIMER_INTERRUPT_LINE |
@@ -416,9 +497,21 @@ OS_RETURN_E lapic_timer_disable(void)
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer disable\n");
     #endif
+
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return OS_ERR_NOT_SUPPORTED;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return OS_ERR_NOT_SUPPORTED;
+    }
     
     /* Disable interrupt */
-    lapic_write(LAPIC_TIMER, APIC_LVT_INT_MASKED);
+    lapic_write(LAPIC_TIMER, LAPIC_LVT_INT_MASKED);
 
     return OS_NO_ERR;
 }
@@ -430,6 +523,18 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
                                     ))
 {
     OS_RETURN_E err;
+
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return OS_ERR_NOT_SUPPORTED;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return OS_ERR_NOT_SUPPORTED;
+    }
 
     if(handler == NULL)
     {
@@ -466,6 +571,18 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
 
 OS_RETURN_E lapic_timer_remove_handler(void)
 {
+    #if LAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("LAPIC Initialization\n");
+    #endif
+    /* Check IO-APIC support */
+    #if ENABLE_IO_APIC == 0
+    return OS_ERR_NOT_SUPPORTED;
+    #endif
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    {
+        return OS_ERR_NOT_SUPPORTED;
+    }
+
     return lapic_timer_set_handler(lapic_dummy_handler);
 }
 
