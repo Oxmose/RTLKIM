@@ -22,6 +22,7 @@
 #include <IO/kernel_output.h>     /* kernel_output() */
 #include <BSP/pic.h>              /* pic_init(), pic_driver */
 #include <BSP/io_apic.h>          /* io-apic_init(), io_apic_driver */
+#include <BSP/lapic.h>            /* lapic_init() */
 #include <BSP/pit.h>              /* pit_init() */
 #include <BSP/rtc.h>              /* rtc_init() */
 #include <BSP/acpi.h>             /* acpi_init() */
@@ -89,8 +90,10 @@ void kernel_kickstart(void)
     #endif
 
     /* Init VESA */
+    #if ENABLE_VESA == 1 && \
+        (TEST_MODE_ENABLED == 0 || \
+         (TEST_MODE_ENABLED == 1 && VESA_TEXT_TEST == 1))
     err = vesa_init();
-    #if ENABLE_VESA == 1
     if(err == OS_NO_ERR)
     {
         kernel_success("VESA Initialized\n");
@@ -157,13 +160,28 @@ void kernel_kickstart(void)
     #if TEST_MODE_ENABLED
     io_apic_driver_test();
     #endif
+    /* Init LAPIC driver */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing LAPIC driver\n");
+    #endif
+    err = lapic_init();
+    INIT_MSG("LAPIC Initialized\n", 
+             "Error while initializing LAPIC: %d. HALTING\n", 
+             err);
+    #if TEST_MODE_ENABLED
+    lapic_driver_test();
+    #endif
     #endif
 
     /* Init kernel's interrupt manager */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing the kernel interrupt manager\n");
     #endif
+    #if ENABLE_IO_APIC !=  0
+    err = kernel_interrupt_init(&io_apic_driver);
+    #else 
     err = kernel_interrupt_init(&pic_driver);
+    #endif
     INIT_MSG("Kernel Interrupt Manager Initialized\n", 
              "Error while initializing Kernel Interrupt Manager: %d. HALTING\n", 
              err);
@@ -208,11 +226,30 @@ void kernel_kickstart(void)
     rtc_driver_test();
     #endif
 
+
+    /* Init LAPIC timer driver */
+    #if ENABLE_IO_APIC != 0 && ENABLE_LAPIC_TIMER != 0
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing LAPIC Timer driver\n");
+    #endif
+    err = lapic_timer_init();
+    INIT_MSG("LAPIC Timer Initialized\n", 
+             "Error while initializing LAPIC Timer: %d. HALTING\n", 
+             err);
+    #if TEST_MODE_ENABLED
+    lapic_timer_driver_test();
+    #endif
+    #endif
+
     /* Init time manager */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing time manager\n");
     #endif
+    #if ENABLE_IO_APIC != 0 && ENABLE_LAPIC_TIMER != 0
+    err = time_init(&lapic_timer_driver, &rtc_driver, &pit_driver);
+    #else 
     err = time_init(&pit_driver, &rtc_driver, NULL);
+    #endif
     INIT_MSG("Time Manager Initialized\n", 
              "Error while initializing Time Manager: %d. HALTING\n", 
              err);

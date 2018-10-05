@@ -15,6 +15,8 @@
  * Allows to remmap the IO-APIC IRQ, set the IRQs mask and manage EoI for the 
  * X86 IO-APIC.
  * 
+ * @warning This driver also use the LAPIC driver to function correctly.
+ * 
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -24,6 +26,7 @@
 #include <IO/kernel_output.h>     /* kernel_success */
 #include <Interrupt/interrupts.h> /* INT_IRQ_OFFSET */
 #include <BSP/acpi.h>             /* acpi_get_io_apic_address */
+#include <BSP/lapic.h>            /* lapic_set_int_eoi */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -95,9 +98,7 @@ OS_RETURN_E io_apic_init(void)
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
     #endif 
-
-    /* TODO Add lapic available check */
-    if(acpi_get_io_apic_available() == 0)
+    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
     {
         return OS_ERR_NOT_SUPPORTED;
     }
@@ -157,18 +158,12 @@ OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number,
 
 OS_RETURN_E io_apic_set_irq_eoi(const uint32_t irq_number)
 {
-    if(irq_number >= max_redirect_count || irq_number > IO_APIC_MAX_IRQ_LINE)
-    {
-        return OS_ERR_NO_SUCH_IRQ_LINE;
-    }
-
     #if IOAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("IOAPIC set IRQ EOI %d\n",
                         irq_number);
     #endif
-    /* TODO: :apic should handle that */
 
-    return OS_NO_ERR;
+    return lapic_set_int_eoi(irq_number);
 }
 
 INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t irq_number)
@@ -177,6 +172,8 @@ INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t irq_number)
     kernel_serial_debug("IOAPIC spurious IRQ %d\n",
                         irq_number);
     #endif
-    /* TODO: :apic should handle that */
+    
+    lapic_set_int_eoi(irq_number);
+
     return INTERRUPT_TYPE_REGULAR;
 }

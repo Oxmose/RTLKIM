@@ -107,7 +107,7 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
 
     /* Check for spurious interrupt */
     irq_id = int_id - INT_IRQ_OFFSET;
-    if(irq_id >= 0)
+    if(irq_id >= 0 && irq_id <= PIC_MAX_IRQ_LINE)
     {
         if(interrupt_driver.driver_handle_spurious((uint32_t) irq_id) == 
            INTERRUPT_TYPE_SPURIOUS)

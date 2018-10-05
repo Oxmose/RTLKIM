@@ -245,7 +245,7 @@ void time_rtc_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
     #endif
 
     /* EOI */
-    kernel_interrupt_set_irq_eoi(RTC_IRQ_LINE);
+    kernel_interrupt_set_irq_eoi(sys_rtc_timer.get_irq());
 }
 
 void time_aux_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
@@ -260,7 +260,7 @@ void time_aux_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
     #endif
     
     /* EOI */
-    kernel_interrupt_set_irq_eoi(sys_main_timer.get_irq());
+    kernel_interrupt_set_irq_eoi(sys_aux_timer.get_irq());
 }
 
 uint64_t time_get_current_uptime(void)

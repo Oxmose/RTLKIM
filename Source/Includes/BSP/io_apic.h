@@ -15,6 +15,8 @@
  * Allows to remmap the IO-APIC IRQ, set the IRQs mask and manage EoI for the 
  * X86 IO-APIC.
  * 
+ * @warning This driver also use the LAPIC driver to function correctly.
+ * 
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 

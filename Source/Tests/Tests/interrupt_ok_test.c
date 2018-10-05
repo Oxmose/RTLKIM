@@ -370,7 +370,6 @@ void test_sw_interupts(void)
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 20));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 21));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 22));
-    __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 23));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 24));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 25));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 26));
@@ -378,7 +377,6 @@ void test_sw_interupts(void)
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 28));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 29));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 30));
-    __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 31));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 32));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 33));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 34));
@@ -647,7 +645,6 @@ void test_sw_interupts(void)
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 20));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 21));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 22));
-    __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 23));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 24));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 25));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 26));
@@ -655,7 +652,6 @@ void test_sw_interupts(void)
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 28));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 29));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 30));
-    __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 31));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 32));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 33));
     __asm__ __volatile__("int %0" :: "i" (MIN_INTERRUPT_LINE + 34));

@@ -24,6 +24,7 @@
                                    * kernel_interrupt_set_irq_eoi */
 #include <Lib/stdint.h>           /* Generioc int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E */
+#include <Time/time_management.h> /* kernel_timer_t */
 
 /* RTLK configuration file */
 #include <config.h>
