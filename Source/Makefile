@@ -50,8 +50,8 @@ QEMU_I386 = qemu-system-i386
 DEBUG_FLAGS = -O0 -g
 EXTRA_FLAGS = -O2
 
-CFLAGS = -m32 -gstabs -std=c11 -nostdinc -fno-builtin -nostdlib \
-        -fno-stack-protector -nostartfiles -nodefaultlibs -Wall -Wextra
+CFLAGS = -m32 -std=c11 -nostdinc -fno-builtin -nostdlib -fno-stack-protector \
+         -nostartfiles -nodefaultlibs -Wall -Wextra
 
 ifeq ($(DEBUG), TRUE)
 CFLAGS += $(DEBUG_FLAGS) -c
