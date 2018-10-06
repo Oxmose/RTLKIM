@@ -121,7 +121,7 @@
  * DEBUG CONFIGURATION
  ******************************************************************************/
 /** @brief Enables kernel debuging features. */
-#define KERNEL_DEBUG 1
+#define KERNEL_DEBUG 0
 
 /** @brief Enables PIC driver debuging feature. */
 #define PIC_KERNEL_DEBUG 0
@@ -161,6 +161,9 @@
 
 /** @brief Enables kernel ata pio debuging feature. */
 #define ATA_PIO_KERNEL_DEBUG 0
+
+/** @brief Enabled kernel queue debuging feature. */
+#define QUEUE_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0
