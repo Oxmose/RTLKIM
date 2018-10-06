@@ -52,7 +52,6 @@
                                                      "MASTER" : "SLAVE"),      \
                                                      device.port,              \
                                                      err);                     \
-        return err;                                                            \
     }                                                                          \
 }
 

@@ -42,16 +42,19 @@
 #include <Tests/test_bank.h>
 #endif
 
-#define INIT_MSG(msg_success, msg_error, error) {     \
-    if(error != OS_NO_ERR)                            \
-    {                                                 \
-        kernel_error(msg_error, error);               \
-        kernel_panic(error);                          \
-    }                                                 \
-    else if(strlen(msg_success) != 0)                 \
-    {                                                 \
-        kernel_success(msg_success);                  \
-    }                                                 \
+#define INIT_MSG(msg_success, msg_error, error, panic) {     \
+    if(error != OS_NO_ERR)                                   \
+    {                                                        \
+        kernel_error(msg_error, error);                      \
+        if(panic == 1)                                       \
+        {                                                    \
+            kernel_panic(error);                             \
+        }                                                    \
+    }                                                        \
+    else if(strlen(msg_success) != 0)                        \
+    {                                                        \
+        kernel_success(msg_success);                         \
+    }                                                        \
 }
 
 /*******************************************************************************
@@ -122,14 +125,14 @@ void kernel_kickstart(void)
     kernel_serial_debug("Detecting CPU\n");
     #endif
     err = cpu_detect(1);
-    INIT_MSG("", "Error while detecting CPU: %d. HALTING\n", err);
+    INIT_MSG("", "Error while detecting CPU: %d. HALTING\n",err, 1);
 
     /* Detect memory */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Detecting memory\n");
     #endif
     err = memory_map_init();
-    INIT_MSG("", "Error while detecting memory: %d. HALTING\n", err);
+    INIT_MSG("", "Error while detecting memory: %d. HALTING\n",err, 1);
 
     /* Initialize ACPI */
     #if KERNEL_DEBUG == 1
@@ -138,7 +141,7 @@ void kernel_kickstart(void)
     err = acpi_init();
     INIT_MSG("ACPI Initialized\n", 
             "Error while initializing ACPI: %d. HALTING\n", 
-             err);
+            err, 1);
 
     /* Init PIC */
     #if KERNEL_DEBUG == 1
@@ -146,7 +149,7 @@ void kernel_kickstart(void)
     #endif
     err = pic_init();
     INIT_MSG("PIC Initialized\n", 
-             "Error while initializing PIC: %d. HALTING\n", err);
+             "Error while initializing PIC: %d. HALTING\n",err, 1);
     #if TEST_MODE_ENABLED
     pic_driver_test();
     #endif
@@ -158,7 +161,7 @@ void kernel_kickstart(void)
     #endif
     err = io_apic_init();
     INIT_MSG("IO-APIC Initialized\n", 
-             "Error while initializing IO-APIC: %d. HALTING\n", err);
+             "Error while initializing IO-APIC: %d. HALTING\n",err, 1);
     #if TEST_MODE_ENABLED
     io_apic_driver_test();
     #endif
@@ -169,7 +172,7 @@ void kernel_kickstart(void)
     err = lapic_init();
     INIT_MSG("LAPIC Initialized\n", 
              "Error while initializing LAPIC: %d. HALTING\n", 
-             err);
+            err, 1);
     #if TEST_MODE_ENABLED
     lapic_driver_test();
     #endif
@@ -186,7 +189,7 @@ void kernel_kickstart(void)
     #endif
     INIT_MSG("Kernel Interrupt Manager Initialized\n", 
              "Error while initializing Kernel Interrupt Manager: %d. HALTING\n", 
-             err);
+            err, 1);
     #if TEST_MODE_ENABLED
     interrupt_ok_test();
     panic_test();
@@ -199,7 +202,7 @@ void kernel_kickstart(void)
     err = kernel_exception_init();
     INIT_MSG("Kernel Exception Manager Initialized\n", 
              "Error while initializing Kernel Exception Manager: %d. HALTING\n", 
-             err);
+            err, 1);
     #if TEST_MODE_ENABLED
     exception_ok_test();
     #endif
@@ -211,7 +214,7 @@ void kernel_kickstart(void)
     err = pit_init();
     INIT_MSG("PIT Initialized\n", 
              "Error while initializing PIT: %d. HALTING\n", 
-             err);
+            err, 1);
     #if TEST_MODE_ENABLED
     pit_driver_test();
     #endif
@@ -223,7 +226,7 @@ void kernel_kickstart(void)
     err = rtc_init();
     INIT_MSG("RTC Initialized\n", 
              "Error while initializing RTC: %d. HALTING\n", 
-             err);
+            err, 1);
     #if TEST_MODE_ENABLED
     rtc_driver_test();
     #endif
@@ -236,7 +239,7 @@ void kernel_kickstart(void)
     err = lapic_timer_init();
     INIT_MSG("LAPIC Timer Initialized\n", 
              "Error while initializing LAPIC Timer: %d. HALTING\n", 
-             err);
+            err, 1);
     #if TEST_MODE_ENABLED
     lapic_timer_driver_test();
     #endif
@@ -253,7 +256,7 @@ void kernel_kickstart(void)
     #endif
     INIT_MSG("Time Manager Initialized\n", 
              "Error while initializing Time Manager: %d. HALTING\n", 
-             err);
+            err, 1);
     #if TEST_MODE_ENABLED
     time_ok_test();
     #endif
@@ -270,19 +273,19 @@ void kernel_kickstart(void)
     err = keyboard_init();
     INIT_MSG("Keyboard Initialized\n", 
              "Error while initializing keyboard: %d. HALTING\n", 
-             err);
+            err, 1);
     #if TEST_MODE_ENABLED
     rtc_driver_test();
     #endif
 
-    /* Init keyboard driver */
+    /* Init ATA PIO driver */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing ATA PIO driver\n");
     #endif
     err = ata_pio_init();
     INIT_MSG("ATA PIO Initialized\n", 
-             "Error while initializing ATA PIO: %d. HALTING\n", 
-             err);
+             "Error while initializing ATA PIO: %d.\n", 
+             err, 0);
     #if TEST_MODE_ENABLED
     ata_pio_driver_test();
     #endif
