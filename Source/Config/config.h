@@ -129,10 +129,10 @@
 /** @brief Enables kernel acpi debuging feature. */
 #define ACPI_KERNEL_DEBUG 0
 
-/** @biref Enables kernel io apic debuging feature. */
+/** @brief Enables kernel io apic debuging feature. */
 #define IOAPIC_KERNEL_DEBUG 0
 
-/** @biref Enables kernel lapic debuging feature. */
+/** @brief Enables kernel lapic debuging feature. */
 #define LAPIC_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */

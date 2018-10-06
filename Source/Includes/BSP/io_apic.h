@@ -38,7 +38,7 @@
 
 /** @brief IO-APIC register selection. */
 #define IOREGSEL                        0x00
-/** @biref IO-APIC Data write register. */
+/** @brief IO-APIC Data write register. */
 #define IOWIN                           0x10
 
 /** @brief IO-APIC ID register. */

@@ -139,7 +139,7 @@
 #define LAPIC_DIVIDER_16                0x3
 /** @brief LAPIC Timer initial frequency. */
 #define LAPIC_INIT_FREQ                 100
-/** @biref LAPIC Timer vector interrupt masked. */
+/** @brief LAPIC Timer vector interrupt masked. */
 #define LAPIC_LVT_INT_MASKED             0x10000
 
 /** @brief LAPIC spurious interrupt vector. */

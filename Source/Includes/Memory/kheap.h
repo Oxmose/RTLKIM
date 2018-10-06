@@ -102,8 +102,8 @@ void setup_kheap(void);
 /**
  * @brief Allocate memory from the kernel heap.
  * 
- * @detail Allocate a chunk of memory form the kernel heap and returns the start
- * address of the chunk.
+ * @details Allocate a chunk of memory form the kernel heap and returns the 
+ * start address of the chunk.
  *
  * ­@param[in] size The number of byte to allocate.
  * 

@@ -303,7 +303,7 @@ OS_RETURN_E vesa_draw_pixel(const uint16_t x, const uint16_t y,
 /**
  * @brief Draws a rectngle on the screen.
  * 
- * @detils Draws a rectangle on the screen at the given coordinates. The top 
+ * @details Draws a rectangle on the screen at the given coordinates. The top 
  * left hand corner of the screen has coordinates x = 0 and y = 0. The color of
  * the rectangle should be expressed in the bpp format of the current set mode.
  *
@@ -336,6 +336,7 @@ OS_RETURN_E vesa_draw_rectangle(const uint16_t x, const uint16_t y,
  * left hand corner of the screen has coordinates x = 0 and y = 0. The 
  * coordinates reffer to the top left hand corner of the character.
  *
+ * @param[in] character The character to write.
  * @param[in] x The x coordinate of the character.
  * @param[in] y The y coordinate of the character.
  * @param[in] fgcolor The foreground color of the character.

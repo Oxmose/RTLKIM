@@ -15,7 +15,7 @@
 #ifndef __TEST_BANK_H_
 #define __TEST_BANK_H_
 
-/* Set here the tests that should run */
+/* Set here the test that should run (only one at a time) */
 #define LOADER_OK_TEST 0
 #define IDT_OK_TEST 0
 #define GDT_OK_TEST 0
