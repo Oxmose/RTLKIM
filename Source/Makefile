@@ -51,12 +51,12 @@ DEBUG_FLAGS = -O0 -g
 EXTRA_FLAGS = -O2
 
 CFLAGS = -m32 -std=c11 -nostdinc -fno-builtin -nostdlib -fno-stack-protector \
-         -nostartfiles -nodefaultlibs -Wall -Wextra
+         -nostartfiles -nodefaultlibs -Wall -Wextra -c -MD
 
 ifeq ($(DEBUG), TRUE)
-CFLAGS += $(DEBUG_FLAGS) -c
+CFLAGS += $(DEBUG_FLAGS)
 else 
-CFLAGS += $(EXTRA_FLAGS) -c
+CFLAGS += $(EXTRA_FLAGS)
 endif
 
 ASFLAGS = -g -f elf -w+gnu-elf-extensions
@@ -67,57 +67,62 @@ QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 64M \
 
 ######################### Compile options
 .PHONY: all
-all: clean init kernel.bin
+all: init kernel.bin
 
 init:
 	@mkdir -p $(OBJ_DIRS)
 	@mkdir -p $(BIN_DIR)
 
-	@echo "C Sources:"
-	@echo $(C_SRCS)
-	@echo 
-	@echo "ASM Sources:"
-	@echo $(A_SRCS)
-	@echo 
-
 # kernel generation
 kernel.bin: $(LINKER_FILE) compile_asm compile_cc
-	$(LD) $(LDFLAGS) $(C_OBJS) $(A_OBJS) -o $(BIN_DIR)/$(KERNEL)
-	@echo Linked object files
+	@echo  "\e[32mCreating Binary file \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
+	@$(LD) $(LDFLAGS) $(C_OBJS) $(A_OBJS) -o $(BIN_DIR)/$(KERNEL)
+	@echo "\e[1m\e[94m============ Link finished ============\e[22m\e[39m"
 	@echo
 
 compile_asm: $(A_OBJS)
-	@echo Compiled assembly sources
+	@echo "\e[1m\e[94m============ Compiled ASM sources ============\e[22m\e[39m"
 	@echo
 
 compile_cc: $(C_OBJS)
-	@echo Compiled c sources
+	@echo "\e[1m\e[94m============ Compiled C sources ============\e[22m\e[39m"
 	@echo
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 ifeq ($(TESTS), TRUE)
-	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)
+	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
+	@$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)
 else 
-	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
+	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
+	@$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
 endif
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
-	$(AS) $(ASFLAGS) $< -o $@
+	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
+	@$(AS) $(ASFLAGS) $< -o $@
 
 clean:
 	@$(RM) -rf $(BIN_DIR) $(BUILD_DIR) $(TESTS_DIR)/Tests/*.o
-	@echo Cleaned build files and binaries
+	@echo "\e[1m\e[94m============ Cleaning Object files and Binaries ============\e[22m\e[39m"
 	@echo
+
+
+# Check header files modifications
+-include $(C_OBJS:.o=.d)
+-include $(A_OBJS:.o=.d)
 
 ######################### Qemu options
 run:
-	$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -serial stdio
+	@echo "\e[1m\e[94m============ Running on Qemu ============\e[22m\e[39m"
+	@$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -serial stdio
 
 qemu-test-mode:
-	$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -serial mon:stdio -nographic
+	@echo "\e[1m\e[94m============ Running on Qemu TEST MODE ============\e[22m\e[39m"
+	@$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -serial mon:stdio -nographic
 
 debug:
-	$(QEMU_I386) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -S
+	@echo "\e[1m\e[94m============ Running on Qemu DEBUG MODE ============\e[22m\e[39m"
+	@$(QEMU_I386) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -S
 
 ######################### Tests
 test:
@@ -126,6 +131,7 @@ test:
 
 ######################### Image file options
 bootable: all
+	@echo "\e[1m\e[94m============ Creating Bootable ISO ============\e[22m\e[39m"
 	cp $(BIN_DIR)/$(KERNEL) ../iso/boot/
 	rm -f ../iso/bootable.iso
 	grub-mkrescue -o ../iso/bootable.iso ../iso

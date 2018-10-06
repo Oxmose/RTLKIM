@@ -2,14 +2,19 @@
 
 error=0
 success=0
-
+total=0
+i=1
+for entry in "./Tests"/*.c
+do
+    total=$((total + 1))
+done
 for entry in "./Tests"/*.c
 do
     filename=$(basename -- "$entry")
     filename="${filename%.*}"
     filename_up=${filename^^}
 
-    echo -e "\e[94m################### $filename_up test\e[39m"
+    echo -e "\e[94m################### Test $i/$total : $filename_up\e[39m"
     # Select the test
     sed -i "s/$filename_up 0/$filename_up 1/g" Tests/test_bank.h
     sed -i 's/TEST_MODE_ENABLED 0/TEST_MODE_ENABLED 1/g' ../Config/config.h
@@ -42,6 +47,8 @@ do
     #Restore non testmode
     sed -i "s/$filename_up 1/$filename_up 0/g" Tests/test_bank.h
     sed -i 's/TEST_MODE_ENABLED 1/TEST_MODE_ENABLED 0/g' ../Config/config.h
+
+    i=$((i + 1))
 done
 
 echo ""

@@ -260,6 +260,7 @@ void kernel_kickstart(void)
 
     #if TEST_MODE_ENABLED
     bios_call_test();
+    kernel_queue_test();
     #endif
 
     /* Init keyboard driver */
