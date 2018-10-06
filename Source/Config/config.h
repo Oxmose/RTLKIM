@@ -85,13 +85,24 @@
 /** @brief Defines the current year (usefull for the RTC). */
 #define CURRENT_YEAR 2018
 
-/** @brief  Defines the kernel's main timer frequency. This will set the maximal 
+/** @brief Defines the kernel's main timer frequency. This will set the maximal 
  * scheduling frequency. */
 #define KERNEL_MAIN_TIMER_FREQ 20
-/** @brief  Defines the kernel's auxiliary timer frequency. */
+/** @brief Defines the kernel's auxiliary timer frequency. */
 #define KERNEL_AUX_TIMER_FREQ  20
-/** @brief  Defines the kernel's rtc timer frequency. */
+/** @brief Defines the kernel's rtc timer frequency. */
 #define KERNEL_RTC_TIMER_FREQ 2
+
+/*******************************************************************************
+ * Threads settings 
+ ******************************************************************************/
+
+/** @brief Defines the maximal length of a thread's name. */
+#define THREAD_MAX_NAME_LENGTH   32
+/** @brief Defines the thread's stack size in bytes. */
+#define THREAD_STACK_SIZE        16384 
+/** @brief Defines the thread's kernel stack size in bytes. */
+#define THREAD_KERNEL_STACK_SIZE 2048
 
 /*******************************************************************************
  * Peripherals settings 

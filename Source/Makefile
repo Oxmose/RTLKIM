@@ -12,7 +12,7 @@
 
 ######################### Modules selection
 
-MODULES = Boot Cpu IO Lib Drivers Interrupt BSP Time User Memory
+MODULES = Boot Cpu IO Lib Drivers Interrupt BSP Time User Memory Core
 ifeq ($(TESTS), TRUE)
 MODULES += ../Tests/Tests
 endif
