@@ -141,7 +141,7 @@ OS_RETURN_E keyboard_init(void);
  * 
  * @return The actual number of characters read.
  */
-uint32_t read_keyboard(char* buffer, const uint32_t size);
+uint32_t keyboard_read(char* buffer, const uint32_t size);
 
 /**
  * @brief Fills the buffer with at maximum size characters.
@@ -154,7 +154,7 @@ uint32_t read_keyboard(char* buffer, const uint32_t size);
  * 
  * @return The actual number of characters read.
  */
-uint32_t secure_read_keyboard(char* buffer, const uint32_t size);
+uint32_t keyboard_secure_read(char* buffer, const uint32_t size);
 
 /**
  * @brief Reads one character from the keyboard.
@@ -164,7 +164,7 @@ uint32_t secure_read_keyboard(char* buffer, const uint32_t size);
  *
  * @param[out] character The buffer to write the character to.
  */
-void getch(char* character);
+void keyboard_getch(char* character);
 
 /**
  * @brief Enables keyboard secure input.

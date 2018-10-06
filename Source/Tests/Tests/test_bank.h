@@ -34,6 +34,7 @@
 #define IO_APIC_DRIVER_TEST 0
 #define LAPIC_TIMER_DRIVER_TEST 0
 #define LAPIC_DRIVER_TEST 0
+#define ATA_PIO_DRIVER_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -54,5 +55,6 @@ void vesa_text_test(void);
 void io_apic_driver_test(void);
 void lapic_timer_driver_test(void);
 void lapic_driver_test(void);
+void ata_pio_driver_test(void);
 
 #endif /* __TEST_BANK_H_ */

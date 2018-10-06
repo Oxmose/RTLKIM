@@ -32,6 +32,7 @@
 #include <Memory/meminfo.h>       /* memory_map_init() */
 #include <Drivers/vesa.h>         /* init_vesa(), vesa_text_vga_to_vesa() */
 #include <Drivers/keyboard.h>     /* keyboard_init() */
+#include <Drivers/ata_pio.h>      /* ata_pio_init() */
 #include <Lib/string.h>           /* strlen() */
 
 /* RTLK configuration file */
@@ -271,6 +272,18 @@ void kernel_kickstart(void)
              err);
     #if TEST_MODE_ENABLED
     rtc_driver_test();
+    #endif
+
+    /* Init keyboard driver */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing ATA PIO driver\n");
+    #endif
+    err = ata_pio_init();
+    INIT_MSG("ATA PIO Initialized\n", 
+             "Error while initializing ATA PIO: %d. HALTING\n", 
+             err);
+    #if TEST_MODE_ENABLED
+    ata_pio_driver_test();
     #endif
 
     kernel_interrupt_restore(1);

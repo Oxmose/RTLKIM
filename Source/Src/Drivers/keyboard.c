@@ -228,14 +228,18 @@ static const key_mapper_t qwerty_map =
  * FUNCTIONS
  ******************************************************************************/
 
-/* Parse the keycode given as parameter and execute the corresponding action.
+/**
+ * @brief Parses a keyboard keycode.
+ * 
+ * @details Parses the keycode given as parameter and execute the corresponding 
+ * action.
  *
- * @param keycode The keycode to parse.
+ * @param[in] keycode The keycode to parse.
  */
 static void manage_keycode(const int8_t keycode)
 {
     char    character;
-    OS_RETURN_E err;
+    //OS_RETURN_E err;
 
 
     /* Manage push of release */
@@ -364,11 +368,15 @@ static void manage_keycode(const int8_t keycode)
     }
 }
 
-/* Keyboard IRQ handler, read the key value and manage thread blocked on IO.
+/**
+ * @brief Keyboard IRQ handler.
+ * 
+ * @details Keyboard IRQ handler, reads the key value and manage thread blocked 
+ * on IO.
  *
- * @param cpu_state The cpu registers before the interrupt.
- * @param int_id The interrupt line that called the handler.
- * @param stack_state The stack state before the interrupt.
+ * @param[in] cpu_state The cpu registers before the interrupt.
+ * @param[in] int_id The interrupt line that called the handler.
+ * @param[in] stack_state The stack state before the interrupt.
  */
 static void keyboard_interrupt_handler(cpu_state_t* cpu_state, uint32_t int_id,
                                        stack_state_t* stack_state)
@@ -420,9 +428,9 @@ OS_RETURN_E keyboard_init(void)
     return err;
 }
 
-uint32_t read_keyboard(char* buffer, const uint32_t size)
+uint32_t keyboard_read(char* buffer, const uint32_t size)
 {
-    OS_RETURN_E err;
+    //OS_RETURN_E err;
     uint32_t    read = 0;
 
     if(buffer == NULL || size == 0)
@@ -483,10 +491,10 @@ uint32_t read_keyboard(char* buffer, const uint32_t size)
     return read;
 }
 
-uint32_t secure_read_keyboard(char* buffer, const uint32_t size)
+uint32_t keyboard_secure_read(char* buffer, const uint32_t size)
 {
     /* Read string */
-    uint32_t new_size = read_keyboard(buffer, size);
+    uint32_t new_size = keyboard_read(buffer, size);
 
     /* Secure output */
     if(new_size < size - 1)
@@ -501,9 +509,9 @@ uint32_t secure_read_keyboard(char* buffer, const uint32_t size)
     return new_size;
 }
 
-void getch(char* character)
+void keyboard_getch(char* character)
 {
-    OS_RETURN_E err;
+    //OS_RETURN_E err;
 
     if(character == NULL)
     {

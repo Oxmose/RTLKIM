@@ -69,11 +69,11 @@
 /** @brief When VESA drivers are enabled, defines the maximal supported height
  * resolution.
  */
-#define MAX_SUPPORTED_HEIGHT 1080
+#define MAX_SUPPORTED_HEIGHT 800
 /** @brief When VESA drivers are enabled, defines the maximal supported width
  * resolution.
  */
-#define MAX_SUPPORTED_WIDTH  1100
+#define MAX_SUPPORTED_WIDTH  1000
 /** @brief When VESA drivers are enabled, defines the maximal supported color
  * depth.
  */
@@ -92,6 +92,19 @@
 #define KERNEL_AUX_TIMER_FREQ  20
 /** @brief  Defines the kernel's rtc timer frequency. */
 #define KERNEL_RTC_TIMER_FREQ 2
+
+/*******************************************************************************
+ * Peripherals settings 
+ ******************************************************************************/
+
+/** @brief Enables ATA PIO detection on the primary ATA port. */
+#define ATA_PIO_DETECT_PRIMARY_PORT   1
+/** @brief Enables ATA PIO detection on the secondary ATA port. */
+#define ATA_PIO_DETECT_SECONDARY_PORT 0
+/** @brief Enables ATA PIO detection on the third ATA port. */
+#define ATA_PIO_DETECT_THIRD_PORT     0
+/** @brief Enables ATA PIO detection on the fourth ATA port. */
+#define ATA_PIO_DETECT_FOURTH_PORT    0
 
 /*******************************************************************************
  * DEBUG CONFIGURATION
@@ -134,6 +147,9 @@
 
 /** @brief Enables kernel lapic debuging feature. */
 #define LAPIC_KERNEL_DEBUG 0
+
+/** @brief Enables kernel ata pio debuging feature. */
+#define ATA_PIO_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0
