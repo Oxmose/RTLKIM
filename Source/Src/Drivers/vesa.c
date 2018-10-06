@@ -119,7 +119,7 @@ static void vesa_process_char(const char character)
     uint32_t i;
     uint32_t j;
 
-    #ifdef KERNEL_DEBUG
+    #if (KERNEL_DEBUG == 1) | (TEST_MODE_ENABLED == 1)
     /* Write on serial */
     serial_write(COM1, character);
     #endif

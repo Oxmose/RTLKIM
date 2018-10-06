@@ -31,6 +31,7 @@
 #include <Interrupt/panic.h>      /* kernel_panic() */
 #include <Memory/meminfo.h>       /* memory_map_init() */
 #include <Drivers/vesa.h>         /* init_vesa(), vesa_text_vga_to_vesa() */
+#include <Drivers/keyboard.h>     /* keyboard_init() */
 #include <Lib/string.h>           /* strlen() */
 
 /* RTLK configuration file */
@@ -226,7 +227,6 @@ void kernel_kickstart(void)
     rtc_driver_test();
     #endif
 
-
     /* Init LAPIC timer driver */
     #if ENABLE_IO_APIC != 0 && ENABLE_LAPIC_TIMER != 0
     #if KERNEL_DEBUG == 1
@@ -259,6 +259,18 @@ void kernel_kickstart(void)
 
     #if TEST_MODE_ENABLED
     bios_call_test();
+    #endif
+
+    /* Init keyboard driver */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing keyboard driver\n");
+    #endif
+    err = keyboard_init();
+    INIT_MSG("Keyboard Initialized\n", 
+             "Error while initializing keyboard: %d. HALTING\n", 
+             err);
+    #if TEST_MODE_ENABLED
+    rtc_driver_test();
     #endif
 
     kernel_interrupt_restore(1);

@@ -188,7 +188,6 @@ OS_RETURN_E lapic_init(void);
  */
 OS_RETURN_E lapic_timer_init(void);
 
-
 /**
  * @brief Initializes the CPU Local APIC Timer for application processor.
  * 
@@ -379,6 +378,5 @@ OS_RETURN_E lapic_timer_remove_handler(void);
  * @return The LAPIC Timer IRQ number.
  */
 uint32_t lapic_timer_get_irq(void);
-
 
 #endif /* __LAPIC_H_ */
