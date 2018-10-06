@@ -102,7 +102,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
 	@$(AS) $(ASFLAGS) $< -o $@
 
 clean:
-	@$(RM) -rf $(BIN_DIR) $(BUILD_DIR) $(TESTS_DIR)/Tests/*.o
+	@$(RM) -rf $(BIN_DIR) $(BUILD_DIR) 
+	@$(RM) -f $(TESTS_DIR)/Tests/*.o $(TESTS_DIR)/Tests/*.d
+	@$(RM) -f ../Image/boot/$(KERNEL)
+
 	@echo "\e[1m\e[94m============ Cleaning Object files and Binaries ============\e[22m\e[39m"
 	@echo
 
@@ -132,7 +135,8 @@ test:
 ######################### Image file options
 bootable: all
 	@echo "\e[1m\e[94m============ Creating Bootable ISO ============\e[22m\e[39m"
-	cp $(BIN_DIR)/$(KERNEL) ../iso/boot/
-	rm -f ../iso/bootable.iso
-	grub-mkrescue -o ../iso/bootable.iso ../iso
+	cp $(BIN_DIR)/$(KERNEL) ../Image/boot/
+	@$(RM) -f ../Image/bootable.iso	
+	grub-mkrescue -o ../Image/bootable.iso ../Image
+	@$(RM) -f ../Image/boot/$(KERNEL)
 	VBoxManage startvm "RTLK"
