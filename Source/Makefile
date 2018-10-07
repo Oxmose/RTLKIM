@@ -51,7 +51,8 @@ DEBUG_FLAGS = -O0 -g
 EXTRA_FLAGS = -O2
 
 CFLAGS = -m32 -std=c11 -nostdinc -fno-builtin -nostdlib -fno-stack-protector \
-         -nostartfiles -nodefaultlibs -Wall -Wextra -c -MD
+         -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c -fno-pie \
+		 -no-pie -MD
 
 ifeq ($(DEBUG), TRUE)
 CFLAGS += $(DEBUG_FLAGS)
@@ -60,7 +61,7 @@ CFLAGS += $(EXTRA_FLAGS)
 endif
 
 ASFLAGS = -g -f elf -w+gnu-elf-extensions
-LDFLAGS = -e loader -T $(LINKER_FILE) -melf_i386
+LDFLAGS = -e loader -T $(LINKER_FILE) -melf_i386 -no-pie
 QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 64M \
            -gdb tcp::1234 -smp 4 \
 		   -drive format=raw,file=Peripherals/hdd_primary_master.img -kernel 
@@ -89,6 +90,9 @@ compile_cc: $(C_OBJS)
 	@echo
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+ifeq ($(DEBUG), TRUE)
+	@echo -n "DEBUG "
+endif
 ifeq ($(TESTS), TRUE)
 	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
 	@$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)

@@ -87,11 +87,11 @@
 
 /** @brief Defines the kernel's main timer frequency. This will set the maximal 
  * scheduling frequency. */
-#define KERNEL_MAIN_TIMER_FREQ 20
+#define KERNEL_MAIN_TIMER_FREQ 100
 /** @brief Defines the kernel's auxiliary timer frequency. */
 #define KERNEL_AUX_TIMER_FREQ  20
 /** @brief Defines the kernel's rtc timer frequency. */
-#define KERNEL_RTC_TIMER_FREQ 2
+#define KERNEL_RTC_TIMER_FREQ 16
 
 /*******************************************************************************
  * Threads settings 
@@ -99,10 +99,10 @@
 
 /** @brief Defines the maximal length of a thread's name. */
 #define THREAD_MAX_NAME_LENGTH   32
-/** @brief Defines the thread's stack size in bytes. */
-#define THREAD_STACK_SIZE        16384 
+/** @brief Defines the thread's maximal stack size in bytes. */
+#define THREAD_MAX_STACK_SIZE    0x00400000  /* 4 MB */
 /** @brief Defines the thread's kernel stack size in bytes. */
-#define THREAD_KERNEL_STACK_SIZE 2048
+#define THREAD_KERNEL_STACK_SIZE 0x400 /* 1KB */
 
 /*******************************************************************************
  * Peripherals settings 
@@ -121,7 +121,7 @@
  * DEBUG CONFIGURATION
  ******************************************************************************/
 /** @brief Enables kernel debuging features. */
-#define KERNEL_DEBUG 0
+#define KERNEL_DEBUG 1
 
 /** @brief Enables PIC driver debuging feature. */
 #define PIC_KERNEL_DEBUG 0
@@ -164,6 +164,9 @@
 
 /** @brief Enabled kernel queue debuging feature. */
 #define QUEUE_KERNEL_DEBUG 0
+
+/** @brief Enabled kernel scheduler debuging feature. */
+#define SCHED_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0

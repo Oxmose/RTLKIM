@@ -1,0 +1,67 @@
+/***************************************************************************//**
+ * @file kheap.c
+ * 
+ * @see kheap.h
+ *
+ * @author Alexy Torres Aurora Dugo
+ *
+ * @date 10/01/2018
+ *
+ * @version 1.0
+ *
+ * @brief Kernel's heap allocator.
+ * 
+ * @details Kernel's heap allocator. Allow to dynamically allocate and dealocate
+ * memory on the kernel's heap.
+ * 
+ * @warning This allocator is not suited to allocate memory for the process, you 
+ * should only use it for the kernel.
+ * 
+ * @copyright Alexy Torres Aurora Dugo
+ ******************************************************************************/
+
+#include <Lib/stdint.h>       /* Generic int types */
+#include <Lib/stdlib.h>       /* atoi */
+#include <Lib/string.h>       /* memset */
+#include <IO/kernel_output.h> /* kernel_success */
+
+/* RTLK configuration file */
+#include <config.h>
+
+/* Header file */
+#include <Memory/kheap.h>
+
+/*******************************************************************************
+ * GLOBAL VARIABLES
+ ******************************************************************************/
+
+/* Heap position in memory */
+/** @brief Start address of the kernel's heap. */
+extern uint8_t kernel_heap_start;
+/** @brief End address of the kernel's heap. */
+extern uint8_t kernel_heap_end;
+
+int8_t* free_state;
+
+void setup_kheap(void)
+{
+    void* mem = &kernel_heap_start;
+    int8_t *mem_start = (int8_t*)(((intptr_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
+
+    free_state = mem_start;
+
+}
+
+void* kmalloc(uint32_t size)
+{
+    int8_t* addr = free_state;
+    free_state += size;
+
+
+    return (void*)addr;
+}
+
+void kfree(void* ptr)
+{
+    (void)ptr;
+}

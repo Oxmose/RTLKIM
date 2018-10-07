@@ -240,9 +240,28 @@ uint64_t time_get_tick_count(void);
  * @details Performs a wait for ms milliseconds based on the kernel's main
  * timer.
  * 
- * @warning This function must only be called and run when the scheduler is 
- * disabled.
+ * @warning This function must only be called before the scheduler is 
+ * initialized. Otherwise the function will immediatly return.
  */
 void time_wait_no_sched(const uint32_t ms);
+
+/** 
+ * @brief Registers the function to call the system's scheduler.
+ * 
+ * @details Registers the function to call the system's scheduler. This function
+ * will be called at each tick of the main timer.
+ * 
+ * @param[in] scheduler_call The scheduling routine to call every tick.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OS_ERR_NULL_POINTER if the scheduler routine pointer is NULL.
+ */
+OS_RETURN_E time_register_scheduler(void(*scheduler_call)(
+                                             cpu_state_t*,
+                                             uint32_t,
+                                             stack_state_t*
+                                             )
+                                       );
 
 #endif /* __TIME_MANAGEMENT_H_ */

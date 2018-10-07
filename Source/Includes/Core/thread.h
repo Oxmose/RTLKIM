@@ -147,9 +147,6 @@ struct kernel_thread
     /** @brief Thread's current priority. */
     uint32_t priority;
 
-    /** @brief Thread's CPU affinity. */
-    uint32_t assigned_cpu;
-
     /** @brief Thread's current state. */
     THREAD_STATE_E           state;
     /** @brief Thread's wait type. This is inly relevant when the thread's state
@@ -179,14 +176,17 @@ struct kernel_thread
     /** @brief Thread's specific EIP registers. */
     uint32_t eip;
 
+    /** @brief TSS Interrupt stack pointer. */
+    uint32_t tss_esp;
+
     /** @brief Thread's kernel stack, used for interrupts. */
     uint8_t kernel_stack[THREAD_KERNEL_STACK_SIZE];
 
     /** @brief Thread's stack. */
-    uint8_t stack[THREAD_STACK_SIZE];
+    uint32_t* stack;
 
     /** @brief Wake up time limit for the sleeping thread. */
-    uint32_t wakeup_time;
+    uint64_t wakeup_time;
 
     /** @brief Pointer to the joining thread's node in the threads list. */
     kernel_queue_node_t* joining_thread;

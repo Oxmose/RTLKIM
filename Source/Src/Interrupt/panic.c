@@ -19,10 +19,11 @@
 
 #include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t, 
                                    * PANIC_INT_LINE */
+#include <IO/graphic.h>           /* color_scheme_t */
 #include <IO/kernel_output.h>     /* kernel_printf */
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Cpu/cpu.h>              /* hlt cpu_cli */
-#include <IO/graphic.h>           /* color_scheme_t */
+#include <Core/scheduler.h>       /* sched_get_tid */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -40,12 +41,6 @@ static uint32_t panic_code = 0;
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
-
-/* TODO REMODE THAT */
-int32_t get_pid(void)
-{
-    return 0;
-}
 
 void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
 {
@@ -215,7 +210,7 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     kernel_printf("| Core ID: 0x%08x                                           "
                     "              |\n", current_cpu_id);
     kernel_printf("| Thread:  %09u                                             "
-                    "             |\n", get_pid());
+                    "             |\n", sched_get_tid());
     kernel_printf("| Inst:    %02x %02x %02x %02x                              "
                     "                          |\n", instruction & 0xFF, 
                     (instruction >> 8) & 0xFF, 

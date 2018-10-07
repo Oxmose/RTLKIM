@@ -63,6 +63,9 @@ static kernel_timer_t sys_aux_timer = {NULL};
 /** @brief Active wait counter. */
 static volatile uint32_t active_wait;
 
+/** @brief Stores the routine to call the scheduler. */
+void(*schedule_routine)(cpu_state_t*, uint32_t, stack_state_t*) = NULL;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -210,16 +213,23 @@ void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
     /* Add a tick count */
     ++sys_tick_count;
 
-    if(active_wait > 0)
+    if(schedule_routine != NULL)
     {
-        uint32_t time_slice = 1000 / sys_main_timer.get_frequency();
-        if(active_wait >= time_slice)
+        schedule_routine(cpu_state, int_id, stack);
+    }
+    else 
+    {
+        if(active_wait > 0)
         {
-            active_wait -= time_slice;
-        }
-        else 
-        {
-            active_wait = 0;
+            uint32_t time_slice = 1000 / sys_main_timer.get_frequency();
+            if(active_wait >= time_slice)
+            {
+                active_wait -= time_slice;
+            }
+            else 
+            {
+                active_wait = 0;
+            }
         }
     }
 
@@ -265,12 +275,15 @@ void time_aux_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
 
 uint64_t time_get_current_uptime(void)
 {
+    uint64_t time_slice;
+
     if(sys_main_timer.get_frequency == NULL)
     {
         return 0;
     }
 
-    return (1000 / sys_main_timer.get_frequency()) * sys_tick_count;
+    time_slice = 1000 / sys_main_timer.get_frequency();
+    return time_slice * sys_tick_count;
 }
 
 uint64_t time_get_tick_count(void)
@@ -280,7 +293,27 @@ uint64_t time_get_tick_count(void)
 
 void time_wait_no_sched(const uint32_t ms)
 {
-    /* TODO: Check if the scheduler is enabled */
+    if(schedule_routine != NULL)
+    {
+        return;
+    }
     active_wait = ms;
     while(active_wait > 0);
+}
+
+OS_RETURN_E time_register_scheduler(void(*scheduler_call)(
+                                             cpu_state_t*,
+                                             uint32_t,
+                                             stack_state_t*
+                                             )
+                                       )
+{
+    if(scheduler_call == NULL)
+    {
+        return OS_ERR_NULL_POINTER;
+    }
+
+    schedule_routine = scheduler_call;
+
+    return OS_NO_ERR;
 }

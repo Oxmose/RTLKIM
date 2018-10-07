@@ -28,7 +28,7 @@ SECTIONS
     {
         *(.data)
     }
-
+    _edata = .;
     /* FROM HERE EVERYTHING IS ZEROED */
 
     /* Read-write data and stack */
@@ -46,7 +46,7 @@ SECTIONS
     kernel_heap_start = 0x00300000;
 
     /* End of kernel memory heap */
-    kernel_heap_end = 0x3000000;
+    kernel_heap_end = 0x03000000;
 
     /* END OF ZEROING ZONE */
 

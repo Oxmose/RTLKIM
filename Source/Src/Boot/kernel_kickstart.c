@@ -34,6 +34,7 @@
 #include <Drivers/keyboard.h>     /* keyboard_init() */
 #include <Drivers/ata_pio.h>      /* ata_pio_init() */
 #include <Lib/string.h>           /* strlen() */
+#include <Core/scheduler.h>       /* sched_init() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -290,9 +291,16 @@ void kernel_kickstart(void)
     ata_pio_driver_test();
     #endif
 
-    kernel_interrupt_restore(1);
+    /* Init Scheduler */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing ATA PIO driver\n");
+    #endif
+    err = sched_init();
+    INIT_MSG("", 
+             "Error while initializing the scheduler: %d.\n", 
+             err, 0);
 
-    main();
+    /* We should never reach this code */
 
     return;
 }

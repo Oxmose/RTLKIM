@@ -1,6 +1,7 @@
 #include <Lib/stdio.h>
 #include <BSP/rtc.h>
 #include <Cpu/cpu.h>
+#include <Core/scheduler.h>
 
 /* Used as example, it will be changed in the future. */
 int main(void)
@@ -19,7 +20,7 @@ int main(void)
         printf("\r\tTime is: %02d:%02d:%02d %02d/%02d/%04d   ", 
                 hours, minutes, seconds, 
                 date.day, date.month, date.year);
-        cpu_hlt();
+        sched_sleep(200);
     }
     return 0;
 }

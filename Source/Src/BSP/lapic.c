@@ -460,8 +460,6 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     /* Compute the new tick count */
     global_lapic_freq = init_lapic_timer_frequency / frequency;
 
-
-
     /* Set new timer count */
     lapic_write(LAPIC_TDCR, LAPIC_DIVIDER_16);
     lapic_write(LAPIC_TICR, global_lapic_freq);

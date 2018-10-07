@@ -36,6 +36,8 @@
 #define LAPIC_DRIVER_TEST 0
 #define ATA_PIO_DRIVER_TEST 0
 #define KERNEL_QUEUE_TEST 0
+#define SCHEDULER_LOAD_TEST 0
+#define SCHEDULER_PREEMT_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -58,5 +60,7 @@ void lapic_timer_driver_test(void);
 void lapic_driver_test(void);
 void ata_pio_driver_test(void);
 void kernel_queue_test(void);
+void scheduler_load_test(void);
+void scheduler_preemt_test(void);
 
 #endif /* __TEST_BANK_H_ */
