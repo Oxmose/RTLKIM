@@ -149,7 +149,8 @@ OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)
     if(driver == NULL || 
        driver->driver_set_irq_eoi == NULL || 
        driver->driver_set_irq_mask == NULL ||
-       driver->driver_handle_spurious == NULL)
+       driver->driver_handle_spurious == NULL ||
+       driver->driver_get_irq_int_line == NULL)
     {
         return OS_ERR_NULL_POINTER;
     }
@@ -178,15 +179,22 @@ OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)
 
 OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t* driver)
 {
+    uint32_t word;
+
     if(driver == NULL ||
        driver->driver_set_irq_eoi == NULL || 
        driver->driver_set_irq_mask == NULL ||
-       driver->driver_handle_spurious == NULL)
+       driver->driver_handle_spurious == NULL ||
+       driver->driver_get_irq_int_line == NULL)
     {
         return OS_ERR_NULL_POINTER;
     }
 
+    ENTER_CRITICAL(word);
+
     interrupt_driver = *driver;
+
+    EXIT_CRITICAL(word);
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Set new interrupt driver.\n");
@@ -203,6 +211,8 @@ OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
                                              )
                                        )
 {
+    uint32_t word;
+
     if(interrupt_line < MIN_INTERRUPT_LINE ||
        interrupt_line > MAX_INTERRUPT_LINE)
     {
@@ -214,13 +224,18 @@ OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
         return OS_ERR_NULL_POINTER;
     }
 
+    ENTER_CRITICAL(word);
+
     if(kernel_interrupt_handlers[interrupt_line].handler != NULL)
     {
+        EXIT_CRITICAL(word);
         return OS_ERR_INTERRUPT_ALREADY_REGISTERED;
     }
 
     kernel_interrupt_handlers[interrupt_line].handler = handler;
     kernel_interrupt_handlers[interrupt_line].enabled = 1;
+
+    EXIT_CRITICAL(word);
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Added INT %d handler at 0x%08x\n",
@@ -232,19 +247,26 @@ OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
 
 OS_RETURN_E kernel_interrupt_remove_int_handler(const uint32_t interrupt_line)
 {
+    uint32_t word;
+    
     if(interrupt_line < MIN_INTERRUPT_LINE ||
        interrupt_line > MAX_INTERRUPT_LINE)
     {
         return OR_ERR_UNAUTHORIZED_INTERRUPT_LINE;
     }
 
+    ENTER_CRITICAL(word);
+
     if(kernel_interrupt_handlers[interrupt_line].handler == NULL)
     {
+        EXIT_CRITICAL(word);
         return OS_ERR_INTERRUPT_NOT_REGISTERED;
     }
 
     kernel_interrupt_handlers[interrupt_line].handler = NULL;
     kernel_interrupt_handlers[interrupt_line].enabled = 0;
+
+    EXIT_CRITICAL(word);
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Removed INT %d handle\n", interrupt_line);
@@ -262,7 +284,7 @@ OS_RETURN_E kernel_interrupt_register_irq_handler(const uint32_t irq_number,
                                        )
 {
     int32_t int_line;
-
+    
     /* Get the interrupt line attached to the IRQ number. */
     int_line = interrupt_driver.driver_get_irq_int_line(irq_number);
 

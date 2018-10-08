@@ -94,6 +94,8 @@ OS_RETURN_E kernel_exception_register_handler(const uint32_t exception_line,
                                              )
                                        )
 {
+    uint32_t word;
+
     if((int32_t)exception_line < MIN_EXCEPTION_LINE ||
        exception_line > MAX_EXCEPTION_LINE)
     {
@@ -105,13 +107,18 @@ OS_RETURN_E kernel_exception_register_handler(const uint32_t exception_line,
         return OS_ERR_NULL_POINTER;
     }
 
+    ENTER_CRITICAL(word);
+
     if(kernel_interrupt_handlers[exception_line].handler != NULL)
     {
+        EXIT_CRITICAL(word);
         return OS_ERR_INTERRUPT_ALREADY_REGISTERED;
     }
 
     kernel_interrupt_handlers[exception_line].handler = handler;
     kernel_interrupt_handlers[exception_line].enabled = 1;
+
+    EXIT_CRITICAL(word);
 
     #if EXCEPTION_KERNEL_DEBUG == 1
     kernel_serial_debug("Added exception %d handler at 0x%08x\n",
@@ -123,19 +130,26 @@ OS_RETURN_E kernel_exception_register_handler(const uint32_t exception_line,
 
 OS_RETURN_E kernel_exception_remove_handler(const uint32_t exception_line)
 {
+    uint32_t word;
+    
     if((int32_t)exception_line < MIN_EXCEPTION_LINE ||
        exception_line > MAX_EXCEPTION_LINE)
     {
         return OR_ERR_UNAUTHORIZED_INTERRUPT_LINE;
     }
 
+    ENTER_CRITICAL(word);
+
     if(kernel_interrupt_handlers[exception_line].handler == NULL)
     {
+        EXIT_CRITICAL(word);
         return OS_ERR_INTERRUPT_NOT_REGISTERED;
     }
 
     kernel_interrupt_handlers[exception_line].handler = NULL;
     kernel_interrupt_handlers[exception_line].enabled = 0;
+
+    EXIT_CRITICAL(word);
 
     #if EXCEPTION_KERNEL_DEBUG == 1
     kernel_serial_debug("Removed exception %d handle\n", exception_line);
