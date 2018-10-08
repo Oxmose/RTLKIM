@@ -38,6 +38,8 @@
 #define KERNEL_QUEUE_TEST 0
 #define SCHEDULER_LOAD_TEST 0
 #define SCHEDULER_PREEMT_TEST 0
+#define SCHEDULER_SLEEP_TEST 0
+#define CRITICAL_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -62,5 +64,7 @@ void ata_pio_driver_test(void);
 void kernel_queue_test(void);
 void scheduler_load_test(void);
 void scheduler_preemt_test(void);
+void scheduler_sleep_test(void);
+void critical_test(void);
 
 #endif /* __TEST_BANK_H_ */

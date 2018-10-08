@@ -464,6 +464,8 @@ static void* init_func(void* args)
     #if TEST_MODE_ENABLED == 1
     scheduler_load_test();
     scheduler_preemt_test();
+    scheduler_sleep_test();
+    critical_test();
     while(1)
     {
         sched_sleep(10000000);
