@@ -113,7 +113,7 @@ section .text:
     ; Setup the kernel heap 
     call setup_kheap
 
-    ; Kickstart the kernel
+    ; Kickstart the kernel, we should never return from here.
     call kernel_kickstart
 
   ; Hang forever, this should never happen

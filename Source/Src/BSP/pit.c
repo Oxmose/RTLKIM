@@ -25,6 +25,7 @@
 #include <Lib/stdint.h>           /* Generioc int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E */
 #include <Time/time_management.h> /* kernel_timer_t */
+#include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -109,6 +110,10 @@ OS_RETURN_E pit_init(void)
 
 OS_RETURN_E pit_enable(void)
 {
+    uint32_t word;
+
+    ENTER_CRITICAL(word);
+
     if(disabled_nesting > 0)
     {
         --disabled_nesting;
@@ -118,8 +123,11 @@ OS_RETURN_E pit_enable(void)
         #if PIT_KERNEL_DEBUG == 1
         kernel_serial_debug("Enable PIT\n");
         #endif
+        EXIT_CRITICAL(word);
         return kernel_interrupt_set_irq_mask(PIT_IRQ_LINE, 1);
     }
+
+    EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
 }
@@ -127,6 +135,9 @@ OS_RETURN_E pit_enable(void)
 OS_RETURN_E pit_disable(void)
 {
     OS_RETURN_E err;
+    uint32_t    word;
+
+    ENTER_CRITICAL(word);
 
     if(disabled_nesting < UINT32_MAX)
     {
@@ -138,22 +149,28 @@ OS_RETURN_E pit_disable(void)
     #endif
     err = kernel_interrupt_set_irq_mask(PIT_IRQ_LINE, 0);
 
+    EXIT_CRITICAL(word);
+
     return err;
 }
 
 OS_RETURN_E pit_set_frequency(const uint32_t freq)
 {
     OS_RETURN_E err;
+    uint32_t    word;
 
     if(freq < PIT_MIN_FREQ || freq > PIT_MAX_FREQ)
     {
         return OS_ERR_OUT_OF_BOUND;
     }
 
+    ENTER_CRITICAL(word);
+
     /* Disable PIT IRQ */
     err = pit_disable();
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         return err;
     }
 
@@ -169,6 +186,8 @@ OS_RETURN_E pit_set_frequency(const uint32_t freq)
     #if PIT_KERNEL_DEBUG == 1
     kernel_serial_debug("New PIT frequency set (%d)\n", freq);
     #endif
+
+    EXIT_CRITICAL(word);
 
     /* Enable PIT IRQ */
     return pit_enable();
@@ -186,15 +205,19 @@ OS_RETURN_E pit_set_handler(void(*handler)(
                                  ))
 {
     OS_RETURN_E err;
+    uint32_t    word;
 
     if(handler == NULL)
     {
         return OS_ERR_NULL_POINTER;
     }
 
+    ENTER_CRITICAL(word);
+
     err = pit_disable();
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         return err;
     }
 
@@ -202,6 +225,7 @@ OS_RETURN_E pit_set_handler(void(*handler)(
     err = kernel_interrupt_remove_irq_handler(PIT_IRQ_LINE);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         pit_enable();
         return err;
     }
@@ -209,6 +233,7 @@ OS_RETURN_E pit_set_handler(void(*handler)(
     err = kernel_interrupt_register_irq_handler(PIT_IRQ_LINE, handler);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         pit_enable();
         return err;
     }
@@ -216,6 +241,8 @@ OS_RETURN_E pit_set_handler(void(*handler)(
     #if PIT_KERNEL_DEBUG == 1
     kernel_serial_debug("New PIT handler set (0x%08x)\n", handler);
     #endif
+
+    EXIT_CRITICAL(word);
 
     return pit_enable();
 }

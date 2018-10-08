@@ -21,6 +21,7 @@
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E, NULL */
 #include <IO/kernel_output.h> /* kernel_success */
+#include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -80,6 +81,7 @@ OS_RETURN_E pic_init(void)
 OS_RETURN_E pic_set_irq_mask(const uint32_t irq_number, const uint32_t enabled)
 {
     uint8_t  init_mask;
+    uint32_t word;
 
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC IRQ mask setting start\n");
@@ -89,6 +91,8 @@ OS_RETURN_E pic_set_irq_mask(const uint32_t irq_number, const uint32_t enabled)
     {
         return OS_ERR_NO_SUCH_IRQ_LINE;
     }
+
+    ENTER_CRITICAL(word);
 
     /* Manage master PIC */
     if(irq_number < 8)
@@ -155,14 +159,14 @@ OS_RETURN_E pic_set_irq_mask(const uint32_t irq_number, const uint32_t enabled)
         }
     }
 
-
-
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC Mask M: 0x%02x S: 0x%02x\n", 
                         cpu_inb(PIC_MASTER_DATA_PORT),
                          cpu_inb(PIC_SLAVE_DATA_PORT));
     kernel_serial_debug("PIC IRQ mask setting end\n");
     #endif
+
+    EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
 }
@@ -254,6 +258,10 @@ INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t int_number)
 
 OS_RETURN_E pic_disable(void)
 {
+    uint32_t word;
+
+    ENTER_CRITICAL(word);
+
     /* Disable all IRQs */
     cpu_outb(0xFF, PIC_MASTER_DATA_PORT);
     cpu_outb(0xFF, PIC_SLAVE_DATA_PORT);    
@@ -261,6 +269,8 @@ OS_RETURN_E pic_disable(void)
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC disabled\n");
     #endif
+
+    EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
 }

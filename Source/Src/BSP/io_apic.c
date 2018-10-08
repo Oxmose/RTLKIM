@@ -27,6 +27,7 @@
 #include <Interrupt/interrupts.h> /* INT_IRQ_OFFSET */
 #include <BSP/acpi.h>             /* acpi_get_io_apic_address */
 #include <BSP/lapic.h>            /* lapic_set_int_eoi */
+#include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -94,6 +95,7 @@ OS_RETURN_E io_apic_init(void)
     uint32_t    i;
     uint32_t    read_count;
     OS_RETURN_E err;
+    uint32_t    word;
 
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
@@ -103,6 +105,8 @@ OS_RETURN_E io_apic_init(void)
     {
         return OS_ERR_NOT_SUPPORTED;
     }
+
+    ENTER_CRITICAL(word);
 
     /* Get IO APIC base address */
     io_apic_base_addr = acpi_get_io_apic_address(0);
@@ -118,9 +122,12 @@ OS_RETURN_E io_apic_init(void)
         err = io_apic_set_irq_mask(i, 0);
         if(err != OS_NO_ERR)
         {
+            EXIT_CRITICAL(word);
             return err;
         }
     }
+
+    EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
 }
@@ -131,11 +138,14 @@ OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number,
     uint32_t entry_lo   = 0;
     uint32_t entry_hi   = 0;
     uint32_t actual_irq = 0;
+    uint32_t word;
 
     if(irq_number >= max_redirect_count || irq_number > IO_APIC_MAX_IRQ_LINE)
     {
         return OS_ERR_NO_SUCH_IRQ_LINE;
     }
+
+    ENTER_CRITICAL(word);
 
     /* Set the interrupt line */
     entry_lo |= irq_number + INT_IOAPIC_IRQ_OFFSET;
@@ -154,42 +164,62 @@ OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number,
                         irq_number, actual_irq, enabled);
     #endif
 
+    EXIT_CRITICAL(word);
+
     return OS_NO_ERR;
 }
 
 OS_RETURN_E io_apic_set_irq_eoi(const uint32_t irq_number)
 {
+    OS_RETURN_E err;
+    uint32_t    word;
+
     #if IOAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("IOAPIC set IRQ EOI %d\n",
                         irq_number);
     #endif
 
-    return lapic_set_int_eoi(irq_number);
+    ENTER_CRITICAL(word);
+
+    err = lapic_set_int_eoi(irq_number);
+
+    EXIT_CRITICAL(word);
+
+    return err;
 }
 
 INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t int_number)
 {
+    INTERRUPT_TYPE_E int_type;
+    uint32_t         word;
+
     #if IOAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("IOAPIC spurious IRQ %d\n",
                         int_number);
     #endif
+
+    ENTER_CRITICAL(word);
+
+    int_type = INTERRUPT_TYPE_REGULAR;
 
     /* If we received a PIC spurious interrupt. */
     if(int_number >= INT_PIC_IRQ_OFFSET && 
        int_number >= INT_PIC_IRQ_OFFSET + 0x0F)
     {
         lapic_set_int_eoi(int_number);
-        return INTERRUPT_TYPE_SPURIOUS;
+        int_type = INTERRUPT_TYPE_SPURIOUS;
     }
 
     /* Check for LAPIC spurious interrupt. */
     if(int_number == LAPIC_SPURIOUS_INT_LINE)
     {
         lapic_set_int_eoi(int_number);
-        return INTERRUPT_TYPE_SPURIOUS;
+        int_type = INTERRUPT_TYPE_SPURIOUS;
     }
 
-    return INTERRUPT_TYPE_REGULAR;
+    EXIT_CRITICAL(word);
+
+    return int_type;;
 }
 
 int32_t io_apic_get_irq_int_line(const uint32_t irq_number)

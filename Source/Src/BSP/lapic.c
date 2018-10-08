@@ -31,6 +31,7 @@
 #include <BSP/acpi.h>             /* get_lapic_addr */
 #include <BSP/pit.h>              /* set_pit_freq, emable_pit, diable_pit */
 #include <Time/time_management.h> /* kernel_timer_t */
+#include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -180,6 +181,7 @@ int32_t lapic_get_id(void)
 OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id)
 {
     OS_RETURN_E err;
+    uint32_t    word;
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Send INIT IPI\n");
@@ -188,6 +190,7 @@ OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id)
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Initialization\n");
     #endif
+
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -197,10 +200,14 @@ OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id)
         return OS_ERR_NOT_SUPPORTED;
     }
 
+
+    ENTER_CRITICAL(word);
+
     /* Check LACPI id */
     err = acpi_check_lapic_id(lapic_id);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         return err;
     }
 
@@ -213,6 +220,8 @@ OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id)
     while ((lapic_read(LAPIC_ICRLO) & ICR_SEND_PENDING) != 0)
     {}
 
+    EXIT_CRITICAL(word);
+
     return err;
 }
 
@@ -220,6 +229,7 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
                                    const uint32_t vector)
 {
     OS_RETURN_E err;
+    uint32_t    word;
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Send STARTUP IPI\n");
@@ -237,10 +247,13 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
         return OS_ERR_NOT_SUPPORTED;
     }
 
+    ENTER_CRITICAL(word);
+
     /* Check LACPI id */
     err = acpi_check_lapic_id(lapic_id);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         return err;
     }
 
@@ -253,12 +266,15 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
     while ((lapic_read(LAPIC_ICRLO) & ICR_SEND_PENDING) != 0)
     {}
 
+    EXIT_CRITICAL(word);
+
     return err;
 }
 
 OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id, const uint32_t vector)
 {
     OS_RETURN_E err;
+    uint32_t    word;
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Send IPI\n");
@@ -275,12 +291,15 @@ OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id, const uint32_t vector)
     {
         return OS_ERR_NOT_SUPPORTED;
     }
-    
+
+    ENTER_CRITICAL(word);    
 
     /* Check LACPI id */
     err = acpi_check_lapic_id(lapic_id);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
+
         return err;
     }
 
@@ -292,6 +311,8 @@ OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id, const uint32_t vector)
     /* Wait for pending sends */
     while ((lapic_read(LAPIC_ICRLO) & ICR_SEND_PENDING) != 0)
     {}
+
+    EXIT_CRITICAL(word);
 
     return err;
 }
@@ -404,6 +425,8 @@ OS_RETURN_E lapic_timer_init(void)
 
 OS_RETURN_E lapic_ap_timer_init(void)
 {
+    uint32_t word;
+
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer AP Initialization\n");
     #endif
@@ -420,6 +443,8 @@ OS_RETURN_E lapic_ap_timer_init(void)
         return OS_ERR_NOT_SUPPORTED;
     }    
 
+    ENTER_CRITICAL(word);
+
     /* Init LAPIC TIMER */
     lapic_write(LAPIC_TDCR, LAPIC_DIVIDER_16);
 
@@ -431,16 +456,29 @@ OS_RETURN_E lapic_ap_timer_init(void)
     lapic_write(LAPIC_TDCR, LAPIC_DIVIDER_16);
     lapic_write(LAPIC_TICR, global_lapic_freq);
 
+    EXIT_CRITICAL(word);
+
     return OS_NO_ERR;
 }
 
 uint32_t lapic_timer_get_frequency(void)
 {
-    return init_lapic_timer_frequency / global_lapic_freq;
+    uint32_t freq;
+    uint32_t word;
+
+    ENTER_CRITICAL(word);
+
+    freq = init_lapic_timer_frequency / global_lapic_freq;
+
+    EXIT_CRITICAL(word);
+
+    return freq;
 }
 
 OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
 {
+    uint32_t word;
+
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer set frequency %d\n", frequency);
     #endif
@@ -456,6 +494,8 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     {
         return OS_ERR_NOT_SUPPORTED;
     }
+
+    ENTER_CRITICAL(word);
     
     /* Compute the new tick count */
     global_lapic_freq = init_lapic_timer_frequency / frequency;
@@ -464,11 +504,15 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     lapic_write(LAPIC_TDCR, LAPIC_DIVIDER_16);
     lapic_write(LAPIC_TICR, global_lapic_freq);
 
+    EXIT_CRITICAL(word);
+
     return OS_NO_ERR;
 }
 
 OS_RETURN_E lapic_timer_enable(void)
 {
+    uint32_t word;
+
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer enable\n");
     #endif
@@ -484,16 +528,22 @@ OS_RETURN_E lapic_timer_enable(void)
     {
         return OS_ERR_NOT_SUPPORTED;
     }
+
+    ENTER_CRITICAL(word);
     
     /* Enable interrupt */
     lapic_write(LAPIC_TIMER, LAPIC_TIMER_INTERRUPT_LINE |
                 LAPIC_TIMER_MODE_PERIODIC);
+
+    EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
 }
 
 OS_RETURN_E lapic_timer_disable(void)
 {
+    uint32_t word;
+
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer disable\n");
     #endif
@@ -509,9 +559,13 @@ OS_RETURN_E lapic_timer_disable(void)
     {
         return OS_ERR_NOT_SUPPORTED;
     }
+
+    ENTER_CRITICAL(word);
     
     /* Disable interrupt */
     lapic_write(LAPIC_TIMER, LAPIC_LVT_INT_MASKED);
+
+    EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
 }
@@ -523,6 +577,7 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
                                     ))
 {
     OS_RETURN_E err;
+    uint32_t    word;
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Initialization\n");
@@ -547,11 +602,14 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
         return err;
     }
 
+    ENTER_CRITICAL(word);
+
     /* Remove the current handler */
     err = kernel_interrupt_remove_int_handler(LAPIC_TIMER_INTERRUPT_LINE);
     if(err != OS_NO_ERR)
     {
-        lapic_timer_enable();
+        EXIT_CRITICAL(word);
+        lapic_timer_enable();        
         return err;
     }
 
@@ -559,12 +617,15 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
                                                 handler);
     if(err != OS_NO_ERR) 
     {
+        EXIT_CRITICAL(word);
         return err;
     }
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("New LAPIC handler set (0x%08x)\n", handler);
     #endif
+
+    EXIT_CRITICAL(word);
 
     return lapic_timer_enable();
 }

@@ -53,7 +53,7 @@ extern uint32_t cpu_idt_base;
 static cpu_tss_entry_t cpu_main_tss __attribute__((aligned(4096)));
 
 /** @brief Kernel stack pointer */
-extern uint32_t* kernel_stack;
+extern uint8_t* kernel_stack;
 
 /*******************************************************************************
  * FUNCTIONS

@@ -302,6 +302,5 @@ void kernel_kickstart(void)
              err, 0);
 
     /* We should never reach this code */
-
-    return;
+    kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
 }

@@ -22,6 +22,7 @@
                                    * stack_state, set_IRQ_EOI, set_IRQ_mask */
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E, OS_EVENT_ID */
+#include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -144,6 +145,9 @@ OS_RETURN_E rtc_init(void)
 
 OS_RETURN_E rtc_enable(void)
 {
+    uint32_t word;
+
+    ENTER_CRITICAL(word);
     if(disabled_nesting > 0)
     {
         --disabled_nesting;
@@ -153,15 +157,21 @@ OS_RETURN_E rtc_enable(void)
         #if RTC_KERNEL_DEBUG == 1
         kernel_serial_debug("Enable RTC\n");
         #endif
+        EXIT_CRITICAL(word);
         return kernel_interrupt_set_irq_mask(RTC_IRQ_LINE, 1);
     }
+
+    EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
 }
 
 OS_RETURN_E rtc_disable(void)
 {
+    uint32_t    word;
     OS_RETURN_E err;
+
+    ENTER_CRITICAL(word);
 
     if(disabled_nesting < UINT32_MAX)
     {
@@ -173,6 +183,8 @@ OS_RETURN_E rtc_disable(void)
     #endif
     err = kernel_interrupt_set_irq_mask(RTC_IRQ_LINE, 0);
 
+    EXIT_CRITICAL(word);
+
     return err;
 }
 
@@ -181,6 +193,7 @@ OS_RETURN_E rtc_set_frequency(const uint32_t frequency)
     OS_RETURN_E err;
     uint32_t    prev_rate;
     uint32_t    rate;
+    uint32_t    word;
 
     if(frequency < RTC_MIN_FREQ || frequency > RTC_MAX_FREQ)
     {
@@ -241,10 +254,13 @@ OS_RETURN_E rtc_set_frequency(const uint32_t frequency)
         rate = 3;
     }
 
+    ENTER_CRITICAL(word);
+
     /* Disable RTC IRQ */
     err = rtc_disable();
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         return err;
     }
     
@@ -260,6 +276,8 @@ OS_RETURN_E rtc_set_frequency(const uint32_t frequency)
     #if RTC_KERNEL_DEBUG == 1
     kernel_serial_debug("New RTC rate set (%d: %dHz)\n", rate, rtc_frequency);
     #endif
+
+    EXIT_CRITICAL(word);
 
     /* Enable RTC IRQ */
     return rtc_enable();
@@ -277,15 +295,19 @@ OS_RETURN_E rtc_set_handler(void(*handler)(
                                  ))
 {
     OS_RETURN_E err;
+    uint32_t    word;
 
     if(handler == NULL)
     {
         return OS_ERR_NULL_POINTER;
     }
 
+    ENTER_CRITICAL(word);
+
     err = rtc_disable();
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         return err;
     }
 
@@ -293,6 +315,7 @@ OS_RETURN_E rtc_set_handler(void(*handler)(
     err = kernel_interrupt_remove_irq_handler(RTC_IRQ_LINE);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         rtc_enable();
         return err;
     }
@@ -300,6 +323,7 @@ OS_RETURN_E rtc_set_handler(void(*handler)(
     err = kernel_interrupt_register_irq_handler(RTC_IRQ_LINE, handler);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         rtc_enable();
         return err;
     }
@@ -307,6 +331,8 @@ OS_RETURN_E rtc_set_handler(void(*handler)(
     #if RTC_KERNEL_DEBUG == 1
     kernel_serial_debug("New RTC handler set (0x%08x)\n", handler);
     #endif
+
+    EXIT_CRITICAL(word);
 
     return rtc_enable();
 }

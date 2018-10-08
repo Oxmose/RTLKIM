@@ -17,9 +17,8 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Lib/stdint.h>           /* Generic int types */
-#include <Interrupt/interrupts.h> /* kernel_interrupt_restore, 
-                                   * kernel_interrupt_disable */
+#include <Lib/stdint.h>    /* Generic int types */
+#include <Sync/critical.h> /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -41,11 +40,11 @@ extern void _bios_call(uint8_t intnum, bios_int_regs_t* regs);
 
 void bios_call(uint8_t intnum, bios_int_regs_t* regs)
 {
-	uint32_t int_status;
+	uint32_t word;
 
-	int_status = kernel_interrupt_disable();
+	ENTER_CRITICAL(word);
 
 	_bios_call(intnum, regs);
 
-	kernel_interrupt_restore(int_status);
+	EXIT_CRITICAL(word);
 }
