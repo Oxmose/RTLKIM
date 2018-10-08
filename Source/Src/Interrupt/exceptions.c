@@ -25,6 +25,8 @@
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Interrupt/panic.h>  /* panic */
 #include <Cpu/cpu_settings.h> /* IDT_ENTRY_COUNT */
+#include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
+#include <Core/scheduler.h>   /* sched_terminate_thread */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -46,7 +48,8 @@ extern custom_handler_t kernel_interrupt_handlers[IDT_ENTRY_COUNT];
 /**
  * @brief Handle a division by zero exception.
  * 
- * @details Handles a divide by zero exception raised by the cpu.
+ * @details Handles a divide by zero exception raised by the cpu. The thread 
+ * will just be killed.
  * 
  * @param cpu_state The cpu registers structure.
  * @param int_id The exception number.
@@ -64,8 +67,8 @@ static void div_by_zero_handler(cpu_state_t* cpu_state, uint32_t int_id,
         kernel_error("Divide by zero handler in wrong exception line.\n");
         panic(cpu_state, int_id, stack_state);
     }
-
-    panic(cpu_state, int_id, stack_state);
+    sched_set_thread_termination_cause(THREAD_TERMINATE_CAUSE_DIV_BY_ZERO);
+    stack_state->eip = (uint32_t)sched_terminate_thread;
 }
 
 

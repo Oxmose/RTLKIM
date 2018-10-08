@@ -120,6 +120,8 @@ typedef enum THREAD_RETURN_STATE THREAD_RETURN_STATE_E;
 /** @brief Thread's abnomarl exit cause. */
 enum THREAD_TERMINATE_CAUSE
 {
+    /** @brief The thread returned normally.  */
+    THREAD_TERMINATE_CORRECTLY,
     /** @brief The thread was killed because of a division by zero. */
     THREAD_TERMINATE_CAUSE_DIV_BY_ZERO,
     /** @brief The thread was killed by a panic condition. */

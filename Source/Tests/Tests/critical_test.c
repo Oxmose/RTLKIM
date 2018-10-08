@@ -64,7 +64,7 @@ void critical_test(void)
 
     for(int i = 0; i < 3; ++i)
     {
-        sched_wait_thread(thread[i], NULL);
+        sched_wait_thread(thread[i], NULL, NULL);
     }
     kernel_printf("\n");
     if(strncmp(value, "--------------------********************....................", 60) != 0 &&

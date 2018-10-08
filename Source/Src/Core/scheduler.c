@@ -493,6 +493,7 @@ static void* init_func(void* args)
     scheduler_preemt_test();
     scheduler_sleep_test();
     critical_test();
+    div_by_zero_test();
     while(1)
     {
         sched_sleep(10000000);
@@ -507,7 +508,7 @@ static void* init_func(void* args)
         kernel_panic(err);
     }
 
-    err = sched_wait_thread(main_thread, NULL);
+    err = sched_wait_thread(main_thread, NULL, NULL);
     if(err != OS_NO_ERR)
     {
         kernel_error("Cannot waint main, aborting [%d]\n", err);
@@ -536,7 +537,7 @@ static void* init_func(void* args)
 
             EXIT_CRITICAL(word);
 
-            err = sched_wait_thread(thread, NULL);
+            err = sched_wait_thread(thread, NULL, NULL);
             if(err != OS_NO_ERR)
             {
                 EXIT_CRITICAL(word);
@@ -1069,12 +1070,12 @@ OS_RETURN_E get_threads_info(thread_info_t* threads, int32_t* size)
     return OS_NO_ERR;
 }
 
-void set_thread_termination_cause(const THREAD_TERMINATE_CAUSE_E term_cause)
+void sched_set_thread_termination_cause(const THREAD_TERMINATE_CAUSE_E term_cause)
 {
     active_thread->return_cause = term_cause;
 }
 
-void terminate_thread(void)
+void sched_terminate_thread(void)
 {
     active_thread->return_state = THREAD_RETURN_STATE_KILLED;
 
@@ -1277,7 +1278,8 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
     return OS_NO_ERR;
 }
 
-OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val)
+OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val, 
+                              THREAD_TERMINATE_CAUSE_E* term_cause)
 {
     if(thread == NULL)
     {
@@ -1318,6 +1320,10 @@ OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val)
     if(ret_val != NULL)
     {
         *ret_val = thread->ret_val;
+    }
+    if(term_cause != NULL)
+    {
+        *term_cause = thread->return_cause;
     }
     sched_clean_joined_thread(thread);
 

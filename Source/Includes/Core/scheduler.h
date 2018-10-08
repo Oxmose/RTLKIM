@@ -247,13 +247,16 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
  * @param[in] thread The handle of thread structure.
  * @param[out] ret_val The buffer to store the value returned by the thread's
  * routine.
+ * @param[out] term_cause The buffer to store the termination cause of the 
+ * thread.
  * 
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the thread handle is NULL.
  * - OS_ERR_NO_SUCH_ID is returned if thread cannot be found in the system.
  */
-OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val);
+OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val, 
+                              THREAD_TERMINATE_CAUSE_E* term_cause);
 
 
 /* Remove the active thread from the active threads table, the thread might be

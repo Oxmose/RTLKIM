@@ -40,7 +40,7 @@ void scheduler_sleep_test(void)
         kernel_panic(err);
     }
 
-    sched_wait_thread(thread, NULL);
+    sched_wait_thread(thread, NULL, NULL);
 
     kernel_interrupt_disable();
 }

@@ -26,6 +26,7 @@
 #include <Cpu/cpu.h>          /* sti cpu_cli */
 #include <IO/kernel_output.h> /* kernel_success */
 #include <Interrupt/panic.h>  /* panic () */
+#include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>

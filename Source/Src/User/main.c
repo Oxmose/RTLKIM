@@ -2,6 +2,7 @@
 #include <BSP/rtc.h>
 #include <Cpu/cpu.h>
 #include <Core/scheduler.h>
+#include <Interrupt/panic.h>
 
 /* Used as example, it will be changed in the future. */
 int main(void)
@@ -23,9 +24,11 @@ int main(void)
                 date.day, date.month, date.year);
         sched_sleep(200);
 
-        if(i++ == 50)
+        if(i++ == 30)
             break;
     }
+
+    kernel_panic(4);
 
     printf("\n");
     return 0;

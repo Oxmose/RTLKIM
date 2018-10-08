@@ -96,9 +96,8 @@ void kernel_kickstart(void)
     #endif
 
     /* Init VESA */
-    #if ENABLE_VESA == 1 && \
-        (TEST_MODE_ENABLED == 0 || \
-         (TEST_MODE_ENABLED == 1 && VESA_TEXT_TEST == 1))
+    #if (ENABLE_VESA == 1 && TEST_MODE_ENABLED == 0) || \
+         (TEST_MODE_ENABLED == 1 && VESA_TEXT_TEST == 1)
     err = vesa_init();
     if(err == OS_NO_ERR)
     {

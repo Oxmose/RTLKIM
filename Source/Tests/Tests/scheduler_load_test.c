@@ -25,7 +25,7 @@ void scheduler_load_test(void)
     thread_t thread[2048];
     OS_RETURN_E err;
 
-    kernel_interrupt_restore(1);
+    kernel_interrupt_disable();
 
     kernel_printf("[TESTMODE] Scheduler tests sarts\n");
 
@@ -41,9 +41,11 @@ void scheduler_load_test(void)
     }
     kernel_printf("[TESTMODE] ");
 
+    kernel_interrupt_restore(1);
+
     for(int i = 0; i < 2048; ++i)
     {
-        sched_wait_thread(thread[i], NULL);
+        sched_wait_thread(thread[i], NULL, NULL);
     }
 
     kernel_printf("\n[TESTMODE] Scheduler thread load tests passed\n");
