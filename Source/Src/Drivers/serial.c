@@ -178,7 +178,7 @@ OS_RETURN_E serial_init(void)
 
 void serial_write(const uint32_t port, const uint8_t data)
 {
-    uint32_t word;
+    //uint32_t word;
 
     if(serial_init_done == 0)
     {
@@ -189,7 +189,7 @@ void serial_write(const uint32_t port, const uint8_t data)
         return;
     }
 
-    ENTER_CRITICAL(word);
+    //ENTER_CRITICAL(word);
 
     /* Wait for empty transmit */
     while((SERIAL_LINE_STATUS_PORT(port) & 0x20) == 0)
@@ -208,13 +208,13 @@ void serial_write(const uint32_t port, const uint8_t data)
     while((SERIAL_LINE_STATUS_PORT(port) & 0x20) == 0)
     {}
 
-    EXIT_CRITICAL(word);
+    //EXIT_CRITICAL(word);
 }
 
 uint8_t serial_read(const uint32_t port)
 {
-    uint32_t word;
-    ENTER_CRITICAL(word);
+    //uint32_t word;
+    //ENTER_CRITICAL(word);
     
     /* Wait for data to be received */
     while (serial_received(port) == 0);
@@ -222,7 +222,7 @@ uint8_t serial_read(const uint32_t port)
     /* Read available data on port */
     uint8_t val = cpu_inb(SERIAL_DATA_PORT(port));
 
-    EXIT_CRITICAL(word);
+    //EXIT_CRITICAL(word);
     return val;
 }
 
