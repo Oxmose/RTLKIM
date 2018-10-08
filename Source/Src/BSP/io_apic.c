@@ -46,9 +46,10 @@ static uint32_t max_redirect_count;
 
 /** @brief IO_PIC driver instance. */
 interrupt_driver_t io_apic_driver = {
-    .driver_set_irq_mask    = io_apic_set_irq_mask,
-    .driver_set_irq_eoi     = io_apic_set_irq_eoi,
-    .driver_handle_spurious = io_apic_handle_spurious_irq
+    .driver_set_irq_mask     = io_apic_set_irq_mask,
+    .driver_set_irq_eoi      = io_apic_set_irq_eoi,
+    .driver_handle_spurious  = io_apic_handle_spurious_irq,
+    .driver_get_irq_int_line = io_apic_get_irq_int_line
 };
 
 /*******************************************************************************
@@ -111,7 +112,7 @@ OS_RETURN_E io_apic_init(void)
 
     max_redirect_count = ((read_count >> 16) & 0xff) + 1;
 
-    /* Disable all interrupts */
+    /* Redirect and disable all interrupts */
     for (i = 0; i < max_redirect_count; ++i)
     {
         err = io_apic_set_irq_mask(i, 0);
@@ -137,7 +138,7 @@ OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number,
     }
 
     /* Set the interrupt line */
-    entry_lo |= irq_number + INT_IRQ_OFFSET;
+    entry_lo |= irq_number + INT_IOAPIC_IRQ_OFFSET;
 
     /* Set enable mask */
     entry_lo |= (~enabled & 0x1) << 16;
@@ -166,14 +167,37 @@ OS_RETURN_E io_apic_set_irq_eoi(const uint32_t irq_number)
     return lapic_set_int_eoi(irq_number);
 }
 
-INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t irq_number)
+INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t int_number)
 {
     #if IOAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("IOAPIC spurious IRQ %d\n",
-                        irq_number);
+                        int_number);
     #endif
-    
-    lapic_set_int_eoi(irq_number);
+
+    /* If we received a PIC spurious interrupt. */
+    if(int_number >= INT_PIC_IRQ_OFFSET && 
+       int_number >= INT_PIC_IRQ_OFFSET + 0x0F)
+    {
+        lapic_set_int_eoi(int_number);
+        return INTERRUPT_TYPE_SPURIOUS;
+    }
+
+    /* Check for LAPIC spurious interrupt. */
+    if(int_number == LAPIC_SPURIOUS_INT_LINE)
+    {
+        lapic_set_int_eoi(int_number);
+        return INTERRUPT_TYPE_SPURIOUS;
+    }
 
     return INTERRUPT_TYPE_REGULAR;
+}
+
+int32_t io_apic_get_irq_int_line(const uint32_t irq_number)
+{
+    if(irq_number > IO_APIC_MAX_IRQ_LINE)
+    {
+        return -1;
+    }
+    
+    return irq_number + INT_IOAPIC_IRQ_OFFSET;
 }

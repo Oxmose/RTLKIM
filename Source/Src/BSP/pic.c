@@ -34,9 +34,10 @@
 
 /** @brief PIC driver instance. */
 interrupt_driver_t pic_driver = {
-    .driver_set_irq_mask    = pic_set_irq_mask,
-    .driver_set_irq_eoi     = pic_set_irq_eoi,
-    .driver_handle_spurious = pic_handle_spurious_irq
+    .driver_set_irq_mask     = pic_set_irq_mask,
+    .driver_set_irq_eoi      = pic_set_irq_eoi,
+    .driver_handle_spurious  = pic_handle_spurious_irq,
+    .driver_get_irq_int_line = pic_get_irq_int_line
 };
 
 /*******************************************************************************
@@ -191,9 +192,14 @@ OS_RETURN_E pic_set_irq_eoi(const uint32_t irq_number)
     return OS_NO_ERR;
 }
 
-INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t irq_number)
+INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t int_number)
 {
-    uint8_t isr_val;
+    uint8_t  isr_val;
+    uint32_t irq_number = int_number - INT_PIC_IRQ_OFFSET;
+
+    #if PIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("PIC Psurious handling %d\n", irq_number);
+    #endif
 
     /* Check if regular soft interrupt */
     if(irq_number > PIC_MAX_IRQ_LINE)
@@ -244,4 +250,27 @@ INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t irq_number)
             return INTERRUPT_TYPE_SPURIOUS;
         }
     }
+}
+
+OS_RETURN_E pic_disable(void)
+{
+    /* Disable all IRQs */
+    cpu_outb(0xFF, PIC_MASTER_DATA_PORT);
+    cpu_outb(0xFF, PIC_SLAVE_DATA_PORT);    
+
+    #if PIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("PIC disabled\n");
+    #endif
+
+    return OS_NO_ERR;
+}
+
+int32_t pic_get_irq_int_line(const uint32_t irq_number)
+{
+    if(irq_number > PIC_MAX_IRQ_LINE)
+    {
+        return -1;
+    }
+    
+    return irq_number + INT_PIC_IRQ_OFFSET;
 }

@@ -34,14 +34,15 @@
 #include <Time/time_management.h> /* time_get_current_uptime(), 
                                    * time_register_scheduler() */
 
-/* Test bank */
-#include <Tests/test_bank.h>
-
 /* RTLK configuration file */
 #include <config.h>
 
 /* Header file */
 #include <Core/scheduler.h>
+
+#if TEST_MODE_ENABLED == 1
+#include <Tests/test_bank.h>
+#endif
 
  /*******************************************************************************
  * GLOBAL VARIABLES
@@ -880,8 +881,8 @@ OS_RETURN_E sched_init(void)
     }
 
     /* Register SW interrupt scheduling */
-    err = kernel_interrupt_register_handler(SCHEDULER_SW_INT_LINE, 
-                                            schedule_int);
+    err = kernel_interrupt_register_int_handler(SCHEDULER_SW_INT_LINE, 
+                                                schedule_int);
     if(err != OS_NO_ERR)
     {
         return err;
@@ -921,15 +922,11 @@ void sched_schedule(void)
 
 OS_RETURN_E sched_sleep(const unsigned int time_ms)
 {
-    uint32_t int_state;
-
     /* We cannot sleep in idle */
     if(active_thread == idle_thread)
     {
         return OS_ERR_UNAUTHORIZED_ACTION;
     }
-
-    int_state = kernel_interrupt_disable();
 
     active_thread->wakeup_time = time_get_current_uptime() + time_ms;
     active_thread->state       = THREAD_STATE_SLEEPING;
@@ -941,8 +938,6 @@ OS_RETURN_E sched_sleep(const unsigned int time_ms)
                         (uint32_t)active_thread->wakeup_time,
                         time_ms);
     #endif
-
-    kernel_interrupt_restore(int_state);
 
     sched_schedule();
 

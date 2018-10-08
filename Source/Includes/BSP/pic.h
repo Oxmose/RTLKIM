@@ -67,9 +67,9 @@
 #define PIC_READ_ISR 0x0B
 
 /** @brief Master PIC Base interrupt line for the lowest IRQ. */
-#define PIC0_BASE_INTERRUPT_LINE INT_IRQ_OFFSET
+#define PIC0_BASE_INTERRUPT_LINE INT_PIC_IRQ_OFFSET
 /** @brief Slave PIC Base interrupt line for the lowest IRQ. */
-#define PIC1_BASE_INTERRUPT_LINE (INT_IRQ_OFFSET + 8)
+#define PIC1_BASE_INTERRUPT_LINE (INT_PIC_IRQ_OFFSET + 8)
 
 /** @brief PIC's minimal IRQ number. */
 #define PIC_MIN_IRQ_LINE 0
@@ -145,12 +145,34 @@ OS_RETURN_E pic_set_irq_eoi(const uint32_t irq_number);
  * @details Checks if the serviced interrupt is a spurious 
  * interrupt. The function also handles the spurious interrupt.
  * 
- * @param[in] irq_number The IRQ number of the interrupt to test.
+ * @param[in] int_number The interrupt number of the interrupt to test.
  * 
  * @return The function will return the interrupt type.
  * - INTERRUPT_TYPE_SPURIOUS if the current interrupt is a spurious one.
  * - INTERRUPT_TYPE_REGULAR if the current interrupt is a regular one.
  */
-INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t irq_number);
+INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t int_number);
+
+/** 
+ * @brief Disables the PIC.
+ * 
+ * @details Disables the PIC by masking all interrupts.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR if no error is encountered.
+ * - No other return value is possible.
+ */
+OS_RETURN_E pic_disable(void);
+
+/**
+ * @brief Returns the interrupt line attached to an IRQ.
+ * 
+ * @details Returns the interrupt line attached to an IRQ. -1 is returned
+ * if the IRQ number is not supported by the driver.
+ * 
+ * @return The interrupt line attached to an IRQ. -1 is returned if the IRQ 
+ * number is not supported by the driver.
+ */
+int32_t pic_get_irq_int_line(const uint32_t irq_number);
 
 #endif /* __PIC_H_ */

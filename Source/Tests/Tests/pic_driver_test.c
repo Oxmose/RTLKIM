@@ -114,21 +114,22 @@ void pic_driver_test(void)
     cpu_outb(pic1_mask_save, PIC_SLAVE_DATA_PORT);
 
     /* Test spurious detection */
-    for(i = 0; i < PIC_MAX_IRQ_LINE; ++i)
+    for(i = INT_PIC_IRQ_OFFSET; i <= PIC_MAX_IRQ_LINE + INT_PIC_IRQ_OFFSET; ++i)
     {
         INTERRUPT_TYPE_E val = pic_handle_spurious_irq(i);
-        if(i == PIC_SPURIOUS_IRQ_MASTER || i == PIC_SPURIOUS_IRQ_SLAVE)
+        if(i == PIC_SPURIOUS_IRQ_MASTER + INT_PIC_IRQ_OFFSET || 
+           i == INT_PIC_IRQ_OFFSET + PIC_SPURIOUS_IRQ_SLAVE)
         {
             if(val != INTERRUPT_TYPE_SPURIOUS)
             {
-                kernel_error("[TESTMODE] TEST_PIC6\n");
+                kernel_error("[TESTMODE] TEST_PIC6 (false neg)\n");
             }
         }
         else 
         {
             if(val != INTERRUPT_TYPE_REGULAR)
             {
-                kernel_error("[TESTMODE] TEST_PIC6\n");
+                kernel_error("[TESTMODE] TEST_PIC6 (false pos)\n");
             }
         }
     }

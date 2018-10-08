@@ -185,6 +185,7 @@ void kernel_kickstart(void)
     #endif
     #if ENABLE_IO_APIC !=  0
     err = kernel_interrupt_init(&io_apic_driver);
+    err |= pic_disable();
     #else 
     err = kernel_interrupt_init(&pic_driver);
     #endif

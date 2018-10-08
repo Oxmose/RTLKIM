@@ -92,7 +92,7 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
     void(*handler)(cpu_state_t*, uint32_t, stack_state_t*);
 
     /* If interrupts are disabled */
-    if(int_state == 0 &&
+    if((stack_state.eflags & CPU_EFLAGS_IF) == 0 &&
        int_id != PANIC_INT_LINE &&
        int_id != SCHEDULER_SW_INT_LINE &&
        int_id >= MIN_INTERRUPT_LINE)
@@ -105,16 +105,26 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
         return;
     }
 
+    #if INTERRUPT_KERNEL_DEBUG == 1
+        kernel_serial_debug("Interrupt %d\n",
+                            int_id);
+        #endif
+
     /* Check for spurious interrupt */
-    irq_id = int_id - INT_IRQ_OFFSET;
+    irq_id = int_id - INT_PIC_IRQ_OFFSET;
     if(irq_id >= 0 && irq_id <= PIC_MAX_IRQ_LINE)
     {
-        if(interrupt_driver.driver_handle_spurious((uint32_t) irq_id) == 
+        if(interrupt_driver.driver_handle_spurious(int_id) == 
            INTERRUPT_TYPE_SPURIOUS)
         {
             spurious_handler();
             return;
         }
+
+        #if INTERRUPT_KERNEL_DEBUG == 1
+        kernel_serial_debug("Non spurious %d\n",
+                            int_id);
+        #endif
     }
 
     /* Select custom handlers */
@@ -184,7 +194,7 @@ OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t* driver)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E kernel_interrupt_register_handler(const uint32_t interrupt_line,
+OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
                                        void(*handler)(
                                              cpu_state_t*,
                                              uint32_t,
@@ -219,7 +229,7 @@ OS_RETURN_E kernel_interrupt_register_handler(const uint32_t interrupt_line,
     return OS_NO_ERR;
 }
 
-OS_RETURN_E kernel_interrupt_remove_handler(const uint32_t interrupt_line)
+OS_RETURN_E kernel_interrupt_remove_int_handler(const uint32_t interrupt_line)
 {
     if(interrupt_line < MIN_INTERRUPT_LINE ||
        interrupt_line > MAX_INTERRUPT_LINE)
@@ -240,6 +250,42 @@ OS_RETURN_E kernel_interrupt_remove_handler(const uint32_t interrupt_line)
     #endif
 
     return OS_NO_ERR;
+}
+
+OS_RETURN_E kernel_interrupt_register_irq_handler(const uint32_t irq_number,
+                                       void(*handler)(
+                                             cpu_state_t*,
+                                             uint32_t,
+                                             stack_state_t*
+                                             )
+                                       )
+{
+    int32_t int_line;
+
+    /* Get the interrupt line attached to the IRQ number. */
+    int_line = interrupt_driver.driver_get_irq_int_line(irq_number);
+
+    if(int_line < 0)
+    {
+        return OS_ERR_NO_SUCH_IRQ_LINE;
+    }
+
+    return kernel_interrupt_register_int_handler(int_line, handler);
+}
+
+OS_RETURN_E kernel_interrupt_remove_irq_handler(const uint32_t irq_number)
+{
+    int32_t int_line;
+
+    /* Get the interrupt line attached to the IRQ number. */
+    int_line = interrupt_driver.driver_get_irq_int_line(irq_number);
+
+    if(int_line < 0)
+    {
+        return OS_ERR_NO_SUCH_IRQ_LINE;
+    }
+
+    return kernel_interrupt_remove_int_handler(int_line);
 }
 
 void kernel_interrupt_restore(const uint32_t prev_state)

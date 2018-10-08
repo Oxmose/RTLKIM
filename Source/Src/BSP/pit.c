@@ -93,7 +93,7 @@ OS_RETURN_E pit_init(void)
     }
 
     /* Set PIT interrupt handler */
-    err = kernel_interrupt_register_handler(PIT_INTERRUPT_LINE, dummy_handler);
+    err = kernel_interrupt_register_irq_handler(PIT_IRQ_LINE, dummy_handler);
     if(err != OS_NO_ERR)
     {
         return err;
@@ -199,14 +199,14 @@ OS_RETURN_E pit_set_handler(void(*handler)(
     }
 
     /* Remove the current handler */
-    err = kernel_interrupt_remove_handler(PIT_INTERRUPT_LINE);
+    err = kernel_interrupt_remove_irq_handler(PIT_IRQ_LINE);
     if(err != OS_NO_ERR)
     {
         pit_enable();
         return err;
     }
 
-    err = kernel_interrupt_register_handler(PIT_INTERRUPT_LINE, handler);
+    err = kernel_interrupt_register_irq_handler(PIT_IRQ_LINE, handler);
     if(err != OS_NO_ERR)
     {
         pit_enable();

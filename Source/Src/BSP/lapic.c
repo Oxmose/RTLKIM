@@ -383,8 +383,8 @@ OS_RETURN_E lapic_timer_init(void)
     global_lapic_freq = init_lapic_timer_frequency / LAPIC_INIT_FREQ;
 
     /* Register LAPI dummy handler */
-    err = kernel_interrupt_register_handler(LAPIC_TIMER_INTERRUPT_LINE,
-                                            lapic_dummy_handler);
+    err = kernel_interrupt_register_int_handler(LAPIC_TIMER_INTERRUPT_LINE,
+                                                lapic_dummy_handler);
     if(err != OS_NO_ERR)
     {
         return err;
@@ -548,16 +548,16 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
     }
 
     /* Remove the current handler */
-    err = kernel_interrupt_remove_handler(LAPIC_TIMER_INTERRUPT_LINE);
+    err = kernel_interrupt_remove_int_handler(LAPIC_TIMER_INTERRUPT_LINE);
     if(err != OS_NO_ERR)
     {
         lapic_timer_enable();
         return err;
     }
 
-    err = kernel_interrupt_register_handler(LAPIC_TIMER_INTERRUPT_LINE, 
-                                            handler);
-    if(err != OS_NO_ERR)
+    err = kernel_interrupt_register_int_handler(LAPIC_TIMER_INTERRUPT_LINE, 
+                                                handler);
+    if(err != OS_NO_ERR) 
     {
         return err;
     }

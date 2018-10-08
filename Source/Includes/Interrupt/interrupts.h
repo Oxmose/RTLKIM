@@ -29,37 +29,27 @@
  * CONSTANTS
  ******************************************************************************/
 
-/** @brief Offset of the first line of an IRQ interrupt. */
-#define INT_IRQ_OFFSET     0x30
+/** @brief Offset of the first line of an IRQ interrupt from PIC. */
+#define INT_PIC_IRQ_OFFSET     0x30
+/** @brief Offset of the first line of an IRQ interrupt from IO-APIC. */
+#define INT_IOAPIC_IRQ_OFFSET  0x40
 /** @brief Minimal customizable accepted interrupt line. */
-#define MIN_INTERRUPT_LINE 0x20
+#define MIN_INTERRUPT_LINE     0x20
 /** @brief Maximal customizable accepted interrupt line. */
-#define MAX_INTERRUPT_LINE (IDT_ENTRY_COUNT - 2)
+#define MAX_INTERRUPT_LINE     (IDT_ENTRY_COUNT - 1)
 
 /** @brief PIT IRQ number. */
 #define PIT_IRQ_LINE              0
-/** @brief PIT interrupt line. */
-#define PIT_INTERRUPT_LINE        (INT_IRQ_OFFSET + PIT_IRQ_LINE)
 /** @brief Keyboard IRQ number. */
 #define KBD_IRQ_LINE              1
-/** @brief Keyboard interrupt line. */
-#define KBD_INTERRUPT_LINE        (INT_IRQ_OFFSET + KBD_IRQ_LINE)
 /** @brief Serial COM2-4 IRQ number. */
 #define SERIAL_2_4_IRQ_LINE       3
-/** @brief Serial COM2-4 interrupt line. */
-#define SERIAL_2_4_INTERRUPT_LINE (INT_IRQ_OFFSET + SERIAL_2_4_IRQ_LINE)
 /** @brief Serial COM1-3 IRQ number. */
 #define SERIAL_1_3_IRQ_LINE       4
-/** @brief Serial COM1-3 interrupt line. */
-#define SERIAL_1_3_INTERRUPT_LINE (INT_IRQ_OFFSET + SERIAL_1_3_IRQ_LINE)
 /** @brief RTC IRQ number. */
 #define RTC_IRQ_LINE              8
-/** @brief RTC interrupt line. */
-#define RTC_INTERRUPT_LINE        (INT_IRQ_OFFSET + RTC_IRQ_LINE)
 /** @brief Mouse IRQ number. */
 #define MOUSE_IRQ_LINE            12
-/** @brief Mouse interrupt line. */
-#define MOUSE_INTERRUPT_LINE      (INT_IRQ_OFFSET + MOUSE_IRQ_LINE)
 
 /** @brief LAPIC Timer interrupt line. */
 #define LAPIC_TIMER_INTERRUPT_LINE 0x20
@@ -199,13 +189,24 @@ struct interrupt_driver
      * @details The function should check if the serviced interrupt is a 
      * spurious interrupt. It also should handle the spurious interrupt.
      * 
-     * @param[in] irq_number The IRQ number of the interrupt to test.
+     * @param[in] int_number The interrupt number of the interrupt to test.
      * 
      * @return The function will return the interrupt type.
      * - INTERRUPT_TYPE_SPURIOUS if the current interrupt is a spurious one.
      * - INTERRUPT_TYPE_REGULAR if the current interrupt is a regular one.
      */
-    INTERRUPT_TYPE_E (*driver_handle_spurious)(const uint32_t irq_number);
+    INTERRUPT_TYPE_E (*driver_handle_spurious)(const uint32_t int_number);
+
+    /**
+     * @brief Returns the interrupt line attached to an IRQ.
+     * 
+     * @details Returns the interrupt line attached to an IRQ. -1 is returned
+     * if the IRQ number is not supported by the driver.
+     * 
+     * @return The interrupt line attached to an IRQ. -1 is returned if the IRQ 
+     * number is not supported by the driver.
+     */
+    int32_t (*driver_get_irq_int_line)(const uint32_t irq_number);
 };
 
 /** 
@@ -249,7 +250,54 @@ OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver);
 OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t* driver);
 
 /**
- * @brief Registers a new interrupt handler for the desired interrupt line.
+ * @brief Registers a new interrupt handler for the desired IRQ number.
+ * 
+ * @details Registers a custom interrupt handler to be executed. The IRQ 
+ * number must be greater or equal to the minimal authorized custom IRQ number 
+ * and less than the maximal one.
+ *
+ * @param[in] irq_number The IRQ number to attach the handler to.
+ * @param[in] handler The handler for the desired interrupt.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+ * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the IRQ attached to the
+ * interrupt line is not allowed. 
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number is not supported.
+ * - OS_ERR_NULL_POINTER is returned if the pointer
+ * to the handler is NULL. 
+ * - OS_ERR_INTERRUPT_ALREADY_REGISTERED is returned if a 
+ * handler is already registered for this RIQ number.
+ */
+OS_RETURN_E kernel_interrupt_register_irq_handler(const uint32_t irq_number,
+                                       void(*handler)(
+                                             cpu_state_t*,
+                                             uint32_t,
+                                             stack_state_t*
+                                             )
+                                       );
+
+/**
+ * @brief Unregisters an interrupt handler for the desired IRQ number.
+ * 
+ * @details Unregisters a custom interrupt handler to be executed. The IRQ 
+ * number must be greater or equal to the minimal authorized custom IRQ number 
+ * and less than the maximal one.
+ *
+ * @param[in] irq_number The IRQ number to detach the handler from.
+ * 
+ * @return The succes state or the error code. 
+ * - OS_NO_ERR is returned if no error is encountered. 
+  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the IRQ attached to the
+ * interrupt line is not allowed. 
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number is not supported.
+ * - OS_ERR_INTERRUPT_NOT_REGISTERED is returned if the IRQ has no handler 
+ * attached.
+ */
+OS_RETURN_E kernel_interrupt_remove_irq_handler(const uint32_t irq_number);
+
+/**
+ * @brief Registers an interrupt handler for the desired interrupt line.
  * 
  * @details Registers a custom interrupt handler to be executed. The interrupt 
  * line must be greater or equal to the minimal authorized custom interrupt line 
@@ -267,7 +315,7 @@ OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t* driver);
  * - OS_ERR_INTERRUPT_ALREADY_REGISTERED is returned if a 
  * handler is already registered for this interrupt line.
  */
-OS_RETURN_E kernel_interrupt_register_handler(const uint32_t interrupt_line,
+OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
                                        void(*handler)(
                                              cpu_state_t*,
                                              uint32_t,
@@ -291,7 +339,7 @@ OS_RETURN_E kernel_interrupt_register_handler(const uint32_t interrupt_line,
  * - OS_ERR_INTERRUPT_NOT_REGISTERED is returned if the interrupt line has no
  * handler attached.
  */
-OS_RETURN_E kernel_interrupt_remove_handler(const uint32_t interrupt_line);
+OS_RETURN_E kernel_interrupt_remove_int_handler(const uint32_t interrupt_line);
 
 /**
  * @brief Restores the CPU interrupts state.

@@ -39,7 +39,7 @@ static void test_sw_interupts_lock(void)
     OS_RETURN_E err;
     uint32_t int_state;
 
-    if((err = kernel_interrupt_register_handler(MIN_INTERRUPT_LINE, incrementer_handler)))
+    if((err = kernel_interrupt_register_int_handler(MIN_INTERRUPT_LINE, incrementer_handler)))
     {
         kernel_error("TEST_SW_INT_LOCK INIT\n");
         kernel_panic(err);
@@ -49,7 +49,7 @@ static void test_sw_interupts_lock(void)
         kernel_printf("[TESTMODE] TEST_SW_INT_LOCK INIT\n");
     }
 
-    if((err = kernel_interrupt_register_handler(MIN_INTERRUPT_LINE + 1, decrementer_handler)))
+    if((err = kernel_interrupt_register_int_handler(MIN_INTERRUPT_LINE + 1, decrementer_handler)))
     {
         kernel_error("TEST_SW_INT_LOCK INIT\n");
         kernel_panic(err);
@@ -181,7 +181,7 @@ static void test_sw_interupts_lock(void)
     }
 
 
-    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE)))
+    if((err = kernel_interrupt_remove_int_handler(MIN_INTERRUPT_LINE)))
     {
         kernel_error("TEST_SW_INT_LOCK 8\n");
         kernel_panic(err);
@@ -191,7 +191,7 @@ static void test_sw_interupts_lock(void)
         kernel_printf("[TESTMODE] TEST_SW_INT_LOCK 8\n");
     }
 
-    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE + 1)))
+    if((err = kernel_interrupt_remove_int_handler(MIN_INTERRUPT_LINE + 1)))
     {
         kernel_error("TEST_SW_INT_LOCK 9\n");
         kernel_panic(err);
@@ -216,7 +216,7 @@ void test_sw_interupts(void)
     cpu_outb(0xFF, 0xA1);
 
     /* TEST REGISTER < MIN */
-    if((err = kernel_interrupt_register_handler(MIN_INTERRUPT_LINE - 1, incrementer_handler))
+    if((err = kernel_interrupt_register_int_handler(MIN_INTERRUPT_LINE - 1, incrementer_handler))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_INT 0\n");
@@ -228,7 +228,7 @@ void test_sw_interupts(void)
     }
 
     /* TEST REGISTER > MAX */
-    if((err = kernel_interrupt_register_handler(MAX_INTERRUPT_LINE + 1, incrementer_handler))
+    if((err = kernel_interrupt_register_int_handler(MAX_INTERRUPT_LINE + 1, incrementer_handler))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_INT 1\n");
@@ -240,7 +240,7 @@ void test_sw_interupts(void)
     }
 
     /* TEST REMOVE < MIN */
-    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE - 1))
+    if((err = kernel_interrupt_remove_int_handler(MIN_INTERRUPT_LINE - 1))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_INT 2\n");
@@ -252,7 +252,7 @@ void test_sw_interupts(void)
     }
 
     /* TEST REMOVE > MAX */
-    if((err = kernel_interrupt_remove_handler(MAX_INTERRUPT_LINE + 1))
+    if((err = kernel_interrupt_remove_int_handler(MAX_INTERRUPT_LINE + 1))
      != OR_ERR_UNAUTHORIZED_INTERRUPT_LINE)
     {
         kernel_error("TEST_SW_INT 3\n");
@@ -264,7 +264,7 @@ void test_sw_interupts(void)
     }
 
     /* TEST NULL HANDLER */
-    if((err = kernel_interrupt_register_handler(MIN_INTERRUPT_LINE, NULL))
+    if((err = kernel_interrupt_register_int_handler(MIN_INTERRUPT_LINE, NULL))
      != OS_ERR_NULL_POINTER)
     {
         kernel_error("TEST_SW_INT 4\n");
@@ -276,7 +276,7 @@ void test_sw_interupts(void)
     }
 
     /* TEST REMOVE WHEN NOT REGISTERED */
-    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE))
+    if((err = kernel_interrupt_remove_int_handler(MIN_INTERRUPT_LINE))
      != OS_ERR_INTERRUPT_NOT_REGISTERED)
     {
         kernel_error("TEST_SW_INT 5\n");
@@ -288,7 +288,7 @@ void test_sw_interupts(void)
     }
 
     /* TEST REGISTER WHEN ALREADY REGISTERED */
-    if((err = kernel_interrupt_register_handler(MIN_INTERRUPT_LINE, incrementer_handler))
+    if((err = kernel_interrupt_register_int_handler(MIN_INTERRUPT_LINE, incrementer_handler))
      != OS_NO_ERR)
     {
         kernel_error("TEST_SW_INT 6\n");
@@ -299,7 +299,7 @@ void test_sw_interupts(void)
         kernel_printf("[TESTMODE] TEST_SW_INT 6\n");
     }
 
-    if((err = kernel_interrupt_register_handler(MIN_INTERRUPT_LINE, incrementer_handler))
+    if((err = kernel_interrupt_register_int_handler(MIN_INTERRUPT_LINE, incrementer_handler))
      != OS_ERR_INTERRUPT_ALREADY_REGISTERED)
     {
         kernel_error("TEST_SW_INT 7\n");
@@ -311,7 +311,7 @@ void test_sw_interupts(void)
     }
 
     /* INIT THINGS */
-    if((err = kernel_interrupt_remove_handler(MIN_INTERRUPT_LINE)) != OS_NO_ERR)
+    if((err = kernel_interrupt_remove_int_handler(MIN_INTERRUPT_LINE)) != OS_NO_ERR)
     {
         kernel_error("TEST_SW_INT 8\n");
         kernel_panic(err);
@@ -328,12 +328,13 @@ void test_sw_interupts(void)
     for(i = MIN_INTERRUPT_LINE; i <= MAX_INTERRUPT_LINE; ++i)
     {
         if(i == PANIC_INT_LINE || 
-           i == PIC_SPURIOUS_IRQ_MASTER + INT_IRQ_OFFSET ||
-           i == PIC_SPURIOUS_IRQ_SLAVE + INT_IRQ_OFFSET)
+           i == PIC_SPURIOUS_IRQ_MASTER + INT_PIC_IRQ_OFFSET ||
+           i == PIC_SPURIOUS_IRQ_SLAVE + INT_PIC_IRQ_OFFSET ||
+           i == 0xFF)
         {
             continue;
         }
-        err = kernel_interrupt_register_handler(i, incrementer_handler);
+        err = kernel_interrupt_register_int_handler(i, incrementer_handler);
         if(err != OS_NO_ERR)
         {
             kernel_error("TEST_SW_INT 9 [%d]\n", err);
@@ -584,12 +585,13 @@ void test_sw_interupts(void)
     for(i = MIN_INTERRUPT_LINE; i <= MAX_INTERRUPT_LINE; ++i)
     {
         if(i == PANIC_INT_LINE || 
-           i == PIC_SPURIOUS_IRQ_MASTER + INT_IRQ_OFFSET ||
-           i == PIC_SPURIOUS_IRQ_SLAVE + INT_IRQ_OFFSET)
+           i == PIC_SPURIOUS_IRQ_MASTER + INT_PIC_IRQ_OFFSET ||
+           i == PIC_SPURIOUS_IRQ_SLAVE + INT_PIC_IRQ_OFFSET ||
+           i == 0xFF)
         {
             continue;
         }
-        if((err = kernel_interrupt_remove_handler(i)) != OS_NO_ERR)
+        if((err = kernel_interrupt_remove_int_handler(i)) != OS_NO_ERR)
         {
             kernel_error("TEST_SW_INT 11\n");
             kernel_panic(err);
@@ -604,12 +606,13 @@ void test_sw_interupts(void)
     for(i = MIN_INTERRUPT_LINE; i <= MAX_INTERRUPT_LINE; ++i)
     {
         if(i == PANIC_INT_LINE || 
-           i == PIC_SPURIOUS_IRQ_MASTER + INT_IRQ_OFFSET ||
-           i == PIC_SPURIOUS_IRQ_SLAVE + INT_IRQ_OFFSET)
+           i == PIC_SPURIOUS_IRQ_MASTER + INT_PIC_IRQ_OFFSET ||
+           i == PIC_SPURIOUS_IRQ_SLAVE + INT_PIC_IRQ_OFFSET ||
+           i == 0xFF)
         {
             continue;
         }
-        if((err = kernel_interrupt_register_handler(i, decrementer_handler)) != OS_NO_ERR)
+        if((err = kernel_interrupt_register_int_handler(i, decrementer_handler)) != OS_NO_ERR)
         {
             kernel_error("TEST_SW_INT 12\n");
             kernel_panic(err);
@@ -859,12 +862,13 @@ void test_sw_interupts(void)
     for(i = MIN_INTERRUPT_LINE; i <= MAX_INTERRUPT_LINE; ++i)
     {
         if(i == PANIC_INT_LINE || 
-           i == PIC_SPURIOUS_IRQ_MASTER + INT_IRQ_OFFSET ||
-           i == PIC_SPURIOUS_IRQ_SLAVE + INT_IRQ_OFFSET)
+           i == PIC_SPURIOUS_IRQ_MASTER + INT_PIC_IRQ_OFFSET ||
+           i == PIC_SPURIOUS_IRQ_SLAVE + INT_PIC_IRQ_OFFSET ||
+           i == 0xFF)
         {
             continue;
         }
-        if((err = kernel_interrupt_remove_handler(i)) != OS_NO_ERR)
+        if((err = kernel_interrupt_remove_int_handler(i)) != OS_NO_ERR)
         {
             kernel_error("TEST_SW_INT 14\n");
             kernel_panic(err);

@@ -110,12 +110,23 @@ OS_RETURN_E io_apic_set_irq_eoi(const uint32_t irq_number);
  * @details Checks if the serviced interrupt is a spurious 
  * interrupt. The function also handles the spurious interrupt.
  * 
- * @param[in] irq_number The IRQ number of the interrupt to test.
+ * @param[in] int_number The interrupt number of the interrupt to test.
  * 
  * @return The function will return the interrupt type.
  * - INTERRUPT_TYPE_SPURIOUS if the current interrupt is a spurious one.
  * - INTERRUPT_TYPE_REGULAR if the current interrupt is a regular one.
  */
-INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t irq_number);
+INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t int_number);
+
+/**
+ * @brief Returns the interrupt line attached to an IRQ.
+ * 
+ * @details Returns the interrupt line attached to an IRQ. -1 is returned
+ * if the IRQ number is not supported by the driver.
+ * 
+ * @return The interrupt line attached to an IRQ. -1 is returned if the IRQ 
+ * number is not supported by the driver.
+ */
+int32_t io_apic_get_irq_int_line(const uint32_t irq_number);
 
 #endif /* __IO_APIC_H_ */

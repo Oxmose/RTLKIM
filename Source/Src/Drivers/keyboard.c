@@ -417,8 +417,8 @@ OS_RETURN_E keyboard_init(void)
 #endif
     memset(&kbd_buf, 0, sizeof(kbd_buffer_t));
     /* Init interuption settings */
-    err = kernel_interrupt_register_handler(KBD_INTERRUPT_LINE,
-                                     keyboard_interrupt_handler);
+    err = kernel_interrupt_register_irq_handler(KBD_IRQ_LINE,
+                                                keyboard_interrupt_handler);
     if(err != OS_NO_ERR)
     {
         return err;

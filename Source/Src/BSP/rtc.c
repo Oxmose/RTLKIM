@@ -112,8 +112,7 @@ OS_RETURN_E rtc_init(void)
     rtc_frequency = (RTC_QUARTZ_FREQ >> (RTC_INIT_RATE - 1));
     
     /* Set rtc clock interrupt handler */
-    err = kernel_interrupt_register_handler(RTC_INTERRUPT_LINE,
-                                            dummy_handler);
+    err = kernel_interrupt_register_irq_handler(RTC_IRQ_LINE, dummy_handler);
     if(err != OS_NO_ERR)
     {
         return err;
@@ -291,14 +290,14 @@ OS_RETURN_E rtc_set_handler(void(*handler)(
     }
 
     /* Remove the current handler */
-    err = kernel_interrupt_remove_handler(RTC_INTERRUPT_LINE);
+    err = kernel_interrupt_remove_irq_handler(RTC_IRQ_LINE);
     if(err != OS_NO_ERR)
     {
         rtc_enable();
         return err;
     }
 
-    err = kernel_interrupt_register_handler(RTC_INTERRUPT_LINE, handler);
+    err = kernel_interrupt_register_irq_handler(RTC_IRQ_LINE, handler);
     if(err != OS_NO_ERR)
     {
         rtc_enable();
