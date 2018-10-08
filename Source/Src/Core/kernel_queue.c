@@ -40,32 +40,29 @@
  * FUNCTIONS
  ******************************************************************************/
 
- kernel_queue_node_t* kernel_queue_create_node(void* data, OS_RETURN_E *error)
- {
-     kernel_queue_node_t* new_node;
+kernel_queue_node_t* kernel_queue_create_node(void* data, OS_RETURN_E *error)
+{
+    kernel_queue_node_t* new_node;
 
-     /* Create new node */
-     new_node = kmalloc(sizeof(kernel_queue_node_t));
+    /* Create new node */
+    new_node = kmalloc(sizeof(kernel_queue_node_t));
 
-     if(new_node == NULL)
-     {
-         if(error != NULL)
-         {
-             *error = OS_ERR_MALLOC;
-         }
-         return NULL;
-     }
-
+    if(new_node == NULL)
+    {
+        if(error != NULL)
+        {
+            *error = OS_ERR_MALLOC;
+        }
+        return NULL;
+    }
      /* Init the structure */
-     memset(new_node, 0, sizeof(kernel_queue_node_t));
-     new_node->data = data;
-
-     if(error != NULL)
-     {
-         *error = OS_NO_ERR;
-     }
-
-     return new_node;
+    memset(new_node, 0, sizeof(kernel_queue_node_t));
+    new_node->data = data;
+    if(error != NULL)
+    {
+        *error = OS_NO_ERR;
+    }
+    return new_node;
 }
 
 OS_RETURN_E kernel_queue_delete_node(kernel_queue_node_t** node)

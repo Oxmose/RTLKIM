@@ -6,6 +6,7 @@
 /* Used as example, it will be changed in the future. */
 int main(void)
 {
+    uint32_t i = 0;
     printf("\n");
     while(1)
     {
@@ -21,6 +22,11 @@ int main(void)
                 hours, minutes, seconds, 
                 date.day, date.month, date.year);
         sched_sleep(200);
+
+        if(i++ == 50)
+            break;
     }
+
+    printf("\n");
     return 0;
 }

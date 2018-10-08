@@ -33,6 +33,7 @@
 #include <Core/kernel_queue.h>    /* kernel_queue_t, kernel_queue_node_t */
 #include <Time/time_management.h> /* time_get_current_uptime(), 
                                    * time_register_scheduler() */
+#include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -125,6 +126,7 @@ static void thread_exit(void)
     OS_RETURN_E          err;
     kernel_thread_t*     joining_thread = NULL;
     kernel_queue_node_t* node;
+    uint32_t             word;
 
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("Exit thread %d\n", active_thread->tid);
@@ -149,10 +151,13 @@ static void thread_exit(void)
         return;
     }
 
+    ENTER_CRITICAL(word);
+
     /* Enqueue thread in zombie list. */
     err = kernel_queue_push(active_thread_node, zombie_threads_table);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         kernel_error("Could not enqueue zombie thread[%d]\n", err);
         kernel_panic(err);
     }
@@ -173,6 +178,7 @@ static void thread_exit(void)
         err = kernel_queue_push(node, init_thread->children);
         if(err != OS_NO_ERR)
         {
+            EXIT_CRITICAL(word);
             kernel_error("Could not enqueue thread to init[%d]\n", err);
             kernel_panic(err);
         }
@@ -180,6 +186,7 @@ static void thread_exit(void)
     }
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         kernel_error("Could not dequeue thread from children[%d]\n", err);
         kernel_panic(err);
     }
@@ -188,6 +195,7 @@ static void thread_exit(void)
     err = kernel_queue_delete_queue(&active_thread->children);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         kernel_error("Could not delete lsit of children[%d]\n", err);
         kernel_panic(err);
     }
@@ -214,11 +222,14 @@ static void thread_exit(void)
                                 active_threads_table[joining_thread->priority]);
             if(err != OS_NO_ERR)
             {
+                EXIT_CRITICAL(word);
                 kernel_error("Could not enqueue joining thread[%d]\n", err);
                 kernel_panic(err);
             }
         }
     }
+
+    EXIT_CRITICAL(word);
 
     /* Schedule thread */
     sched_schedule();
@@ -235,12 +246,16 @@ static void thread_exit(void)
 static void sched_clean_joined_thread(kernel_thread_t* thread)
 {
     kernel_queue_node_t* node;
-    OS_RETURN_E         err;
+    OS_RETURN_E          err;
+    uint32_t             word;
+
+    ENTER_CRITICAL(word);
 
     /* Remove node from children table */
     node = kernel_queue_find(active_thread->children, thread, &err);
     if(err != OS_NO_ERR && err != OS_ERR_NO_SUCH_ID)
     {
+        EXIT_CRITICAL(word);
         kernel_error("Could not find joined thread in chlidren table[%d]\n",
                      err);
         kernel_panic(err);
@@ -251,6 +266,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
         err = kernel_queue_remove(active_thread->children, node);
         if(err != OS_NO_ERR)
         {
+            EXIT_CRITICAL(word);
             kernel_error("Could delete thread node in children table[%d]\n",
                          err);
             kernel_panic(err);
@@ -259,6 +275,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
         err = kernel_queue_delete_node(&node);
         if(err != OS_NO_ERR)
         {
+            EXIT_CRITICAL(word);
             kernel_error("Could delete thread node[%d]\n", err);
             kernel_panic(err);
         }
@@ -268,6 +285,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
     node = kernel_queue_find(zombie_threads_table, thread, &err);
     if(err != OS_NO_ERR && err != OS_ERR_NO_SUCH_ID)
     {
+        EXIT_CRITICAL(word);
         kernel_error("Could not find joined thread in zombie table[%d]\n",
                      err);
         kernel_panic(err);
@@ -278,6 +296,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
         err = kernel_queue_remove(zombie_threads_table, node);
         if(err != OS_NO_ERR)
         {
+            EXIT_CRITICAL(word);
             kernel_error("Could delete thread node in zombie table[%d]\n",
                          err);
             kernel_panic(err);
@@ -286,6 +305,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
         err = kernel_queue_delete_node(&node);
         if(err != OS_NO_ERR)
         {
+            EXIT_CRITICAL(word);
             kernel_error("Could delete thread node[%d]\n", err);
             kernel_panic(err);
         }
@@ -295,6 +315,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
     node = kernel_queue_find(global_threads_table, thread, &err);
     if(err != OS_NO_ERR && err != OS_ERR_NO_SUCH_ID)
     {
+        EXIT_CRITICAL(word);
         kernel_error("Could not find joined thread in general table[%d]\n",
                      err);
         kernel_panic(err);
@@ -304,6 +325,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
         err = kernel_queue_remove(global_threads_table, node);
         if(err != OS_NO_ERR)
         {
+            EXIT_CRITICAL(word);
             kernel_error("Could delete thread node in general table[%d]\n",
                          err);
             kernel_panic(err);
@@ -312,6 +334,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
         err = kernel_queue_delete_node(&node);
         if(err != OS_NO_ERR)
         {
+            EXIT_CRITICAL(word);
             kernel_error("Could delete thread node[%d]\n", err);
             kernel_panic(err);
         }
@@ -326,6 +349,8 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
     kfree(thread->stack);
     kfree(thread);
     --thread_count;
+
+    EXIT_CRITICAL(word);
 }
 
 /**
@@ -411,7 +436,8 @@ static void* idle_sys(void* args)
 
         if(system_state == SYSTEM_STATE_HALTED)
         {
-            kernel_info("System HALTED");
+            kernel_printf("\n");
+            kernel_info(" -- System HALTED -- ");
             kernel_interrupt_disable();
         }
         cpu_hlt();
@@ -438,6 +464,7 @@ static void* init_func(void* args)
     kernel_queue_node_t* thread_node;
     uint32_t             sys_thread;
     OS_RETURN_E          err;
+    uint32_t             word;
 
     (void)args;
 
@@ -480,9 +507,6 @@ static void* init_func(void* args)
         kernel_panic(err);
     }
 
-    /* Initialized the interrupts */
-    kernel_interrupt_restore(1);
-
     err = sched_wait_thread(main_thread, NULL);
     if(err != OS_NO_ERR)
     {
@@ -497,9 +521,12 @@ static void* init_func(void* args)
     /* System thread are idle threads and INIT */
     sys_thread = 2;
 
+    ENTER_CRITICAL(word);
+
     /* Wait all children */
     while(thread_count > sys_thread)
     {
+        
         thread_node = kernel_queue_pop(active_thread->children, &err);
 
         while(thread_node != NULL && err == OS_NO_ERR)
@@ -507,16 +534,22 @@ static void* init_func(void* args)
 
             thread = (kernel_thread_t*)thread_node->data;
 
+            EXIT_CRITICAL(word);
+
             err = sched_wait_thread(thread, NULL);
             if(err != OS_NO_ERR)
             {
+                EXIT_CRITICAL(word);
                 kernel_error("Error while waiting thread in INIT [%d]\n", err);
                 kernel_panic(err);
             }
 
+            ENTER_CRITICAL(word);
+
             err = kernel_queue_delete_node(&thread_node);
             if(err != OS_NO_ERR)
             {
+                EXIT_CRITICAL(word);
                 kernel_error("Error while deleting thread node in INIT [%d]\n", 
                              err);
                 kernel_panic(err);
@@ -525,12 +558,16 @@ static void* init_func(void* args)
         }
     }
 
+    EXIT_CRITICAL(word);
+
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("INIT Ended\n");
     #endif
 
     /* If here, the system is halted */
     system_state = SYSTEM_STATE_HALTED;
+
+
 
     return NULL;
 }
@@ -984,6 +1021,7 @@ OS_RETURN_E get_threads_info(thread_info_t* threads, int32_t* size)
     int32_t               i;
     kernel_queue_node_t*  cursor;
     kernel_thread_t*      cursor_thread;
+    uint32_t              word;
 
     if(threads == NULL)
     {
@@ -998,6 +1036,8 @@ OS_RETURN_E get_threads_info(thread_info_t* threads, int32_t* size)
     {
         *size = thread_count;
     }
+
+    ENTER_CRITICAL(word);
 
     /* Walk the thread list and fill the structures */
     cursor = global_threads_table->head;
@@ -1023,6 +1063,8 @@ OS_RETURN_E get_threads_info(thread_info_t* threads, int32_t* size)
         cursor = cursor->next;
         cursor_thread = (kernel_thread_t*)cursor->data;
     }
+
+    EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
 }
@@ -1055,6 +1097,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
     kernel_queue_node_t* seconde_new_thread_node;
     kernel_queue_node_t* children_new_thread_node;
     uint32_t             stack_index;
+    uint32_t             word;
 
     if(thread != NULL)
     {
@@ -1066,6 +1109,8 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
     {
         return OS_ERR_FORBIDEN_PRIORITY;
     }
+
+    ENTER_CRITICAL(word);
 
     new_thread = kmalloc(sizeof(kernel_thread_t));
     new_thread_node = kernel_queue_create_node(new_thread, &err);
@@ -1081,6 +1126,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
         {
             err = OS_ERR_MALLOC;
         }
+        EXIT_CRITICAL(word);
         return err;
     }
     memset(new_thread, 0, sizeof(kernel_thread_t));
@@ -1100,6 +1146,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
     {
         kernel_queue_delete_node(&new_thread_node);
         kfree(new_thread);
+        EXIT_CRITICAL(word);
         return err;
     }
 
@@ -1109,7 +1156,10 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
     new_thread->stack = kmalloc(stack_index * sizeof(uint32_t));
     if(new_thread->stack == NULL)
     {
+        kernel_queue_delete_node(&new_thread_node);
+        kernel_queue_delete_queue(&new_thread->children);
         kfree(new_thread);
+        EXIT_CRITICAL(word);
         return OS_ERR_MALLOC;
     }
 
@@ -1152,6 +1202,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
         kernel_queue_delete_node(&new_thread_node);
         kfree(new_thread->stack);
         kfree(new_thread);
+        EXIT_CRITICAL(word);
         return err;
     }
 
@@ -1163,6 +1214,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
         kernel_queue_delete_node(&seconde_new_thread_node);
         kfree(new_thread->stack);
         kfree(new_thread);
+        EXIT_CRITICAL(word);
         return err;
     }
 
@@ -1175,6 +1227,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
         kernel_queue_delete_node(&seconde_new_thread_node);
         kfree(new_thread->stack);
         kfree(new_thread);
+        EXIT_CRITICAL(word);
         return err;
     }
 
@@ -1188,6 +1241,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
          kernel_queue_remove(active_threads_table[priority], new_thread_node);
          kfree(new_thread->stack);
          kfree(new_thread);
+         EXIT_CRITICAL(word);
          return err;
      }
 
@@ -1203,10 +1257,13 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
         kernel_queue_remove(global_threads_table, seconde_new_thread_node);
         kfree(new_thread->stack);
         kfree(new_thread);
+        EXIT_CRITICAL(word);
         return err;
     }
 
     ++thread_count;
+
+    EXIT_CRITICAL(word);
 
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("Created thread %d\n", new_thread->tid);
@@ -1297,6 +1354,7 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
                                 const uint8_t do_schedule)
 {
     OS_RETURN_E      err;
+    uint32_t         word;
     kernel_thread_t* thread = (kernel_thread_t*)node->data;
 
     /* Check thread value */
@@ -1320,11 +1378,14 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
         }
     }
 
+    ENTER_CRITICAL(word);
+
     /* Unlock thread state */
     thread->state = THREAD_STATE_READY;
     err = kernel_queue_push(node, active_threads_table[thread->priority]);
     if(err != OS_NO_ERR)
     {
+        EXIT_CRITICAL(word);
         kernel_error("Could not enqueue thread in active table[%d]\n", err);
         kernel_panic(err);
     }
@@ -1334,6 +1395,8 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
                          thread->tid,
                          block_type);
     #endif
+
+    EXIT_CRITICAL(word);
 
     if(do_schedule)
     {
