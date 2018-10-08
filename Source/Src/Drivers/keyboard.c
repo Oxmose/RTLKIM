@@ -241,7 +241,6 @@ static void manage_keycode(const int8_t keycode)
     char    character;
     //OS_RETURN_E err;
 
-
     /* Manage push of release */
     if(keycode > 0)
     {

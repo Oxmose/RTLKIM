@@ -21,10 +21,11 @@
  * @warning Only COM1 and COM2 are initialized for input.
  ******************************************************************************/
 
-#include <Lib/stddef.h> /* OS_RETURN_E */
-#include <Lib/stdint.h> /* Generic int types */
-#include <Lib/string.h> /* strlen */
-#include <Cpu/cpu.h>    /* outb, inb */
+#include <Lib/stddef.h>    /* OS_RETURN_E */
+#include <Lib/stdint.h>    /* Generic int types */
+#include <Lib/string.h>    /* strlen */
+#include <Cpu/cpu.h>       /* outb, inb */
+#include <Sync/critical.h> /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -177,6 +178,8 @@ OS_RETURN_E serial_init(void)
 
 void serial_write(const uint32_t port, const uint8_t data)
 {
+    uint32_t word;
+
     if(serial_init_done == 0)
     {
         return;
@@ -185,6 +188,8 @@ void serial_write(const uint32_t port, const uint8_t data)
     {
         return;
     }
+
+    ENTER_CRITICAL(word);
 
     /* Wait for empty transmit */
     while((SERIAL_LINE_STATUS_PORT(port) & 0x20) == 0)
@@ -202,15 +207,23 @@ void serial_write(const uint32_t port, const uint8_t data)
 
     while((SERIAL_LINE_STATUS_PORT(port) & 0x20) == 0)
     {}
+
+    EXIT_CRITICAL(word);
 }
 
 uint8_t serial_read(const uint32_t port)
 {
+    uint32_t word;
+    ENTER_CRITICAL(word);
+    
     /* Wait for data to be received */
     while (serial_received(port) == 0);
 
     /* Read available data on port */
-    return cpu_inb(SERIAL_DATA_PORT(port));
+    uint8_t val = cpu_inb(SERIAL_DATA_PORT(port));
+
+    EXIT_CRITICAL(word);
+    return val;
 }
 
 void serial_put_string(const char* string)

@@ -22,6 +22,7 @@
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Cpu/cpu.h>          /* oub cpu_inb */
 #include <IO/kernel_output.h> /* kernel_info kernel_info */
+#include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -190,6 +191,7 @@ OS_RETURN_E ata_pio_read_sector(ata_pio_device_t device, const uint32_t sector,
 {
     uint32_t i;
     uint8_t  status;
+    uint32_t word;
 
     OS_RETURN_E err = OS_NO_ERR;
 
@@ -211,6 +213,8 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
     {
         return OS_ERR_ATA_SIZE_TO_HUGE;
     }
+
+    ENTER_CRITICAL(word);
 
     /* Set sector to read */
     cpu_outb((device.type == MASTER ? 0xE0 : 0xF0) | 
@@ -241,6 +245,7 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
         #if ATA_PIO_KERNEL_DEBUG == 1
         kernel_serial_debug("ATA device not present\n");
         #endif
+        EXIT_CRITICAL(word);
         return OS_ERR_ATA_DEVICE_NOT_PRESENT;
     }
     while(((status & ATA_PIO_FLAG_BUSY) == ATA_PIO_FLAG_BUSY)
@@ -258,6 +263,7 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
                                                   "MASTER" : "SLAVE"));
         #endif
 
+        EXIT_CRITICAL(word);
         return OS_ERR_ATA_DEVICE_ERROR;
     }
 
@@ -289,6 +295,8 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
         cpu_inw(device.port + ATA_PIO_DATA_PORT_OFFSET);
     }
 
+    EXIT_CRITICAL(word);
+
     return err;
 }
 
@@ -296,8 +304,7 @@ OS_RETURN_E ata_pio_write_sector(ata_pio_device_t device, const uint32_t sector,
                              const uint8_t* buffer, const uint32_t size)
 {
     uint32_t i;
-
-    //OS_RETURN_E err = OS_NO_ERR;
+    uint32_t word;
 
     #if ATA_PIO_KERNEL_DEBUG == 1
     kernel_serial_debug("ATA write request device 0x%08x %s, sector 0x%08x,\
@@ -317,6 +324,8 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
     {
         return OS_ERR_ATA_SIZE_TO_HUGE;
     }
+
+    ENTER_CRITICAL(word);
 
     /* Set sector to write */
     cpu_outb((device.type == MASTER ? 0xE0 : 0xF0) | 
@@ -367,21 +376,26 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
         cpu_outw(0x0000, device.port + ATA_PIO_DATA_PORT_OFFSET);
     }
 
+    EXIT_CRITICAL(word);
+
     /* Flush write */
     return ata_pio_flush(device);
 }
 
 OS_RETURN_E ata_pio_flush(ata_pio_device_t device)
 {
-    uint8_t status;
-
+    uint8_t     status;
+    uint32_t    word;
     OS_RETURN_E err = OS_NO_ERR;
+
 
     #if ATA_PIO_KERNEL_DEBUG == 1
     kernel_serial_debug("ATA flush request device 0x%08x %s\n",
                         device.port,
                         ((device.type == MASTER) ? "MASTER" : "SLAVE"));
     #endif
+
+    ENTER_CRITICAL(word);
 
     /* Set device */
     cpu_outb((device.type == MASTER ? 0xE0 : 0xF0),
@@ -399,6 +413,7 @@ OS_RETURN_E ata_pio_flush(ata_pio_device_t device)
         #if ATA_PIO_KERNEL_DEBUG == 1
         kernel_serial_debug("ATA device not present\n");
         #endif
+        EXIT_CRITICAL(word);
         return OS_ERR_ATA_DEVICE_NOT_PRESENT;
     }
 
@@ -410,7 +425,7 @@ OS_RETURN_E ata_pio_flush(ata_pio_device_t device)
                                                   ((device.type == MASTER) ?
                                                   "MASTER" : "SLAVE"));
         #endif
-
+        EXIT_CRITICAL(word);
         return OS_ERR_ATA_DEVICE_ERROR;
     }
 
@@ -428,9 +443,10 @@ OS_RETURN_E ata_pio_flush(ata_pio_device_t device)
                                                   ((device.type == MASTER) ?
                                                   "MASTER" : "SLAVE"));
         #endif
-
+        EXIT_CRITICAL(word);
         return OS_ERR_ATA_DEVICE_ERROR;
     }
 
+    EXIT_CRITICAL(word);
     return err;
 }
