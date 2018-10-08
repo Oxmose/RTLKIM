@@ -275,12 +275,8 @@ OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val,
  * @details Removes the active thread from the active threads table, the thread 
  * might be contained in an other structure such as a mutex. The caller of this 
  * function must call schedule() after.
- * 
- * @warning The caller of this function must call sched_schedule() after.
  *
- * @param[in] node The node containing the thread to unlock.
- * @param[in] block_type The type of block (mutex, sem, ...)
- * @param[in] do_schedule Set to 1 the thread should be immediatly scheduled.
+ * @param block_type The type of block (mutex, sem, ...)
  * 
  * @return The current thread system's node is returned on success. If the call
  * failed, NULL is returned.
@@ -317,7 +313,7 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
  * greater than the current threads count in the system then it will be modified 
  * to the current threads count.
  *
- * @param[out] thread The array in wich we want to store the threads 
+ * @param[out] threads The array in wich we want to store the threads 
  * information.
  * @param[in] size The size of the array given as parameter. If size is greater
  * than the current threads count in the system then it will be modified to the

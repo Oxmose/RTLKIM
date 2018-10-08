@@ -415,7 +415,7 @@ static void* main_kickstart(void* args)
  * only thread running when no other trhread are ready. It allows better power
  * consumption management and CPU usage computation.
  *
- * @param args[in] The argument to send to the IDLE thread, usualy null.
+ * @param[in] args The argument to send to the IDLE thread, usualy null.
  * 
  * @warning The IDLE thread routine should never return.
  * 
@@ -698,7 +698,7 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
 /**
  * @brief Selects the next thread to be scheduled.
  * 
- * @detaisl Selects the next thread to be scheduled. Sets the prev_thread and 
+ * @details Selects the next thread to be scheduled. Sets the prev_thread and 
  * active_thread pointers. The function will select the next most prioritary 
  * thread to be executed. This function also wake up sleeping thread which 
  * wake-up time has been reached
