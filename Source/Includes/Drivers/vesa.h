@@ -522,7 +522,7 @@ void vesa_fill_screen(uint32_t* pointer);
  * 
  * @details Enables or disables transparent background for characters.
  * 
- * @param[in} enabled If set to other than 0, characters will be printed with
+ * @param[in] enabled If set to other than 0, characters will be printed with
  * a transparent background.
  */
 void vesa_set_transparent_char(const uint32_t enabled);

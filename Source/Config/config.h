@@ -43,13 +43,13 @@
  */
 #define ENABLE_LAPIC_TIMER 1
 
-/** @brief Enables SMP support. IO-APIC must be enable and supported to enable 
+/** @brief Enables SMP support. IO-APIC must be enabled and supported to enable 
  * SMP.
  */
 #define ENABLE_SMP         0
 
 /** @brief Enables VESA support for graphic drivers. */
-#define ENABLE_VESA        1
+#define ENABLE_VESA        0
 
 /** @brief Enables ATA drivers support. */
 #define ENABLE_ATA         0
