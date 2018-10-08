@@ -517,4 +517,14 @@ void vesa_console_write_keyboard(const char* str, const uint32_t len);
  */
 void vesa_fill_screen(uint32_t* pointer);
 
+/** 
+ * @brief Enables or disables transparent background for characters.
+ * 
+ * @details Enables or disables transparent background for characters.
+ * 
+ * @param[in} enabled If set to other than 0, characters will be printed with
+ * a transparent background.
+ */
+void vesa_set_transparent_char(const uint32_t enabled);
+
 #endif /* __VESA_H_ */

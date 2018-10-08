@@ -28,7 +28,7 @@ void ata_pio_driver_test(void)
     {
         kernel_debug("[TESTMODE] Wrote: %s\n", buffer);
     }
-    if(ata_pio_write_sector(dev, 50, (uint8_t*)buffer, 35) != OS_NO_ERR)
+    if(ata_pio_write_sector(dev, 1, (uint8_t*)buffer, 35) != OS_NO_ERR)
     {
         kernel_error("Failed to write 2\n");
         ++error;
@@ -38,7 +38,7 @@ void ata_pio_driver_test(void)
         kernel_debug("[TESTMODE] Wrote: %s\n", buffer);
     }
 
-    if(ata_pio_read_sector(dev, 50, (uint8_t*)recv, 35) != OS_NO_ERR)
+    if(ata_pio_read_sector(dev, 1, (uint8_t*)recv, 35) != OS_NO_ERR)
     {
         kernel_error("Failed to read 1\n");
         ++error;

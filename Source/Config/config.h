@@ -49,7 +49,7 @@
 #define ENABLE_SMP         0
 
 /** @brief Enables VESA support for graphic drivers. */
-#define ENABLE_VESA        0
+#define ENABLE_VESA        1
 
 /** @brief Enables ATA drivers support. */
 #define ENABLE_ATA         0
@@ -69,11 +69,11 @@
 /** @brief When VESA drivers are enabled, defines the maximal supported height
  * resolution.
  */
-#define MAX_SUPPORTED_HEIGHT 800
+#define MAX_SUPPORTED_HEIGHT 1080
 /** @brief When VESA drivers are enabled, defines the maximal supported width
  * resolution.
  */
-#define MAX_SUPPORTED_WIDTH  1000
+#define MAX_SUPPORTED_WIDTH  1920
 /** @brief When VESA drivers are enabled, defines the maximal supported color
  * depth.
  */

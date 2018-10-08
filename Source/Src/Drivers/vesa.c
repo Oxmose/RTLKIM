@@ -102,6 +102,16 @@ kernel_graphic_driver_t vesa_driver = {
     .console_write_keyboard = vesa_console_write_keyboard
 };
 
+/** @brief Sets if the characters background should be of the screen colorscheme
+ * or transparent.
+ */
+uint32_t transparent_char = 0;
+
+/** @brief Buffer that saves the background of the cursor to restore it next 
+ * time the cursor moves.
+ */
+uint8_t save_buff[256] = {0};
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -153,13 +163,13 @@ static void vesa_process_char(const char character)
             vesa_scroll(SCROLL_DOWN, 1);
         }
 
-
-        /* Display character */
-        vesa_drawchar(character, screen_cursor.x, screen_cursor.y,
-                      screen_scheme.foreground, screen_scheme.background);
-
         /* Update cursor position */
         vesa_put_cursor_at(screen_cursor.y, screen_cursor.x + font_width);
+
+        /* Display character */
+        vesa_drawchar(character, screen_cursor.x - font_width, screen_cursor.y,
+                      screen_scheme.foreground, 
+                      transparent_char ? 0 : screen_scheme.background);
 
         /* Manage end of line cursor position */
         if(screen_cursor.x + font_width >= current_mode->width)
@@ -195,11 +205,11 @@ static void vesa_process_char(const char character)
                     {
                         vesa_drawchar(' ', screen_cursor.x, screen_cursor.y,
                                       screen_scheme.foreground,
-                                      screen_scheme.background);
+                                      transparent_char ? 0 : screen_scheme.background);
                         vesa_drawchar(' ', 
                                 screen_cursor.x - font_width, screen_cursor.y,
                                 screen_scheme.foreground,
-                                screen_scheme.background);
+                                transparent_char ? 0 : screen_scheme.background);
                         vesa_put_cursor_at(screen_cursor.y,
                                            screen_cursor.x - font_width);
                         last_columns[(screen_cursor.y / font_height)] = 
@@ -212,11 +222,11 @@ static void vesa_process_char(const char character)
                     {
                         vesa_drawchar(' ', screen_cursor.x, screen_cursor.y,
                                       screen_scheme.foreground,
-                                      screen_scheme.background);
+                                      transparent_char ? 0 : screen_scheme.background);
                         vesa_drawchar(' ', 
                                 screen_cursor.x - font_width, screen_cursor.y,
                                 screen_scheme.foreground,
-                                screen_scheme.background);
+                                transparent_char ? 0 : screen_scheme.background);
                         vesa_put_cursor_at(screen_cursor.y,
                                            screen_cursor.x - font_width);
                         last_columns[(screen_cursor.y / font_height)] = 
@@ -227,12 +237,12 @@ static void vesa_process_char(const char character)
                     {
                         vesa_drawchar(' ', screen_cursor.x, screen_cursor.y,
                                       screen_scheme.foreground,
-                                      screen_scheme.background);
+                                      transparent_char ? 0 : screen_scheme.background);
                         vesa_drawchar(' ', 
                             last_columns[(screen_cursor.y / font_height) - 1], 
                             screen_cursor.y - font_height,
                             screen_scheme.foreground,
-                            screen_scheme.background);
+                            transparent_char ? 0 : screen_scheme.background);
                         vesa_put_cursor_at(screen_cursor.y - font_height,
                             last_columns[(screen_cursor.y / font_height) - 1]);
                     }
@@ -790,7 +800,6 @@ __inline__ OS_RETURN_E vesa_draw_rectangle(const uint16_t x, const uint16_t y,
     return OS_NO_ERR;
 }
 
-
 void vesa_drawchar(const unsigned char charracter,
                    const uint32_t x, const uint32_t y,
                    const uint32_t fgcolor, const uint32_t bgcolor)
@@ -881,15 +890,39 @@ OS_RETURN_E vesa_put_cursor_at(const uint32_t line, const uint32_t column)
 
     ENTER_CRITICAL(word);
 
+    /* Restore background */
+    uint8_t i;
+    uint32_t index = 0;
+    for(i = 0; i < 16; ++i)
+    {
+        vesa_draw_pixel(screen_cursor.x, screen_cursor.y + i, 
+        save_buff[index], save_buff[index + 1], 
+        save_buff[index + 2], save_buff[index + 3]);
+        index += 4;
+        vesa_draw_pixel(screen_cursor.x + 1, screen_cursor.y + i, 
+        save_buff[index], save_buff[index + 1], 
+        save_buff[index + 2], save_buff[index + 3]);
+        index += 4;
+    }
+
     screen_cursor.x = column;
     screen_cursor.y = line;
 
     if(column + 2 < current_mode->width)
     {
         uint8_t i;
+        uint32_t index = 0;
         for(i = 0; i < 16; ++i)
         {
+            vesa_get_pixel(column, line + i, 
+            &save_buff[index], &save_buff[index + 1], 
+            &save_buff[index + 2], &save_buff[index + 3]);
+            index += 4;
             vesa_draw_pixel(column, line + i, 0xFF, 0xFF, 0xFF, 0xFF);
+            vesa_get_pixel(column + 1, line + i, 
+            &save_buff[index], &save_buff[index + 1], 
+            &save_buff[index + 2], &save_buff[index + 3]);
+            index += 4;
             vesa_draw_pixel(column + 1, line + i, 0xFF, 0xFF, 0xFF, 0xFF);
         }
     }
@@ -1097,4 +1130,9 @@ void vesa_fill_screen(uint32_t* pointer)
            current_mode->height *
            (current_mode->bpp / 8));
     EXIT_CRITICAL(word);
+}
+
+void vesa_set_transparent_char(const uint32_t enabled)
+{
+    transparent_char = enabled == 1 ? 1 : 0;
 }
