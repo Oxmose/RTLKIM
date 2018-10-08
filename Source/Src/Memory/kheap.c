@@ -24,6 +24,7 @@
 #include <Lib/stdlib.h>       /* atoi */
 #include <Lib/string.h>       /* memset */
 #include <IO/kernel_output.h> /* kernel_success */
+#include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -329,11 +330,14 @@ void* kmalloc(uint32_t size)
     mem_chunk_t* chunk2;
     uint32_t     size2;
     uint32_t     len;
+    uint32_t     word;
 
     if(init == 0)
     {
         return NULL;
     }
+
+    ENTER_CRITICAL(word);
 
     size = (size + ALIGN - 1) & (~(ALIGN - 1));
 
@@ -346,6 +350,7 @@ void* kmalloc(uint32_t size)
 
 	if (n >= NUM_SIZES)
     {
+        EXIT_CRITICAL(word);
         return NULL;
     }
 
@@ -354,6 +359,7 @@ void* kmalloc(uint32_t size)
 		++n;
 		if (n >= NUM_SIZES)
         {
+            EXIT_CRITICAL(word);
             return NULL;
         }
     }
@@ -391,21 +397,29 @@ void* kmalloc(uint32_t size)
                         mem_free, mem_used);
     #endif
 
+    EXIT_CRITICAL(word);
+
     return chunk->data;
 }
 
 void kfree(void* ptr)
 {
+    uint32_t word;
+    uint32_t used;
+    mem_chunk_t* chunk;
+    mem_chunk_t* next;
+    mem_chunk_t* prev;
+
     if(init == 0 || ptr == NULL)
     {
         return;
     }
 
-    uint32_t used;
+    ENTER_CRITICAL(word);
 
-    mem_chunk_t *chunk = (mem_chunk_t*)((int8_t*)ptr - HEADER_SIZE);
-    mem_chunk_t *next = CONTAINER(mem_chunk_t, all, chunk->all.next);
-    mem_chunk_t *prev = CONTAINER(mem_chunk_t, all, chunk->all.prev);
+    chunk = (mem_chunk_t*)((int8_t*)ptr - HEADER_SIZE);
+    next = CONTAINER(mem_chunk_t, all, chunk->all.next);
+    prev = CONTAINER(mem_chunk_t, all, chunk->all.prev);
 
     used = memory_chunk_size(chunk);
     mem_used -= used;
@@ -434,6 +448,8 @@ void kfree(void* ptr)
 		LIST_INIT(chunk, free);
 		push_free(chunk);
     }
+
+    EXIT_CRITICAL(word);
 
     #if KHEAP_KERNEL_DEBUG == 1
     kernel_serial_debug("Kheap freed 0x%8x -> %d\n", ptr, used);

@@ -28,8 +28,6 @@ int main(void)
             break;
     }
 
-    kernel_panic(4);
-
     printf("\n");
     return 0;
 }

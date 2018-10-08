@@ -328,6 +328,11 @@ uint32_t kernel_interrupt_disable(void)
 {
     uint32_t old_state = kernel_interrupt_get_state();
 
+    if(old_state == 0)
+    {
+        return 0;
+    }
+
     cpu_cli();
     int_state = 0;
 

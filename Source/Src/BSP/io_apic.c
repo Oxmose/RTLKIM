@@ -95,7 +95,6 @@ OS_RETURN_E io_apic_init(void)
     uint32_t    i;
     uint32_t    read_count;
     OS_RETURN_E err;
-    uint32_t    word;
 
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
@@ -105,8 +104,6 @@ OS_RETURN_E io_apic_init(void)
     {
         return OS_ERR_NOT_SUPPORTED;
     }
-
-    ENTER_CRITICAL(word);
 
     /* Get IO APIC base address */
     io_apic_base_addr = acpi_get_io_apic_address(0);
@@ -122,12 +119,9 @@ OS_RETURN_E io_apic_init(void)
         err = io_apic_set_irq_mask(i, 0);
         if(err != OS_NO_ERR)
         {
-            EXIT_CRITICAL(word);
             return err;
         }
     }
-
-    EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
 }
@@ -172,18 +166,13 @@ OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number,
 OS_RETURN_E io_apic_set_irq_eoi(const uint32_t irq_number)
 {
     OS_RETURN_E err;
-    uint32_t    word;
 
     #if IOAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("IOAPIC set IRQ EOI %d\n",
                         irq_number);
     #endif
 
-    ENTER_CRITICAL(word);
-
     err = lapic_set_int_eoi(irq_number);
-
-    EXIT_CRITICAL(word);
 
     return err;
 }
@@ -191,14 +180,11 @@ OS_RETURN_E io_apic_set_irq_eoi(const uint32_t irq_number)
 INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t int_number)
 {
     INTERRUPT_TYPE_E int_type;
-    uint32_t         word;
 
     #if IOAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("IOAPIC spurious IRQ %d\n",
                         int_number);
     #endif
-
-    ENTER_CRITICAL(word);
 
     int_type = INTERRUPT_TYPE_REGULAR;
 
@@ -216,8 +202,6 @@ INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t int_number)
         lapic_set_int_eoi(int_number);
         int_type = INTERRUPT_TYPE_SPURIOUS;
     }
-
-    EXIT_CRITICAL(word);
 
     return int_type;;
 }
