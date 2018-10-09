@@ -494,6 +494,7 @@ static void* init_func(void* args)
     scheduler_sleep_test();
     critical_test();
     div_by_zero_test();
+    mutex_test();
     while(1)
     {
         sched_sleep(10000000);

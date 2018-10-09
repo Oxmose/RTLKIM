@@ -41,6 +41,7 @@
 #define SCHEDULER_SLEEP_TEST 0
 #define CRITICAL_TEST 0
 #define DIV_BY_ZERO_TEST 0
+#define MUTEX_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -68,5 +69,6 @@ void scheduler_preemt_test(void);
 void scheduler_sleep_test(void);
 void critical_test(void);
 void div_by_zero_test(void);
+void mutex_test(void);
 
 #endif /* __TEST_BANK_H_ */
