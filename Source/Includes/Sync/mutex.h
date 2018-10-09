@@ -149,6 +149,8 @@ OS_RETURN_E mutex_pend(mutex_t* mutex);
  * @details Posts the mutex given as parameter. The function might schedule to a
  * nest prioritary thread.
  * 
+ * @param[in] mutex The mutex to post.
+ * 
  * @return The succes state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the mutex is NULL.
