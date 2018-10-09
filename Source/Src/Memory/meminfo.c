@@ -20,6 +20,7 @@
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Boot/multiboot.h>   /* MULTIBOOT_MEMORY_AVAILABLE */
 #include <IO/kernel_output.h> /* kernel_info */
+#include <Interrupt/panic.h>  /* kernel_panic.h */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -108,6 +109,13 @@ OS_RETURN_E memory_map_init(void)
     free_size   = (uint32_t)&kernel_heap_end - (uint32_t)&kernel_heap_start;
     static_free = (uint32_t)&kernel_heap_start - (uint32_t)&_end;
     size        = (uint32_t)&_end;
+
+    if((uint32_t)&_end >(uint32_t)&kernel_heap_start)
+    {
+        kernel_error("Error, kernel size if too big, consider modifying the"
+                     " configuration file.\n");
+        kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
+    }
     
     kernel_info("Kernel memory ranges:\n\t[STATIC: 0x%08x - 0x%08x]\n"
                  "\t[DYNAMIC: 0x%08x - 0x%08x]\n", 

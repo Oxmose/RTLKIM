@@ -168,6 +168,9 @@
 /** @brief Enabled kernel scheduler debuging feature. */
 #define SCHED_KERNEL_DEBUG 0
 
+/** @brief Enabled kernel scheduler debuging feature. */
+#define MUTEX_KERNEL_DEBUG 0
+
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0
 
