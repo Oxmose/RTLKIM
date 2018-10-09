@@ -162,14 +162,17 @@
 /** @brief Enables kernel ata pio debuging feature. */
 #define ATA_PIO_KERNEL_DEBUG 0
 
-/** @brief Enabled kernel queue debuging feature. */
+/** @brief Enables kernel queue debuging feature. */
 #define QUEUE_KERNEL_DEBUG 0
 
-/** @brief Enabled kernel scheduler debuging feature. */
+/** @brief Enables kernel scheduler debuging feature. */
 #define SCHED_KERNEL_DEBUG 0
 
-/** @brief Enabled kernel scheduler debuging feature. */
+/** @brief Enables kernel mutex debuging feature. */
 #define MUTEX_KERNEL_DEBUG 0
+
+/** @brief Enables kernel semaphore debuging feature. */
+#define SEMAPHORE_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0

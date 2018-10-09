@@ -495,6 +495,7 @@ static void* init_func(void* args)
     critical_test();
     div_by_zero_test();
     mutex_test();
+    semaphore_test();
     while(1)
     {
         sched_sleep(10000000);
