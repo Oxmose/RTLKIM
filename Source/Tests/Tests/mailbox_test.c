@@ -21,7 +21,7 @@ void* thread1_fn(void*args)
         OS_RETURN_E err;
 
         printf("[1] Sleep\n");
-        sched_sleep(500);
+        sched_sleep(200);
         err = mailbox_post(&mb1, (void*)i);
         if(err != OS_NO_ERR)
         {
@@ -74,7 +74,7 @@ void* thread2_fn(void*args)
         printf("[2] Received %u\n", val);
 
         printf("[2] Sleep\n");
-        sched_sleep(500);
+        sched_sleep(200);
         err = mailbox_post(&mb2, (void*)i);
         if(err != OS_NO_ERR)
         {
@@ -119,7 +119,7 @@ void* thread3_fn(void*args)
         printf("[3] Received %u\n", val);
 
         printf("[3] Sleep\n");
-        sched_sleep(500);
+        sched_sleep(200);
         err = mailbox_post(&mb2, (void*)i);
         if(err != OS_NO_ERR)
         {
