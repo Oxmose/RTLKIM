@@ -497,6 +497,7 @@ static void* init_func(void* args)
     mutex_test();
     semaphore_test();
     mailbox_test();
+    userqueue_test();
     while(1)
     {
         sched_sleep(10000000);

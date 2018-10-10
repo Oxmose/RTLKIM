@@ -177,6 +177,9 @@
 /** @brief Enables kernel mailbox debuging feature. */
 #define MAILBOX_KERNEL_DEBUG 0
 
+/** @brief Enables kernel queue debuging deature. */
+#define USERQUEUE_KERNEL_DEBUG 0
+
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0
 

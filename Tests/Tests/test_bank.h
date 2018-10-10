@@ -44,6 +44,7 @@
 #define MUTEX_TEST 0
 #define SEMAPHORE_TEST 0
 #define MAILBOX_TEST 0
+#define USERQUEUE_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -74,5 +75,6 @@ void div_by_zero_test(void);
 void mutex_test(void);
 void semaphore_test(void);
 void mailbox_test(void);
+void userqueue_test(void);
 
 #endif /* __TEST_BANK_H_ */
