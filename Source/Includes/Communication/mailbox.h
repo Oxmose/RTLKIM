@@ -44,9 +44,9 @@ struct mailbox
     void*  value;
 
     /** @brief Mailbox's initialization sate. */
-    int8_t init;
+    int16_t init;
     /** @brief Mailbox's current state (0 = empty, 1 = full). */
-    int8_t state;   
+    int16_t state;   
 
     /** @brief Mailbox's reader synchronization semaphore. */
     semaphore_t mailbox_sem_read; 
@@ -161,6 +161,6 @@ OS_RETURN_E mailbox_destroy(mailbox_t *mailbox);
  *
  * @return 1 if the mailbox is empty and 0 otherwise.
  */
-int8_t mailbox_isempty(mailbox_t *mailbox, OS_RETURN_E *error);
+int32_t mailbox_isempty(mailbox_t *mailbox, OS_RETURN_E *error);
 
 #endif /* __MAILBOX_H_ */

@@ -51,7 +51,7 @@ struct queue
     uint32_t index_bot;
 
     /** @brief Queue's initialization sate. */
-    int8_t init;
+    int32_t init;
 
     /** @brief Queue's reader synchronization semaphore. */
     semaphore_t queue_sem_read; 
@@ -166,7 +166,7 @@ OS_RETURN_E queue_destroy(queue_t *queue);
  *
  * @return 1 if the queue is empty and 0 otherwise.
  */
-int8_t queue_isempty(queue_t *queue, OS_RETURN_E *error);
+int32_t queue_isempty(queue_t *queue, OS_RETURN_E *error);
 
 /**
  * @brief Returns the size of the queue.

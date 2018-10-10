@@ -75,7 +75,7 @@ extern kernel_graphic_driver_t vga_text_driver;
  * @param[in] line The line index of the coordinates.
  * @param[in] column The column index of the coordinates.
  */
-uint16_t* vga_get_framebuffer(const uint8_t line, const uint8_t column);
+uint16_t* vga_get_framebuffer(const uint32_t line, const uint32_t column);
 
 /**
  * @brief Clears the screen by printing space character on black background.

@@ -103,7 +103,7 @@ typedef struct key_mapper key_mapper_t;
 struct kbd_buffer
 {
     /** @brief Current buffer mode (0: not initialized, 1: read, 2: getchar). */
-    int8_t      type;
+    int32_t      type;
     /** @brief Character array as buffer. */
     char*       char_buf;
     /** @brief Number of characters to read. */

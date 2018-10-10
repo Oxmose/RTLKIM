@@ -38,7 +38,7 @@
 /* Assemly function */
 extern void _bios_call(uint8_t intnum, bios_int_regs_t* regs);
 
-void bios_call(uint8_t intnum, bios_int_regs_t* regs)
+void bios_call(uint32_t intnum, bios_int_regs_t* regs)
 {
 	uint32_t word;
 

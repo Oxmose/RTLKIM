@@ -301,7 +301,7 @@ OS_RETURN_E sem_post(semaphore_t* sem)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E sem_try_pend(semaphore_t* sem, int8_t* value)
+OS_RETURN_E sem_try_pend(semaphore_t* sem, int32_t* value)
 {
     uint32_t word;
 

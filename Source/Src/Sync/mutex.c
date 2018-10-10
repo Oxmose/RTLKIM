@@ -254,7 +254,7 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
 {
     kernel_queue_node_t* node;
     OS_RETURN_E          err;
-    uint8_t              do_sched;
+    uint32_t              do_sched;
     uint32_t             prio;
     uint32_t             word;
 
@@ -349,7 +349,7 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E mutex_try_pend(mutex_t* mutex, int8_t* value)
+OS_RETURN_E mutex_try_pend(mutex_t* mutex, int32_t* value)
 {
     uint32_t word;
 

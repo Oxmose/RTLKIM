@@ -252,9 +252,9 @@ OS_RETURN_E mailbox_post(mailbox_t* mailbox, void* element)
     return OS_NO_ERR;
 }
 
-int8_t mailbox_isempty(mailbox_t* mailbox, OS_RETURN_E* error)
+int32_t mailbox_isempty(mailbox_t* mailbox, OS_RETURN_E* error)
 {
-    int8_t   ret;
+    int32_t   ret;
     uint32_t word;
 
     if(mailbox == NULL)

@@ -155,7 +155,7 @@ void *mutex_thread_2(void *args)
 void *mutex_thread_3(void *args)
 {
     //printf("[TESTMODE]T3\n");
-    int8_t val;
+    int32_t val;
     OS_RETURN_E err;
     if((err = mutex_try_pend(&mutex2, &val)) != OS_MUTEX_LOCKED || val != 0)
     {

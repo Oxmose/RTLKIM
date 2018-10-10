@@ -275,7 +275,7 @@ OS_RETURN_E queue_post(queue_t* queue, void* element)
     return OS_NO_ERR;
 }
 
-int8_t queue_isempty(queue_t* queue, OS_RETURN_E* error)
+int32_t queue_isempty(queue_t* queue, OS_RETURN_E* error)
 {
     int32_t size = queue_size(queue, error);
 

@@ -91,7 +91,7 @@ kernel_graphic_driver_t vga_text_driver = {
  * encountered. OS_ERR_OUT_OF_BOUND is returned if the parameters are
  * out of bound.
  */
-static OS_RETURN_E vga_print_char(const uint8_t line, const uint8_t column,
+static OS_RETURN_E vga_print_char(const uint32_t line, const uint32_t column,
                                   const char character)
 {
     uint16_t* screen_mem;
@@ -243,7 +243,7 @@ static void vga_process_char(const char character)
     }
 }
 
-uint16_t* vga_get_framebuffer(const uint8_t line, const uint8_t column)
+uint16_t* vga_get_framebuffer(const uint32_t line, const uint32_t column)
 {
     /* Avoid overflow on text mode */
     if(line > VGA_TEXT_SCREEN_LINE_SIZE - 1 || 

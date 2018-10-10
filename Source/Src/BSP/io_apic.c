@@ -65,7 +65,7 @@ interrupt_driver_t io_apic_driver = {
  * @param[in] reg The register to write.
  * @param[in] val The value to write to the register.
  */
-__inline__ static void io_apic_write(const uint8_t reg, const uint32_t val)
+__inline__ static void io_apic_write(const uint32_t reg, const uint32_t val)
 {
     mapped_io_write_32((uint32_t*)(io_apic_base_addr + IOREGSEL), reg);
     mapped_io_write_32((uint32_t*)(io_apic_base_addr + IOWIN), val);
@@ -80,7 +80,7 @@ __inline__ static void io_apic_write(const uint8_t reg, const uint32_t val)
  * 
  * @return The value contained in the register.
  */
-__inline__ static uint32_t io_apic_read(const uint8_t reg)
+__inline__ static uint32_t io_apic_read(const uint32_t reg)
 {
     mapped_io_write_32((uint32_t*)(io_apic_base_addr + IOREGSEL), reg);
     return mapped_io_read_32((uint32_t*)(io_apic_base_addr + IOWIN));

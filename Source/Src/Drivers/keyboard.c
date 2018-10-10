@@ -236,7 +236,7 @@ static const key_mapper_t qwerty_map =
  *
  * @param[in] keycode The keycode to parse.
  */
-static void manage_keycode(const int8_t keycode)
+static void manage_keycode(const int32_t keycode)
 {
     char    character;
     //OS_RETURN_E err;

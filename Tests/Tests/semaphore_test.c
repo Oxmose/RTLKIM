@@ -102,7 +102,7 @@ void *sem_thread_3(void *args)
 
 void *sem_thread_4(void *args)
 {
-    int8_t val;
+    int32_t val;
     if(sem_try_pend(&sem4, &val) != OS_SEM_LOCKED)
     {
         printf("Failed to try_pend sem4\n");

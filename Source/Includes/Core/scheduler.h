@@ -302,7 +302,7 @@ kernel_queue_node_t* sched_lock_thread(const THREAD_WAIT_TYPE_E block_type);
  */
 OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
                                 const THREAD_WAIT_TYPE_E block_type,
-                                const uint8_t do_schedule);
+                                const uint32_t do_schedule);
 
 /**
  * @brief Gets all the system threads information.

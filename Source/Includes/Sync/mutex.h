@@ -57,7 +57,7 @@ struct mutex
     /**
      * @brief Mutex lock state (0 locked, 1 unlocked). 
      */
-    volatile uint8_t state;
+    volatile uint16_t state;
 
     /**
      * @brief Mutex flags.
@@ -75,7 +75,7 @@ struct mutex
     int32_t locker_tid;
 
     /** @brief Mutex initialization state. */
-    int8_t init;
+    int16_t init;
 };
 
 /** 
@@ -175,6 +175,6 @@ OS_RETURN_E mutex_post(mutex_t* mutex);
  * - OS_ERR_MUTEX_UNINITIALIZED is returned if the mutex has not been 
  *   initialized.
  */
-OS_RETURN_E mutex_try_pend(mutex_t* mutex, int8_t* value);
+OS_RETURN_E mutex_try_pend(mutex_t* mutex, int32_t* value);
 
 #endif /* __MUTEX_H_ */

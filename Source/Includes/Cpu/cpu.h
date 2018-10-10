@@ -344,7 +344,7 @@ OS_RETURN_E cpu_get_info(cpu_info_t* info);
  *
  * @return 1 if the CPUID instruction is available, 0 otherwise.
  */
-int8_t cpu_cpuid_capable(void);
+int32_t cpu_cpuid_capable(void);
 
 /**
  * @brief Detects CPU features and save then in the system's cpu_info_t 
@@ -362,7 +362,7 @@ int8_t cpu_cpuid_capable(void);
  * - OS_ERR_UNAUTHORIZED_ACTION is retuned if the kernel could not detect the 
  * CPU.
  */
-OS_RETURN_E cpu_detect(const uint8_t print);
+OS_RETURN_E cpu_detect(const uint32_t print);
 
 /**
  * @brief Returns the highest support CPUID feature request ID.
@@ -570,7 +570,7 @@ __inline__ static uint32_t cpu_compare_and_swap(volatile uint32_t* p_val,
                                                 const int oldval, 
                                                 const int newval)
 {
-    uint8_t prev;
+    uint32_t prev;
     __asm__ __volatile__ (
             "lock cmpxchg %1, %2\n"
             "setne %%al"

@@ -392,7 +392,7 @@ uint32_t kernel_interrupt_get_state(void);
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
  */
 OS_RETURN_E kernel_interrupt_set_irq_mask(const uint32_t irq_number, 
-                                          const uint8_t enabled);
+                                          const uint32_t enabled);
 
 /**
  * @brief Acknowleges an IRQ.

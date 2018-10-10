@@ -52,12 +52,12 @@ OS_RETURN_E cpu_get_info(cpu_info_t* info)
     return OS_NO_ERR;
 }
 
-int8_t cpu_cpuid_capable(void)
+int32_t cpu_cpuid_capable(void)
 {
     return ((cpu_info.cpu_flags & CPU_FLAG_cpu_cpuid_capable) >> 21) & 0x1;
 }
 
-OS_RETURN_E cpu_detect(const uint8_t print)
+OS_RETURN_E cpu_detect(const uint32_t print)
 {
     if(cpu_cpuid_capable() == 1)
     {

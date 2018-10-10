@@ -350,7 +350,7 @@ uint32_t kernel_interrupt_get_state(void)
 
 
 OS_RETURN_E kernel_interrupt_set_irq_mask(const uint32_t irq_number, 
-                                          const uint8_t enabled)
+                                          const uint32_t enabled)
 {
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("IRQ Mask change: %d %d\n", irq_number, enabled);

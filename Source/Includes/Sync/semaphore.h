@@ -48,7 +48,7 @@ struct semaphore
     volatile int32_t sem_level;
 
     /** @brief Semaphore initialization state. */
-    int8_t init;
+    int32_t init;
 };
 
 /** 
@@ -142,6 +142,6 @@ OS_RETURN_E sem_post(semaphore_t* sem);
  * - OS_ERR_SEM_UNINITIALIZED is returned if the semaphore has not been 
  *   initialized.
  */
-OS_RETURN_E sem_try_pend(semaphore_t* sem, int8_t* value);
+OS_RETURN_E sem_try_pend(semaphore_t* sem, int32_t* value);
 
 #endif /* __SEMAPHORE_H_ */
