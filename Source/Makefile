@@ -12,7 +12,12 @@
 
 ######################### Modules selection
 
-MODULES = Boot Cpu IO Lib Drivers Interrupt BSP Time User Memory Core Sync
+MODULES = Boot Cpu IO Interrupt     \
+        	Drivers BSP             \
+			Time Memory Core        \
+			Lib User                \
+			Sync Communication
+			
 ifeq ($(TESTS), TRUE)
 MODULES += ../Tests/Tests
 endif
