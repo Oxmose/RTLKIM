@@ -19,7 +19,7 @@ MODULES = Boot Cpu IO Interrupt     \
 			Sync Communication
 			
 ifeq ($(TESTS), TRUE)
-MODULES += ../Tests/Tests
+MODULES += ../../Tests/Tests
 endif
 
 ######################### Files options
@@ -31,7 +31,7 @@ SRC_DIR    = Src
 BUILD_DIR  = Build
 INC_DIR    = Includes
 CONFIG_DIR = Config
-TESTS_DIR  = Tests
+TESTS_DIR  = ../Tests
 BIN_DIR    = Bin
 
 SRC_DIRS = $(MODULES:%=$(SRC_DIR)/%)
@@ -69,7 +69,7 @@ ASFLAGS = -g -f elf -w+gnu-elf-extensions
 LDFLAGS = -e loader -T $(LINKER_FILE) -melf_i386 -no-pie
 QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 64M \
            -gdb tcp::1234 -smp 4 \
-		   -drive format=raw,file=Peripherals/hdd_primary_master.img -kernel 
+		   -drive format=raw,file=../Peripherals/hdd_primary_master.img -kernel 
 
 ######################### Compile options
 .PHONY: all
