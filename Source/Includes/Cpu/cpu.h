@@ -33,7 +33,7 @@
 #define CPU_EFLAGS_IF_SHIFT 9
 
 /** @brief CPUID capable flags. */
-#define CPU_FLAG_cpu_cpuid_capable 0x00200000
+#define CPU_FLAG_CPU_CPUID_CAPABLE 0x00200000
 
 /****************************
  * General Features 
@@ -159,17 +159,78 @@
 /****************************
  * Extended Features 
  ***************************/
-
 /** @brief CPUID SYSCALL/SYSRET flag. */
-#define EDX_SYSCALL   (1 << 11)   
+#define EDX_SYSCALL   (1 << 11) 
+/** @brief CPUID Multiprocessor flag. */
+#define EDX_MP        (1 << 19) 
 /** @brief CPUID Execute Disable Bit flag. */
 #define EDX_XD        (1 << 20)   
+/** @brief CPUID MMX etended flag. */
+#define EDX_MMX_EX    (1 << 22)   
+/** @brief CPUID FXSAVE/STOR available flag. */
+#define EDX_FXSR     (1 << 24)   
+/** @brief CPUID FXSAVE/STOR optimized flag. */
+#define EDX_FXSR_OPT  (1 << 25)   
 /** @brief CPUID 1 GB Pages flag. */
 #define EDX_1GB_PAGE  (1 << 26)   
 /** @brief CPUID RDTSCP and IA32_TSC_AUX flag. */
 #define EDX_RDTSCP    (1 << 27)   
 /** @brief CPUID 64-bit Architecture flag. */
 #define EDX_64_BIT    (1 << 29)   
+/** @brief CPUID 3D Now etended flag. */
+#define EDX_3DNOW_EX  (1 << 30)   
+/** @brief CPUID 3D Now flag. */
+#define EDX_3DNOW     (1 << 31)   
+/** @brief CPUID LAHF Available in long mode flag */
+#define ECX_LAHF_LM   (1 << 0)   
+/** @brief CPUID Hyperthreading not valid flag */
+#define ECX_CMP_LEG   (1 << 1) 
+/** @brief CPUID Secure Virtual Machine flag */
+#define ECX_SVM       (1 << 2) 
+/** @brief CPUID Extended API space flag */
+#define ECX_EXTAPIC   (1 << 3) 
+/** @brief CPUID CR8 in protected mode flag */
+#define ECX_CR8_LEG   (1 << 4) 
+/** @brief CPUID ABM available flag */
+#define ECX_ABM       (1 << 5) 
+/** @brief CPUID SSE4A flag */
+#define ECX_SSE4A     (1 << 6) 
+/** @brief CPUID Misaligne SSE mode flag */
+#define ECX_MISASSE   (1 << 7) 
+/** @brief CPUID Prefetch flag */
+#define ECX_PREFETCH  (1 << 8) 
+/** @brief CPUID OS Visible workaround flag */
+#define ECX_OSVW      (1 << 9) 
+/** @brief CPUID Instruction based sampling flag */
+#define ECX_IBS       (1 << 10)   
+/** @brief CPUID XIO intruction set flag */
+#define ECX_XOP       (1 << 11) 
+/** @brief CPUID SKINIT instructions flag */
+#define ECX_SKINIT    (1 << 12) 
+/** @brief CPUID watchdog timer flag */
+#define ECX_WDT       (1 << 13) 
+/** @brief CPUID Light weight profiling flag */
+#define ECX_LWP       (1 << 15) 
+/** @brief CPUID 4 operand fuxed multiply add flag */
+#define ECX_FMA4      (1 << 16) 
+/** @brief CPUID Translation cache extension flag */
+#define ECX_TCE       (1 << 17) 
+/** @brief CPUID NODE_ID MSR flag */
+#define ECX_NODEIDMSR (1 << 19) 
+/** @brief CPUID Trailing bit manipulation flag */
+#define ECX_TBM       (1 << 21) 
+/** @brief CPUID Topology extension flag */
+#define ECX_TOPOEX    (1 << 22) 
+/** @brief CPUID Core performance counter extensions flag */
+#define ECX_PERF_CORE (1 << 23)   
+/** @brief CPUID NB performance counter extensions flag */
+#define ECX_PERF_NB   (1 << 24) 
+/** @brief CPUID Data breakpoint extensions flag */
+#define ECX_DBX       (1 << 26) 
+/** @brief CPUID Performance TSC flag */
+#define ECX_PERF_TSC  (1 << 27) 
+/** @brief CPUID L2I perf counter extensions flag */
+#define ECX_PCX_L2I   (1 << 28)
 
 /****************************
  * CPU Vendor signatures
@@ -302,7 +363,7 @@ enum CPUID_REQ
     CPUID_GETSERIAL,
 
     /** @brief Request extended CPUID features. */
-    CPUID_INTELEXTENDED=0x80000000,
+    CPUID_INTELEXTENDED_AVAILABLE=0x80000000,
     /** @brief Request Intel CPUID features. */
     CPUID_INTELFEATURES,
     /** @brief Request Intel brand string. */

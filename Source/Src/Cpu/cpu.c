@@ -54,7 +54,7 @@ OS_RETURN_E cpu_get_info(cpu_info_t* info)
 
 int32_t cpu_cpuid_capable(void)
 {
-    return ((cpu_info.cpu_flags & CPU_FLAG_cpu_cpuid_capable) >> 21) & 0x1;
+    return ((cpu_info.cpu_flags & CPU_FLAG_CPU_CPUID_CAPABLE) >> 21) & 0x1;
 }
 
 OS_RETURN_E cpu_detect(const uint32_t print)
@@ -230,7 +230,89 @@ OS_RETURN_E cpu_detect(const uint32_t print)
                 if((regs[3] & EDX_TM) == EDX_TM) 
                 { kernel_printf("TM - "); }
                 if((regs[3] & EDX_PBE) == EDX_PBE) 
-                { kernel_printf("EDX_PBE - "); }
+                { kernel_printf("PBE - "); }
+
+                /* Check for extended features */
+                cpu_cpuid(CPUID_INTELEXTENDED_AVAILABLE, (uint32_t*)regs);
+                if((uint32_t)regs[0] >= (uint32_t)CPUID_INTELFEATURES)
+                {
+                    cpu_cpuid(CPUID_INTELFEATURES, (uint32_t*)regs);
+
+                    
+                    if((regs[3] & EDX_SYSCALL) == EDX_SYSCALL) 
+                    { kernel_printf("SYSCALL - "); }                    
+                    if((regs[3] & EDX_MP) == EDX_MP) 
+                    { kernel_printf("MP - "); } 
+                    if((regs[3] & EDX_XD) == EDX_XD)   
+                    { kernel_printf("XD - "); } 
+                    if((regs[3] & EDX_MMX_EX) == EDX_MMX_EX)   
+                    { kernel_printf("MMX_EX - "); } 
+                    if((regs[3] & EDX_FXSR) == EDX_FXSR)   
+                    { kernel_printf("FXSR - "); } 
+                    if((regs[3] & EDX_FXSR_OPT) == EDX_FXSR_OPT)   
+                    { kernel_printf("FXSR_OPT - "); } 
+                    if((regs[3] & EDX_1GB_PAGE) == EDX_1GB_PAGE)   
+                    { kernel_printf("1GB_PAGE - "); } 
+                    if((regs[3] & EDX_RDTSCP) == EDX_RDTSCP)   
+                    { kernel_printf("RDTSCP - "); } 
+                    if((regs[3] & EDX_64_BIT) == EDX_64_BIT)   
+                    { kernel_printf("X64 - "); } 
+                    if((regs[3] & EDX_3DNOW_EX) == EDX_3DNOW_EX)   
+                    { kernel_printf("3DNOW_EX - "); } 
+                    if((regs[3] & EDX_3DNOW) == EDX_3DNOW)   
+                    { kernel_printf("3DNOW - "); } 
+                    if((regs[2] & ECX_LAHF_LM) == ECX_LAHF_LM)   
+                    { kernel_printf("LAHF_LM - "); } 
+                    if((regs[2] & ECX_CMP_LEG) == ECX_CMP_LEG) 
+                    { kernel_printf("CMP_LEG - "); } 
+                    if((regs[2] & ECX_SVM) == ECX_SVM) 
+                    { kernel_printf("SVM - "); } 
+                    if((regs[2] & ECX_EXTAPIC) == ECX_EXTAPIC) 
+                    { kernel_printf("EXTAPIC - "); } 
+                    if((regs[2] & ECX_CR8_LEG) == ECX_CR8_LEG) 
+                    { kernel_printf("CR8_LEG - "); } 
+                    if((regs[2] & ECX_ABM) == ECX_ABM) 
+                    { kernel_printf("ABM - "); } 
+                    if((regs[2] & ECX_SSE4A) == ECX_SSE4A) 
+                    { kernel_printf("SSE4A - "); } 
+                    if((regs[2] & ECX_MISASSE) == ECX_MISASSE) 
+                    { kernel_printf("MISALIGNED_SSE - "); } 
+                    if((regs[2] & ECX_PREFETCH) == ECX_PREFETCH) 
+                    { kernel_printf("PREFETCH - "); } 
+                    if((regs[2] & ECX_OSVW) == ECX_OSVW) 
+                    { kernel_printf("OSVW - "); } 
+                    if((regs[2] & ECX_IBS) == ECX_IBS)   
+                    { kernel_printf("IBS - "); } 
+                    if((regs[2] & ECX_XOP) == ECX_XOP) 
+                    { kernel_printf("XOP - "); } 
+                    if((regs[2] & ECX_SKINIT) == ECX_SKINIT) 
+                    { kernel_printf("SKINIT - "); } 
+                    if((regs[2] & ECX_WDT) == ECX_WDT) 
+                    { kernel_printf("WDT - "); } 
+                    if((regs[2] & ECX_LWP) == ECX_LWP) 
+                    { kernel_printf("LWP - "); } 
+                    if((regs[2] & ECX_FMA4) == ECX_FMA4) 
+                    { kernel_printf("FMA4 - "); } 
+                    if((regs[2] & ECX_TCE) == ECX_TCE) 
+                    { kernel_printf("TCE - "); } 
+                    if((regs[2] & ECX_NODEIDMSR) == ECX_NODEIDMSR) 
+                    { kernel_printf("NODE_ID_MSR - "); } 
+                    if((regs[2] & ECX_TBM) == ECX_TBM) 
+                    { kernel_printf("TMB - "); } 
+                    if((regs[2] & ECX_TOPOEX) == ECX_TOPOEX) 
+                    { kernel_printf("TOPOEX - "); } 
+                    if((regs[2] & ECX_PERF_CORE) == ECX_PERF_CORE)   
+                    { kernel_printf("PERF_CORE - "); } 
+                    if((regs[2] & ECX_PERF_NB) == ECX_PERF_NB) 
+                    { kernel_printf("PERF_NB - "); } 
+                    if((regs[2] & ECX_DBX) == ECX_DBX) 
+                    { kernel_printf("DBX - "); } 
+                    if((regs[2] & ECX_PERF_TSC) == ECX_PERF_TSC) 
+                    { kernel_printf("TSC - "); } 
+                    if((regs[2] & ECX_PCX_L2I) == ECX_PCX_L2I)
+                    { kernel_printf("PCX_L2I - "); } 
+                }
+                
 
                 kernel_printf("End of features");
             }
