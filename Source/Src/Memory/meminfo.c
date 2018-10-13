@@ -54,8 +54,14 @@ extern uint8_t kernel_heap_start;
 /** @brief Kernel's heap limit adderss. */
 extern uint8_t kernel_heap_end;
 
+/** @brief Total ammount of memory in the system. */
 static uint32_t total_memory;
+
+/** @brief Static memory used by the kernel. */
 static uint32_t static_used_memory;
+
+/** @brief Kernel's heap used memory data. */
+extern uint32_t kheap_mem_used;
 
 /*******************************************************************************
  * FUNCTIONS
@@ -134,4 +140,29 @@ OS_RETURN_E memory_map_init(void)
                 static_used_memory / 1024 / 1024);
     
     return OS_NO_ERR;
+}
+
+uint32_t meminfo_kernel_heap_usage(void)
+{
+    return kheap_mem_used;
+}
+
+uint32_t meminfo_kernel_heap_size(void)
+{
+    return (uint32_t)&kernel_heap_end - (uint32_t)&kernel_heap_start;
+}
+
+uint32_t meminfo_kernel_memory_usage(void)
+{
+    return static_used_memory + meminfo_kernel_heap_usage();
+}
+
+uint32_t meminfo_kernel_total_size(void)
+{
+    return (uint32_t)&kernel_heap_end;
+}
+
+uint32_t meminfo_get_memory_size(void)
+{
+    return total_memory;
 }

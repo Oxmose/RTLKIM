@@ -56,7 +56,7 @@ static mem_chunk_t* last_chunk;
 /** @brief Quantity of free memory in the kernel's heap. */
 static uint32_t mem_free;
 /** @brief Quantity of used memory in the kernel's heap. */
-static uint32_t mem_used;
+uint32_t kheap_mem_used;
 /** @brief Quantity of memory used to store meta data in the kernel's heap. */
 static uint32_t mem_meta;
 
@@ -291,7 +291,7 @@ void setup_kheap(void)
     int8_t *mem_end = (int8_t*)(((intptr_t)mem + size) & (~(ALIGN - 1)));
 
     mem_free = 0;
-    mem_used = 0;
+    kheap_mem_used = 0;
     mem_meta = 0;
     first_chunk = NULL;
     last_chunk = NULL;
@@ -388,7 +388,7 @@ void* kmalloc(uint32_t size)
 	chunk->used = 1;
 
     mem_free -= size2;
-    mem_used += size2 - len - HEADER_SIZE;
+    kheap_mem_used += size2 - len - HEADER_SIZE;
 
     #if KHEAP_KERNEL_DEBUG == 1
     kernel_serial_debug("Kheap allocated 0x%8x -> %dB (%dB free, %dB used)\n", 
@@ -422,7 +422,7 @@ void kfree(void* ptr)
     prev = CONTAINER(mem_chunk_t, all, chunk->all.prev);
 
     used = memory_chunk_size(chunk);
-    mem_used -= used;
+    kheap_mem_used -= used;
 
     if (next->used == 0)
     {

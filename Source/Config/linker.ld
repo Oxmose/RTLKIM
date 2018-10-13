@@ -46,7 +46,7 @@ SECTIONS
     kernel_heap_start = 0x00300000;
 
     /* End of kernel memory heap */
-    kernel_heap_end = 0x03000000;
+    kernel_heap_end = 0x00D00000;
 
     /* END OF ZEROING ZONE */
 
