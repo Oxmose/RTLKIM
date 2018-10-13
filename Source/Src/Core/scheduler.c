@@ -81,6 +81,12 @@ static kernel_queue_node_t* prev_thread_node;
 /** @brief Current system state. */
 static volatile SYSTEM_STATE_E system_state;
 
+/** @brief Count of the number of times the scheduler was called. */
+static volatile uint64_t schedule_count;
+
+/** @brien Count of the number of times the idle thread was scheduled. */
+static volatile uint64_t idle_sched_count;
+
 /*******************************************************
  * THREAD TABLES
  * Sorted by priority:
@@ -423,6 +429,8 @@ static void* main_kickstart(void* args)
  */
 static void* idle_sys(void* args)
 {
+    uint32_t word;
+
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("IDLE Started\n");
     #endif
@@ -432,6 +440,9 @@ static void* idle_sys(void* args)
     /* Halt forever, cpu_hlt for energy consumption */
     while(1)
     {
+        ENTER_CRITICAL(word);
+        ++idle_sched_count;
+        EXIT_CRITICAL(word);
         kernel_interrupt_restore(1);
 
         if(system_state == SYSTEM_STATE_HALTED)
@@ -855,6 +866,8 @@ static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
     /* Search for next thread */
     select_thread();
 
+    ++schedule_count;
+
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("CPU Sched %d -> %d\n",
                         prev_thread->tid, active_thread->tid);
@@ -875,8 +888,10 @@ OS_RETURN_E sched_init(void)
     uint32_t    i;
 
     /* Init scheduler settings */
-    last_given_tid  = 0;
-    thread_count    = 0;
+    last_given_tid   = 0;
+    thread_count     = 0;
+    schedule_count   = 0;
+    idle_sched_count = 0;
 
     init_thread      = NULL;
     init_thread_node = NULL;
@@ -1414,4 +1429,14 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
     }
 
     return OS_NO_ERR;
+}
+
+uint64_t sched_get_schedule_count(void)
+{
+    return schedule_count;
+}
+
+uint64_t sched_get_idle_schedule_count(void)
+{
+    return idle_sched_count;
 }

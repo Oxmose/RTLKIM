@@ -238,7 +238,6 @@ OS_RETURN_E cpu_detect(const uint32_t print)
                 {
                     cpu_cpuid(CPUID_INTELFEATURES, (uint32_t*)regs);
 
-                    
                     if((regs[3] & EDX_SYSCALL) == EDX_SYSCALL) 
                     { kernel_printf("SYSCALL - "); }                    
                     if((regs[3] & EDX_MP) == EDX_MP) 
@@ -313,7 +312,6 @@ OS_RETURN_E cpu_detect(const uint32_t print)
                     { kernel_printf("PCX_L2I - "); } 
                 }
                 
-
                 kernel_printf("End of features");
             }
         }

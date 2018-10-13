@@ -346,4 +346,22 @@ void sched_set_thread_termination_cause(const THREAD_TERMINATE_CAUSE_E
  */
 void sched_terminate_thread(void);
 
+/**
+ * @brief Returns the number of time the scheduler was called.
+ * 
+ * @details Returns the number of time the scheduler was called.
+ * 
+ * @return The number of time the scheduler was called.
+ */
+uint64_t sched_get_schedule_count(void);
+
+/**
+ * @brief Returns the number of time the idle thread was schedulled.
+ * 
+ * @details Returns the number of time the idle thread was schedulled.
+ * 
+ * @return The number of time the idle thread was schedulled.
+ */
+uint64_t sched_get_idle_schedule_count(void);
+
 #endif /* __SCHEDULER_H_ */
