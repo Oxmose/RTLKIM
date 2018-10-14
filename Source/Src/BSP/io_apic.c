@@ -40,7 +40,7 @@
  ******************************************************************************/
 
 /** @brief The IO APIC base address */
-static const uint8_t* io_apic_base_addr;
+static const void* io_apic_base_addr;
 
 /** @brief IO-APIC IRQ redirection count. */
 static uint32_t max_redirect_count;

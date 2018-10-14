@@ -46,7 +46,7 @@ int8_t* free_state;
 void setup_kheap(void)
 {
     void* mem = &kernel_heap_start;
-    int8_t *mem_start = (int8_t*)(((intptr_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
+    int8_t* mem_start = (int8_t*)(((intptr_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
 
     free_state = mem_start;
 

@@ -287,8 +287,8 @@ void setup_kheap(void)
 
     void* mem = &kernel_heap_start;
     uint32_t size = &kernel_heap_end - &kernel_heap_start;
-    int8_t *mem_start = (int8_t*)(((intptr_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
-    int8_t *mem_end = (int8_t*)(((intptr_t)mem + size) & (~(ALIGN - 1)));
+    int8_t* mem_start = (int8_t*)(((intptr_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
+    int8_t* mem_end = (int8_t*)(((intptr_t)mem + size) & (~(ALIGN - 1)));
 
     mem_free = 0;
     kheap_mem_used = 0;

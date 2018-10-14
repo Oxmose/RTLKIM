@@ -44,7 +44,7 @@
  ******************************************************************************/
 
 /* Local APIC controller address */
-static uint8_t* lapic_base_addr;
+static void* lapic_base_addr;
 
 /* Lapic TIMER settings */
 static volatile uint8_t  wait_int;

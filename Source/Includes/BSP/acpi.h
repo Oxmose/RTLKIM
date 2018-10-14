@@ -412,7 +412,7 @@ int32_t acpi_get_remmaped_irq(const uint32_t irq_number);
  * @return The Local APIC controller address. If the function has been called
  * before init_acpi, NULL is returned.
  */
-uint8_t* acpi_get_lapic_addr(void);
+void* acpi_get_lapic_addr(void);
 
 /**
  * @brief Returns the IO-APIC controller address.
@@ -429,7 +429,7 @@ uint8_t* acpi_get_lapic_addr(void);
  * @return The IO-APIC controller address. If the function has been called
  * before init_acpi, NULL is returned.
  */
-const uint8_t* acpi_get_io_apic_address(const uint32_t io_apic_id);
+const void* acpi_get_io_apic_address(const uint32_t io_apic_id);
 
 /**
  * @brief Checks if the Local APIC id given as parameter exists in the system.

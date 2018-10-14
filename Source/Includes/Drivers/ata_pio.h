@@ -180,7 +180,7 @@ OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device);
  */
 OS_RETURN_E ata_pio_read_sector(const ata_pio_device_t device, 
                                 const uint32_t sector,
-	                            uint8_t* buffer, const uint32_t size);
+	                            void* buffer, const uint32_t size);
 
 /**
  * @brief Writes the content of the buffer to the device sector.
@@ -209,7 +209,7 @@ OS_RETURN_E ata_pio_read_sector(const ata_pio_device_t device,
  */
 OS_RETURN_E ata_pio_write_sector(const ata_pio_device_t device, 
                                  const uint32_t sector,
-	                             const uint8_t* buffer, const uint32_t size);
+	                             const void* buffer, const uint32_t size);
 
 /**
  * @brief Asks the device to flush it's buffer.

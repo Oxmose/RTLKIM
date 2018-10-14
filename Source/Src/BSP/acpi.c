@@ -811,7 +811,7 @@ int32_t acpi_get_remmaped_irq(const uint32_t irq_number)
     return irq_number;
 }
 
-const uint8_t* acpi_get_io_apic_address(const uint32_t io_apic_id)
+const void* acpi_get_io_apic_address(const uint32_t io_apic_id)
 {
     if(acpi_initialized != 1)
     {
@@ -828,10 +828,10 @@ const uint8_t* acpi_get_io_apic_address(const uint32_t io_apic_id)
         return NULL;
     }
 
-    return (uint8_t*)io_apic_tables[io_apic_id]->io_apic_addr;
+    return (void*)io_apic_tables[io_apic_id]->io_apic_addr;
 }
 
-uint8_t* acpi_get_lapic_addr(void)
+void* acpi_get_lapic_addr(void)
 {
     if(acpi_initialized != 1)
     {
@@ -843,7 +843,7 @@ uint8_t* acpi_get_lapic_addr(void)
         return NULL;
     }
 
-    return (uint8_t*)madt->local_apic_addr;
+    return (void*)madt->local_apic_addr;
 }
 
 OS_RETURN_E acpi_check_lapic_id(const uint32_t lapic_id)
