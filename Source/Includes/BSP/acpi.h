@@ -345,7 +345,7 @@ typedef struct local_apic_nmi
  * the ACPI RSDP and then parse all the ACPI information. Each supported entry 
  * is stored for further use.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_CHECKSUM_FAILED is returned if the ACPI is corrupted.
  * - OS_ERR_NULL_POINTER is returned if the ACPI contains errored memory 
@@ -441,7 +441,7 @@ const void* acpi_get_io_apic_address(const uint32_t io_apic_id);
  * 
  * @warning This function must be called after the init_acpi function.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered and the ID exists. 
  * - OS_ACPI_NOT_INITIALIZED is returned if the ACPI is not initialized.
  * - OS_ERR_NO_SUCH_LAPIC_ID is returned if the lapic ID does not exist in the

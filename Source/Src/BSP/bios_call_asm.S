@@ -74,7 +74,7 @@ section .text
         sidt [OFFSET_ADDR(idt32_ptr)]        ; Save 32bit IDT pointer
         sgdt [OFFSET_ADDR(gdt32_ptr)]        ; Save 32bit GDT pointer
 
-        load_cpu_struct:
+    load_cpu_struct:
         lgdt [OFFSET_ADDR(gdt16_ptr)]        ; Load 16bit GDT pointer
 
         ; GET THE INT NUMBER
@@ -101,8 +101,9 @@ section .text
     rm_bootstrap:
         use16
 
-        ; LOAD SEGMENT REGISTERS
+        ; Disable paging
 
+        ; LOAD SEGMENT REGISTERS
         mov  ax, DATA16
         mov  ds, ax
         mov  es, ax

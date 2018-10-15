@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file meminfo.c
- * 
+ *
  * @see meminfo.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,9 +10,9 @@
  * @version 1.0
  *
  * @brief Kernel memory detector.
- * 
+ *
  * @details This module is used to detect the memory mapping of the system.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -70,19 +70,26 @@ extern uint32_t kheap_mem_used;
 OS_RETURN_E memory_map_init(void)
 {
     multiboot_memory_map_t* mmap;
+    multiboot_memory_map_t* mmap_end;
     uint32_t i;
     uint32_t free_size;
     uint32_t static_free;
     uint32_t size;
 
+    /* Update memory poisition */
+    multiboot_data_ptr = (multiboot_info_t*)
+                            ((uint8_t*)multiboot_data_ptr + KERNEL_MEM_OFFSET);
+
     /* Copy multiboot data in upper memory */
-    mmap = (multiboot_memory_map_t*)multiboot_data_ptr->mmap_addr;
+    mmap = (multiboot_memory_map_t*)(multiboot_data_ptr->mmap_addr +
+                                     KERNEL_MEM_OFFSET);
+    mmap_end = (multiboot_memory_map_t*)((uint32_t)mmap +
+                                         multiboot_data_ptr->mmap_length);
     i = 0;
     total_memory = 0;
     /* Mark all static used memory as used */
-    static_used_memory = (uint32_t)&_end;
-    while((uint32_t)mmap < 
-          multiboot_data_ptr->mmap_addr + multiboot_data_ptr->mmap_length)
+    static_used_memory = (uint32_t)&_end - (uint32_t)&_start;
+    while(mmap < mmap_end)
     {
         total_memory += (uint32_t)mmap->len;
 
@@ -114,31 +121,31 @@ OS_RETURN_E memory_map_init(void)
     }
     free_size   = (uint32_t)&kernel_heap_end - (uint32_t)&kernel_heap_start;
     static_free = (uint32_t)&kernel_heap_start - (uint32_t)&_end;
-    size        = (uint32_t)&_end;
+    size        = (uint32_t)&_end - (uint32_t)&_start;
 
     if((uint32_t)&_end >(uint32_t)&kernel_heap_start)
     {
-        kernel_error("Error, kernel size if too big, consider modifying the"
-                     " configuration file.\n");
+        kernel_error("Error, kernel size if too big (%d), consider modifying "
+                     "the configuration file.\n", (uint32_t)&_end );
         kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
     }
-    
+
     kernel_info("Kernel memory ranges:\n\t[STATIC: 0x%08x - 0x%08x]\n"
-                 "\t[DYNAMIC: 0x%08x - 0x%08x]\n", 
-                0, (uint32_t)&_end, 
-                (uint32_t)&kernel_heap_start, (uint32_t)&kernel_heap_end );
-    kernel_info("Kernel static size %uKb | %uMb\n", size / 1024, 
+                 "\t[DYNAMIC: 0x%08x - 0x%08x]\n",
+                (uint32_t)&_start, (uint32_t)&_end,
+                (uint32_t)&kernel_heap_start, (uint32_t)&kernel_heap_end);
+    kernel_info("Kernel static size %uKb | %uMb\n", size / 1024,
                 size / 1024 / 1024);
-    kernel_info("Kernel free static memory %uKb | %uMb\n", static_free / 1024, 
+    kernel_info("Kernel free static memory %uKb | %uMb\n", static_free / 1024,
                 static_free / 1024 / 1024);
-    kernel_info("Kernel free dynamic memory %uKb | %uMb\n", free_size / 1024, 
+    kernel_info("Kernel free dynamic memory %uKb | %uMb\n", free_size / 1024,
                 free_size / 1024 / 1024);
 
-    kernel_info("Total memory: %uKb | %uMb\n", total_memory / 1024, 
+    kernel_info("Total memory: %uKb | %uMb\n", total_memory / 1024,
                 total_memory / 1024 / 1024);
-    kernel_info("Used memory: %uKb | %uMb\n", static_used_memory / 1024, 
+    kernel_info("Used memory: %uKb | %uMb\n", static_used_memory / 1024,
                 static_used_memory / 1024 / 1024);
-    
+
     return OS_NO_ERR;
 }
 
@@ -159,7 +166,7 @@ uint32_t meminfo_kernel_memory_usage(void)
 
 uint32_t meminfo_kernel_total_size(void)
 {
-    return (uint32_t)&kernel_heap_end;
+    return (uint32_t)&kernel_heap_end - (uint32_t)&_start;
 }
 
 uint32_t meminfo_get_memory_size(void)

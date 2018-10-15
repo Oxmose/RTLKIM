@@ -10,31 +10,38 @@
  * @version 2.0
  *
  * @brief Kernel's main configuration file.
- * 
- * @details Kernel configuration's definitions. This file stores the different 
+ *
+ * @details Kernel configuration's definitions. This file stores the different
  * settings used when compiling RTLK.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #ifndef __CONFIG_H_
 #define __CONFIG_H_
 
-/** 
+/**
  * @brief Kernel's main stack size in bytes.
- * 
- * @warning When modifying this value, do not forget to modify it in the 
+ *
+ * @warning When modifying this value, do not forget to modify it in the
  * loader.S file.
  */
 #define KERNEL_STACK_SIZE 16384
 
+/**
+ * @brief Kernel's high memory offset.
+ *
+ * @warning Must be 4MB aligned.
+ */
+#define KERNEL_MEM_OFFSET 0xE0000000
+
 /*******************************************************************************
- * Features settings 
+ * Features settings
  ******************************************************************************/
 /** @brief Maximal number of CPU to be supported by the kernel. */
 #define MAX_CPU_COUNT      1
 
-/** @brief Enables the use of an IO-APIC instead of the PIC if present if the 
+/** @brief Enables the use of an IO-APIC instead of the PIC if present if the
  * system.
  */
 #define ENABLE_IO_APIC     1
@@ -43,7 +50,7 @@
  */
 #define ENABLE_LAPIC_TIMER 1
 
-/** @brief Enables SMP support. IO-APIC must be enabled and supported to enable 
+/** @brief Enables SMP support. IO-APIC must be enabled and supported to enable
  * SMP.
  */
 #define ENABLE_SMP         0
@@ -64,7 +71,7 @@
 #define SERIAL_DEBUG_PORT  COM1
 
 /*******************************************************************************
- * Screen settings 
+ * Screen settings
  ******************************************************************************/
 /** @brief When VESA drivers are enabled, defines the maximal supported height
  * resolution.
@@ -80,12 +87,12 @@
 #define MAX_SUPPORTED_BPP    32
 
 /*******************************************************************************
- * Timers settings 
+ * Timers settings
  ******************************************************************************/
 /** @brief Defines the current year (usefull for the RTC). */
 #define CURRENT_YEAR 2018
 
-/** @brief Defines the kernel's main timer frequency. This will set the maximal 
+/** @brief Defines the kernel's main timer frequency. This will set the maximal
  * scheduling frequency. */
 #define KERNEL_MAIN_TIMER_FREQ 1000
 /** @brief Defines the kernel's auxiliary timer frequency. */
@@ -94,7 +101,7 @@
 #define KERNEL_RTC_TIMER_FREQ 16
 
 /*******************************************************************************
- * Threads settings 
+ * Threads settings
  ******************************************************************************/
 
 /** @brief Defines the maximal length of a thread's name. */
@@ -105,7 +112,7 @@
 #define THREAD_KERNEL_STACK_SIZE 0x400 /* 1KB */
 
 /*******************************************************************************
- * Peripherals settings 
+ * Peripherals settings
  ******************************************************************************/
 
 /** @brief Enables ATA PIO detection on the primary ATA port. */
@@ -177,8 +184,11 @@
 /** @brief Enables kernel mailbox debuging feature. */
 #define MAILBOX_KERNEL_DEBUG 0
 
-/** @brief Enables kernel queue debuging deature. */
+/** @brief Enables kernel queue debuging feature. */
 #define USERQUEUE_KERNEL_DEBUG 0
+
+/** @brief Enables kernel paging debuging feature. */
+#define PAGING_KERNEL_DEBUG 1
 
 /** @brief Enables test mode features. */
 #define TEST_MODE_ENABLED 0

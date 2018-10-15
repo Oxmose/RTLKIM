@@ -179,7 +179,7 @@ typedef struct vesa_mode_info vesa_mode_info_t;
  * @details Initializes the VESA driver, sets its structures and gathers 
  * available VESA modes.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_VESA_NOT_SUPPORTED if the graphic driver is cannot handle VESA on 
  * the system.
@@ -193,7 +193,7 @@ OS_RETURN_E vesa_init(void);
  * content of the VGA framebuffer to write it on the screen after the video mode 
  * switch.
  *
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_VESA_NOT_SUPPORTED if the graphic driver is cannot handle VESA on 
  * the system.
@@ -220,7 +220,7 @@ uint16_t vesa_get_vesa_mode_count(void);
  * @param[out] buffer The buffer that needs to be filled with the data.
  * @param[in] size The size of the buffer in number of elements.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_VESA_NOT_SUPPORTED if the graphic driver is cannot handle VESA on 
  * the system.
@@ -238,7 +238,7 @@ OS_RETURN_E vesa_get_vesa_modes(vesa_mode_info_t* buffer, const uint32_t size);
  *
  * @param[in] mode The VESA mode to be set.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_VESA_NOT_SUPPORTED if the graphic driver is cannot handle VESA on 
  * the system.
@@ -261,7 +261,7 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode);
  * @param[out] green The green component of the pixel buffer.
  * @param[out] blue The blue component of the pixel buffer.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_VESA_NOT_SUPPORTED if the graphic driver is cannot handle VESA on 
  *   the system.
@@ -288,7 +288,7 @@ OS_RETURN_E vesa_get_pixel(const uint16_t x, const uint16_t y,
  * @param[in] green The green component of the pixel.
  * @param[in] blue The blue component of the pixel.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_VESA_NOT_SUPPORTED if the graphic driver is cannot handle VESA on 
  *   the system.
@@ -316,7 +316,7 @@ OS_RETURN_E vesa_draw_pixel(const uint16_t x, const uint16_t y,
  * @param[in] green The green component of the pixel.
  * @param[in] blue The blue component of the pixel.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_VESA_NOT_SUPPORTED if the graphic driver is cannot handle VESA on 
  *   the system.
@@ -342,7 +342,7 @@ OS_RETURN_E vesa_draw_rectangle(const uint16_t x, const uint16_t y,
  * @param[in] fgcolor The foreground color of the character.
  * @param[in] bgcolor The background color of the character.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_VESA_NOT_SUPPORTED if the graphic driver is cannot handle VESA on 
  *   the system.
@@ -398,7 +398,7 @@ void vesa_clear_screen(void);
  * @param[in] line The line index where to place the cursor.
  * @param[in] column The column index where to place the cursor.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.  
  * - OS_ERR_OUT_OF_BOUND is returned if the parameters are out of bound.
  */
@@ -413,7 +413,7 @@ OS_RETURN_E vesa_put_cursor_at(const uint32_t line, const uint32_t column);
  * @param[out] buffer The cursor buffer in which the current cursor position is
  * going to be saved.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
  */
@@ -427,7 +427,7 @@ OS_RETURN_E vesa_save_cursor(cursor_t* buffer);
  * 
  * @param[in] buffer The buffer containing the cursor's attributes.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_UNAUTHORIZED_ACTION is returned if the positions of the buffer are
  * out of bound.
@@ -465,7 +465,7 @@ void vesa_set_color_scheme(const colorscheme_t color_scheme);
  * @param[out] buffer The buffer that will receive the current color scheme used 
  * by the screen.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
  */

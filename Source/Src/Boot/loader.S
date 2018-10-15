@@ -31,13 +31,19 @@ extern multiboot_data_ptr
 
 extern cpu_info                 ; CPU INFO structure
 
-global loader                   ; Kernel entry point
 global kernel_stack             ; Kernel first stack
-
+global low_loader               ; Kernel entry point
+global loader                   ; Kernelk high mem entry point
 ;-----------------------------
 ; KERNEL STACK SETTINGS
 ;-----------------------------
 KERNEL_STACK_SIZE equ 16384     ; DO NOT FORGET TO MODIFY IN CONFIG.H
+
+;-----------------------------
+; PAGING SETTINGS
+;-----------------------------
+KERNEL_MEM_OFFSET    equ 0xE0000000 ; DO NOT FORGET TO MODIFY IN CONFIG.H
+KERNEL_START_PAGE_ID equ (KERNEL_MEM_OFFSET >> 22)
 
 ;-----------------------------
 ; MULTIBOOT SETTINGS
@@ -57,11 +63,46 @@ section .multiboot
     dd CHECKSUM
 
 section .text:
+
+  low_loader equ (loader - KERNEL_MEM_OFFSET)
+
   align 4
   loader:
     ; Make sure interrupts are disabled and clear flags
     push  dword 0
     popfd
+
+    ; Blank all uninitialized memory
+    mov  edi, (__bss_start - KERNEL_MEM_OFFSET)
+    xor  eax, eax
+    blank_mem:
+        mov  [edi], eax
+        add  edi, 4
+        cmp  edi, (kernel_heap_end - KERNEL_MEM_OFFSET)
+        jl  blank_mem
+
+    ; Map the first 4M of the kernel 1:1
+    mov ecx, (pgdir_boot - KERNEL_MEM_OFFSET)
+    mov cr3, ecx
+
+    ; Enable 4MB pages
+    mov ecx, cr4
+    or  ecx, 0x00000010
+    mov cr4, ecx
+
+    ; Enable paging
+    mov ecx, cr0
+    or  ecx, 0x80000000
+    mov cr0, ecx
+
+    ; Load high mem kernel entry point
+    lea ecx, [high_loader]
+    jmp ecx
+
+  high_loader:
+    ; Unmap the first 4M
+    mov dword [pgdir_boot], 0
+    invlpg [0]
 
     ; Save Multiboot info to Memory
     mov edi, multiboot_data_ptr
@@ -72,15 +113,6 @@ section .text:
 
     ; Init base pointer
     xor ebp, ebp
-
-    ; Blank all uninitialized memory
-    mov  edi, __bss_start
-    xor  eax, eax
-    blank_mem:
-        mov  [edi], eax
-        add  edi, 4
-        cmp  edi, kernel_heap_end
-        jl  blank_mem
 
     ; Init CPU info structure
     mov  edi, cpu_info
@@ -110,7 +142,7 @@ section .text:
     ; Setup kernel TSS
     call cpu_setup_tss
 
-    ; Setup the kernel heap 
+    ; Setup the kernel heap
     call setup_kheap
 
     ; Kickstart the kernel, we should never return from here.
@@ -141,6 +173,22 @@ section .text:
 ; THE STACK SPACE
 ;-----------------------
 section .bss
-  align 4
+  align 32
   kernel_stack:
     resb KERNEL_STACK_SIZE
+
+section .data
+  align 0x1000
+  pgdir_boot:
+    ; 4MB R/W Present.
+    dd 0x00000083
+    times (KERNEL_START_PAGE_ID - 1) dd 0         ; Pages before kernel space.
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x00000083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x00400083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x00800083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x00C00083
+    times (1024 - KERNEL_START_PAGE_ID - 5) dd 0  ; Pages after the kernel image.

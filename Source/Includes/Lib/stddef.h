@@ -8,10 +8,10 @@
  * @version 1.0
  *
  * @brief Standard definitions for the kernel.
- * 
+ *
  * @details Standard definitions for the kernel. Contains the RTLK error codes
  * definition, and some types definitions.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -158,15 +158,17 @@ enum OS_RETURN
     /** @brief RTLK Error value. */
     OS_ERR_PERMISSION_DENIED               = 58,
     /** @brief RTLK Error value. */
-    OS_ERR_NOT_SUPPORTED                   = 59
+    OS_ERR_NOT_SUPPORTED                   = 59,
+    /** @brief RTLK Error value. */
+    OS_ERR_KERNEL_OFFSET_UNALIGNED         = 60
 };
 
-/** 
+/**
  * @brief Defines OS_RETURN_E type as a shorcut for enum OS_RETURN.
  */
 typedef enum OS_RETURN OS_RETURN_E;
 
-/** 
+/**
  * @brief Defines OS_EVENT_ID type as a renaming for int32_t.
  */
 typedef int32_t OS_EVENT_ID;
@@ -175,7 +177,7 @@ typedef int32_t OS_EVENT_ID;
 #error __SIZE_TYPE__ not defined
 #endif
 
-/** 
+/**
  * @brief Defines size_t type as a renaming for __SIZE_TYPE__.
  */
 typedef __SIZE_TYPE__ size_t;
@@ -184,12 +186,12 @@ typedef __SIZE_TYPE__ size_t;
 #error __PTRDIFF_TYPE__ not defined
 #endif
 
-/** 
+/**
  * @brief Defines ptrdiff_t type as a renaming for __PTRDIFF_TYPE__.
  */
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 
-/** 
+/**
  * @brief Defines intptr_t type as a renaming for int32_t.
  */
 typedef int32_t intptr_t;

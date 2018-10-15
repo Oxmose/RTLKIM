@@ -133,7 +133,7 @@ typedef struct ata_pio_device ata_pio_device_t;
  * @details Initializes the ATA PIO driver settings. The driver will detect all
  * the connected ATA device in the system.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  */
@@ -147,7 +147,7 @@ OS_RETURN_E ata_pio_init(void);
  *
  * @param[in] device The device to identify.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  * - OS_ERR_ATA_DEVICE_NOT_PRESENT is returned if the device was not detected.
@@ -169,7 +169,7 @@ OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device);
  * @param[out] buffer The buffer that is used to store the read data.
  * @param[in] size The number of bytes to read from the device.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  * - OS_ERR_ATA_DEVICE_NOT_PRESENT is returned if the device was not detected.
@@ -198,7 +198,7 @@ OS_RETURN_E ata_pio_read_sector(const ata_pio_device_t device,
  * @warning Padding is added at the end of the sector, all other data present in
  * the sector before the write opperation are overwritten.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  * - OS_ERR_ATA_DEVICE_NOT_PRESENT is returned if the device was not detected.
@@ -219,7 +219,7 @@ OS_RETURN_E ata_pio_write_sector(const ata_pio_device_t device,
  *
  * @param[in] device The device to be flushed.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  * - OS_ERR_ATA_DEVICE_NOT_PRESENT is returned if the device was not detected.

@@ -148,7 +148,7 @@ void sched_schedule(void);
  *
  * @param[in] time_ms The number of milliseconds to wait.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_UNAUTHORIZED_ACTION is returned if sleep was called by the idle 
  * thread.
@@ -199,7 +199,7 @@ uint32_t sched_get_priority(void);
  *
  * @param[in] priority The desired priority of the thread.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_FORBIDEN_PRIORITY is returned if the desired priority cannot be
  * aplied to the thread. 
@@ -222,7 +222,7 @@ OS_RETURN_E sched_set_priority(const uint32_t priority);
  * @param[in] function The thread routine to be executed.
  * @param[in] args The arguments to be used by the thread.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_FORBIDEN_PRIORITY is returned if the desired priority cannot be
  * aplied to the thread. 
@@ -250,7 +250,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
  * @param[out] term_cause The buffer to store the termination cause of the 
  * thread.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the thread handle is NULL.
  * - OS_ERR_NO_SUCH_ID is returned if thread cannot be found in the system.
@@ -295,7 +295,7 @@ kernel_queue_node_t* sched_lock_thread(const THREAD_WAIT_TYPE_E block_type);
  * @param[in] block_type The type of block (mutex, sem, ...)
  * @param[in] do_schedule Set to 1 the thread should be immediatly scheduled.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the thread handle is NULL.
  * - OS_ERR_NO_SUCH_ID is returned if thread cannot be found in the system.
@@ -319,7 +319,7 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
  * than the current threads count in the system then it will be modified to the
  * current threads count.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the buffer or the size parameter are 
  *   NULL.

@@ -69,7 +69,7 @@ typedef struct semaphore semaphore_t;
  * @param[out] sem The pointer to the semaphore to initialize.
  * @param[in] init_level The initial value to set the semaphore with.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the semaphore to 
  *   initialize is NULL.
@@ -84,7 +84,7 @@ OS_RETURN_E sem_init(semaphore_t* sem, const int32_t init_level);
  *
  * @param[in, out] sem The semaphore to destroy.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the semaphore to destroy 
  *   is NULL.
@@ -101,7 +101,7 @@ OS_RETURN_E sem_destroy(semaphore_t* sem);
  *
  * @param[in] sem The semaphore to pend.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the semaphore to destroy 
  *   is NULL.
@@ -115,7 +115,7 @@ OS_RETURN_E sem_pend(semaphore_t* sem);
  *
  * @param[in] sem The semaphore to post.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the semaphore to destroy 
  *   is NULL.
@@ -134,7 +134,7 @@ OS_RETURN_E sem_post(semaphore_t* sem);
  * @param[in] sem The semaphore to pend.
  * @param[out] value The buffer that receives the semaphore state.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_SEM_LOCKED is returned if the semaphore is locked.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the semaphore to destroy 

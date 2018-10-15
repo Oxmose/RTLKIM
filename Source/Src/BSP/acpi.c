@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file acpi.c
- * 
+ *
  * @see acpi.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,9 +10,9 @@
  * @version 1.0
  *
  * @brief Kernel ACPI management.
- * 
+ *
  * @details Kernel ACPI management, detects and parse the ACPI for the kernel.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -20,6 +20,7 @@
 #include <Lib/stddef.h>       /* OS_RETURN_E, NULL */
 #include <Lib/string.h>       /* memcpy */
 #include <IO/kernel_output.h> /* kernel_error */
+#include <Memory/paging.h>    /* kernel_mmap */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -87,18 +88,18 @@ static uint32_t acpi_initialized = 0;
 
 /**
  * @brief Parses the APIC entries of the MADT table.
- * 
- * @details Parse the APIC entries of the MADT table.The function will parse 
+ *
+ * @details Parse the APIC entries of the MADT table.The function will parse
  * each entry and detect two of the possible entry kind: the LAPIC entries,
- * which also determine the cpu count and the IO-APIC entries will detect the 
+ * which also determine the cpu count and the IO-APIC entries will detect the
  * different available IO-APIC of the system.
  *
  * @param[in] madt_ptr The address of the MADT entry to parse.
- * 
- * @return The succes state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_CHECKSUM_FAILED is returned if the ACPI is corrupted.
- * - OS_ERR_NULL_POINTER is returned if the ACPI contains errored memory 
+ * - OS_ERR_NULL_POINTER is returned if the ACPI contains errored memory
  *   addresses.
  */
 static OS_RETURN_E acpi_parse_apic(acpi_madt_t* madt_ptr)
@@ -108,11 +109,26 @@ static OS_RETURN_E acpi_parse_apic(acpi_madt_t* madt_ptr)
     uint8_t*       madt_entry;
     uint8_t*       madt_limit;
     apic_header_t* header;
+    OS_RETURN_E    err;
 
     if(madt_ptr == NULL)
     {
         return OS_ERR_NULL_POINTER;
     }
+
+    err = kernel_mmap((void*)(KERNEL_MEM_OFFSET + (uint32_t)madt_ptr), madt_ptr,
+                      sizeof(acpi_madt_t),
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_ONLY,
+                      1);
+
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    madt_ptr = (acpi_madt_t*)((uint32_t)madt_ptr + KERNEL_MEM_OFFSET);
 
     #if ACPI_KERNEL_DEBUG == 1
     kernel_serial_debug("Parsing MADT at 0x%08x\n", (uint32_t)madt_ptr);
@@ -208,16 +224,16 @@ static OS_RETURN_E acpi_parse_apic(acpi_madt_t* madt_ptr)
 
 /**
  * @brief Parses the APIC FACS table.
- * 
- * @details Parses the APIC FACS table. The function will save the FACS table 
+ *
+ * @details Parses the APIC FACS table. The function will save the FACS table
  * address in for further use.
  *
  * @param[in] facs_ptr The address of the FACS entry to parse.
- * 
- * @return The succes state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_CHECKSUM_FAILED is returned if the ACPI is corrupted.
- * - OS_ERR_NULL_POINTER is returned if the ACPI contains errored memory 
+ * - OS_ERR_NULL_POINTER is returned if the ACPI contains errored memory
  *   addresses.
  */
 static OS_RETURN_E acpi_parse_facs(acpi_facs_t* facs_ptr)
@@ -226,6 +242,22 @@ static OS_RETURN_E acpi_parse_facs(acpi_facs_t* facs_ptr)
     {
         return OS_ERR_NULL_POINTER;
     }
+
+    OS_RETURN_E err;
+
+    err = kernel_mmap((void*)(KERNEL_MEM_OFFSET + (uint32_t)facs_ptr), facs_ptr,
+                      sizeof(acpi_facs_t),
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_ONLY,
+                      1);
+
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    facs_ptr = (acpi_facs_t*)((uint32_t)facs_ptr + KERNEL_MEM_OFFSET);
 
     #if ACPI_KERNEL_DEBUG == 1
     kernel_serial_debug("Parsing FACS at 0x%08x\n", (uint32_t)facs_ptr);
@@ -251,11 +283,26 @@ static OS_RETURN_E acpi_parse_dsdt(acpi_dsdt_t* dsdt_ptr)
 {
     int32_t     sum;
     uint32_t    i;
+    OS_RETURN_E err;
 
     if(dsdt_ptr == NULL)
     {
         return OS_ERR_NULL_POINTER;
     }
+
+    err = kernel_mmap((void*)(KERNEL_MEM_OFFSET + (uint32_t)dsdt_ptr), dsdt_ptr,
+                      sizeof(acpi_dsdt_t),
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_ONLY,
+                      1);
+
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    dsdt_ptr = (acpi_dsdt_t*)((uint32_t)dsdt_ptr + KERNEL_MEM_OFFSET);
 
     #if ACPI_KERNEL_DEBUG == 1
     kernel_serial_debug("Parsing DSDT at 0x%08x\n", (uint32_t)dsdt_ptr);
@@ -310,6 +357,20 @@ static OS_RETURN_E acpi_parse_fadt(acpi_fadt_t* fadt_ptr)
     {
         return OS_ERR_NULL_POINTER;
     }
+
+    err = kernel_mmap((void*)(KERNEL_MEM_OFFSET + (uint32_t)fadt_ptr), fadt_ptr,
+                      sizeof(acpi_fadt_t),
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_ONLY,
+                      1);
+
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    fadt_ptr = (acpi_fadt_t*)((uint32_t)fadt_ptr + KERNEL_MEM_OFFSET);
 
     #if ACPI_KERNEL_DEBUG == 1
     kernel_serial_debug("Parsing FADT at 0x%08x\n", (uint32_t)fadt_ptr);
@@ -382,6 +443,20 @@ static OS_RETURN_E acpi_parse_dt(acpi_header_t* header)
         return OS_ERR_NULL_POINTER;
     }
 
+    err = kernel_mmap((void*)(KERNEL_MEM_OFFSET + (uint32_t)header), header,
+                      sizeof(acpi_header_t),
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_ONLY,
+                      1);
+
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    header = (acpi_header_t*)((uint32_t)header + KERNEL_MEM_OFFSET);
+
     #if ACPI_KERNEL_DEBUG == 1
     kernel_serial_debug("Parsing SDT at 0x%08x\n", (uint32_t)header);
     #endif
@@ -439,6 +514,20 @@ static OS_RETURN_E acpi_parse_rsdt(rsdt_descriptor_t* rsdt_ptr)
     {
         return OS_ERR_NULL_POINTER;
     }
+
+    err = kernel_mmap((void*)(KERNEL_MEM_OFFSET + (uint32_t)rsdt_ptr), rsdt_ptr,
+                      sizeof(rsdt_descriptor_t),
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_ONLY,
+                      1);
+
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    rsdt_ptr = (rsdt_descriptor_t*)((uint32_t)rsdt_ptr + KERNEL_MEM_OFFSET);
 
     #if ACPI_KERNEL_DEBUG == 1
     kernel_serial_debug("Parsing RSDT at 0x%08x\n", (uint32_t)rsdt_ptr);
@@ -511,6 +600,20 @@ static OS_RETURN_E acpi_parse_xsdt(xsdt_descriptor_t* xsdt_ptr)
         return OS_ERR_NULL_POINTER;
     }
 
+    err = kernel_mmap((void*)(KERNEL_MEM_OFFSET + (uint32_t)xsdt_ptr), xsdt_ptr,
+                      sizeof(xsdt_descriptor_t),
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_ONLY,
+                      1);
+
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    xsdt_ptr = (xsdt_descriptor_t*)((uint32_t)xsdt_ptr + KERNEL_MEM_OFFSET);
+
     #if ACPI_KERNEL_DEBUG == 1
     kernel_serial_debug("Parsing XSDT at 0x%08x\n", (uint32_t)xsdt_ptr);
     #endif
@@ -579,6 +682,20 @@ static OS_RETURN_E acpi_parse_rsdp(rsdp_descriptor_t* rsdp_desc)
     {
         return OS_ERR_NULL_POINTER;
     }
+
+    err = kernel_mmap((void*)(KERNEL_MEM_OFFSET + (uint32_t)rsdp_desc), rsdp_desc,
+                      sizeof(rsdp_descriptor_t),
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_ONLY,
+                      1);
+
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    rsdp_desc = (rsdp_descriptor_t*)((uint32_t)rsdp_desc + KERNEL_MEM_OFFSET);
 
     #if ACPI_KERNEL_DEBUG == 1
     kernel_serial_debug("Parsing RSDP at 0x%08x\n", (uint32_t)rsdp_desc);
@@ -706,8 +823,8 @@ OS_RETURN_E acpi_init(void)
     io_apic_count = 0;
 
     /* Define ACPI table search address range */
-    range_begin = (uint8_t*)0x000E0000;
-    range_end   = (uint8_t*)0x000FFFFF;
+    range_begin = (uint8_t*)0x000E0000 + KERNEL_MEM_OFFSET;
+    range_end   = (uint8_t*)0x000FFFFF + KERNEL_MEM_OFFSET;
 
     /* Search for ACPI table */
     while (range_begin < range_end)

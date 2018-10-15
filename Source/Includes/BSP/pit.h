@@ -62,7 +62,7 @@ extern kernel_timer_t pit_driver;
  * @details Initializes PIT settings, sets the PIT interrupt manager and enables 
  * interrupts for the PIT.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the PIT is not 
  *   supported.
@@ -74,7 +74,7 @@ OS_RETURN_E pit_init(void);
  * 
  * @details Enables PIT ticks by clearing the PIT's IRQ mask.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the PIT is not 
  *   supported.
@@ -86,7 +86,7 @@ OS_RETURN_E pit_enable(void);
  * 
  * @details Disables PIT ticks by setting the PIT's IRQ mask.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the PIT is not 
  *   supported.
@@ -103,7 +103,7 @@ OS_RETURN_E pit_disable(void);
  *
  * @param[in] freq The new frequency to be set to the PIT.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_OUT_OF_BOUND is returned if the frequency is out of bounds.
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the PIT is not 
@@ -128,7 +128,7 @@ uint32_t pit_get_frequency(void);
  * 
  * @param[in] handler The handler of the PIT interrupt.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the handler is NULL.
   * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the PIT interrupt line
@@ -148,7 +148,7 @@ OS_RETURN_E pit_set_handler(void(*handler)(
  *
  * @details Removes the PIT tick handler. 
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the PIT interrupt line
  * is not allowed. 

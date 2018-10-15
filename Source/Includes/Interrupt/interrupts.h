@@ -162,7 +162,7 @@ struct interrupt_driver
      * @param[in] enabled Must be set to 1 to enable the IRQ and 0 to disable
      * the IRQ.
      * 
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
      */
@@ -176,7 +176,7 @@ struct interrupt_driver
      * 
      * @param[in] irq_number The irq number to acknowledge.
      * 
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
      */
@@ -227,7 +227,7 @@ typedef struct interrupt_driver interrupt_driver_t;
  * 
  * @param[in] driver The driver structure to be used by the interrupt manager.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if one of the driver's function pointers 
  * is NULL or the driver's pointer is NULL.
@@ -242,7 +242,7 @@ OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver);
  * 
  * @param[in] driver The driver structure to be used by the interrupt manager.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if one of the driver's function pointers 
  * is NULL or the driver's pointer is NULL.
@@ -259,7 +259,7 @@ OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t* driver);
  * @param[in] irq_number The IRQ number to attach the handler to.
  * @param[in] handler The handler for the desired interrupt.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the IRQ attached to the
  * interrupt line is not allowed. 
@@ -286,7 +286,7 @@ OS_RETURN_E kernel_interrupt_register_irq_handler(const uint32_t irq_number,
  *
  * @param[in] irq_number The IRQ number to detach the handler from.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
   * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the IRQ attached to the
  * interrupt line is not allowed. 
@@ -306,7 +306,7 @@ OS_RETURN_E kernel_interrupt_remove_irq_handler(const uint32_t irq_number);
  * @param[in] interrupt_line The interrupt line to attach the handler to.
  * @param[in] handler The handler for the desired interrupt.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the desired
  * interrupt line is not allowed. 
@@ -332,7 +332,7 @@ OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
  *
  * @param[in] interrupt_line The interrupt line to deattach the handler from.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the desired
  * interrupt line is not allowed.
@@ -387,7 +387,7 @@ uint32_t kernel_interrupt_get_state(void);
  * @param[in] enabled Must be set to 1 to enable the IRQ or 0 to disable the 
  * IRQ.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
  */
@@ -401,7 +401,7 @@ OS_RETURN_E kernel_interrupt_set_irq_mask(const uint32_t irq_number,
  * 
  * @param[in] irq_number The irq number to acknowledge.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the desired IRQ is not allowed. 
  */

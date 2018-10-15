@@ -111,7 +111,7 @@ extern kernel_timer_t rtc_driver;
  * @details Initializes RTC settings, sets the RTC interrupt manager and enables 
  * interrupts for the RTC.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the RTC is not 
  *   supported.
@@ -123,7 +123,7 @@ OS_RETURN_E rtc_init(void);
  * 
  * @details Enables RTC ticks by clearing the RTC's IRQ mask.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the RTC is not 
  *   supported.
@@ -135,7 +135,7 @@ OS_RETURN_E rtc_enable(void);
  * 
  * @details Disables RTC ticks by setting the RTC's IRQ mask.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the RTC is not 
  *   supported.
@@ -154,7 +154,7 @@ OS_RETURN_E rtc_disable(void);
  *
  * @param[in] frequency The new frequency to be set to the RTC.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is detected. 
  * - OS_ERR_OUT_OF_BOUND is returned if the frequency is out of bounds.
  * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the RTC is not 
@@ -179,7 +179,7 @@ uint32_t rtc_get_frequency(void);
  * 
  * @param[in] handler The handler of the RTC interrupt.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the handler is NULL.
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the RTC interrupt line
@@ -199,7 +199,7 @@ OS_RETURN_E rtc_set_handler(void(*handler)(
  *
  * @details Removes the RTC tick handler. 
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the RTC interrupt line
  * is not allowed. 

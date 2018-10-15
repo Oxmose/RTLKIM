@@ -78,7 +78,7 @@ typedef struct queue queue_t;
  * @param[out] queue A pointer to the queue to initialize. If NULL, the 
  * function will immediatly return with the according error code.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the queue to 
  *   initialize is NULL.
@@ -97,7 +97,7 @@ OS_RETURN_E queue_init(queue_t *queue, const uint32_t size);
  * @param[out] error A pointer to the variable that contains the function 
  * success state. May be NULL.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the queue to 
  *   initialize is NULL.
@@ -119,7 +119,7 @@ void* queue_pend(queue_t *queue, OS_RETURN_E *error);
  * pointer is stored in the queue, meaning the content of the pointed address
  * might change.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the queue to 
  *   initialize is NULL.
@@ -138,7 +138,7 @@ OS_RETURN_E queue_post(queue_t *queue, void *element);
  * @param[in, out] queue A pointer to the queue to destroy. If NULL, the 
  * function will immediatly return with the according error code.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the queue to 
  *   initialize is NULL.
