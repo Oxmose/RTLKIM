@@ -45,7 +45,7 @@
 #define SEMAPHORE_TEST 0
 #define MAILBOX_TEST 0
 #define USERQUEUE_TEST 0
-#define PAGING_ALLOC_TEST 1
+#define PAGING_ALLOC_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);

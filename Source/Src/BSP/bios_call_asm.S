@@ -101,8 +101,6 @@ section .text
     rm_bootstrap:
         use16
 
-        ; Disable paging
-
         ; LOAD SEGMENT REGISTERS
         mov  ax, DATA16
         mov  ds, ax
@@ -110,6 +108,11 @@ section .text
         mov  fs, ax
         mov  gs, ax
         mov  ss, ax
+
+        ; Disable paging
+        mov eax, cr0
+        and eax, 0x7FF7FFFF
+        mov cr0, eax
 
         ; Disable protected bit in CR0
         mov  eax, cr0
@@ -155,9 +158,15 @@ section .text
     pm_bootstrap:
 
         pusha
+        ; Enable protected mode
         mov  eax, cr0
         inc  eax
         mov  cr0, eax
+
+        ; Enable paging
+        mov eax, cr0
+        or  eax, 0x80010000
+        mov cr0, eax
 
         jmp  dword CODE32:OFFSET_ADDR(pm_mode)  ; Jump to PM mode
 

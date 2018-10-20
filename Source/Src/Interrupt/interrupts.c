@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file interrupts.c
- * 
+ *
  * @see interrupts.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,11 +10,11 @@
  * @version 1.5
  *
  * @brief X86 interrupt manager.
- * 
+ *
  * @details X86 interrupt manager. Allows to attach ISR to interrupt lines and
- * manage IRQ used by the CPU. We also define the general interrupt handler 
+ * manage IRQ used by the CPU. We also define the general interrupt handler
  * here.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -57,8 +57,8 @@ static uint32_t spurious_interrupt;
  ******************************************************************************/
 /**
  * @brief Kernel's spurious interrupt handler.
- * 
- * @details Spurious interrupt handler. This function should only be 
+ *
+ * @details Spurious interrupt handler. This function should only be
  * called by an assembly interrupt handler. The function will handle spurious
  * interrupts.
  */
@@ -75,14 +75,14 @@ static void spurious_handler(void)
 
 /**
  * @brief Kernel's main interrupt handler.
- * 
- * @details Generic and global interrupt handler. This function should only be 
- * called by an assembly interrupt handler. The function will dispatch the 
+ *
+ * @details Generic and global interrupt handler. This function should only be
+ * called by an assembly interrupt handler. The function will dispatch the
  * interrupt to the desired function to handle the interrupt.
  *
  * @param[in, out] cpu_state The cpu registers structure.
  * @param[in] int_id The interrupt number.
- * @param[in, out] stack_state The stack state before the interrupt that contain cs, 
+ * @param[in, out] stack_state The stack state before the interrupt that contain cs,
  * eip, error code and the eflags register value.
  */
 void kernel_interrupt_handler(cpu_state_t cpu_state,
@@ -106,6 +106,11 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
         return;
     }
 
+    if(int_id == PANIC_INT_LINE)
+    {
+        panic(&cpu_state, int_id, &stack_state);
+    }
+
     #if INTERRUPT_KERNEL_DEBUG == 1
         kernel_serial_debug("Interrupt %d\n",
                             int_id);
@@ -115,7 +120,7 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
     irq_id = int_id - INT_PIC_IRQ_OFFSET;
     if(irq_id >= 0 && irq_id <= PIC_MAX_IRQ_LINE)
     {
-        if(interrupt_driver.driver_handle_spurious(int_id) == 
+        if(interrupt_driver.driver_handle_spurious(int_id) ==
            INTERRUPT_TYPE_SPURIOUS)
         {
             spurious_handler();
@@ -146,8 +151,8 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
 
 OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)
 {
-    if(driver == NULL || 
-       driver->driver_set_irq_eoi == NULL || 
+    if(driver == NULL ||
+       driver->driver_set_irq_eoi == NULL ||
        driver->driver_set_irq_mask == NULL ||
        driver->driver_handle_spurious == NULL ||
        driver->driver_get_irq_int_line == NULL)
@@ -167,7 +172,7 @@ OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)
     kernel_interrupt_disable();
     spurious_interrupt = 0;
 
-    /* Set interrupt driver */ 
+    /* Set interrupt driver */
     interrupt_driver = *driver;
 
      #if INTERRUPT_KERNEL_DEBUG == 1
@@ -182,7 +187,7 @@ OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t* driver)
     uint32_t word;
 
     if(driver == NULL ||
-       driver->driver_set_irq_eoi == NULL || 
+       driver->driver_set_irq_eoi == NULL ||
        driver->driver_set_irq_mask == NULL ||
        driver->driver_handle_spurious == NULL ||
        driver->driver_get_irq_int_line == NULL)
@@ -248,7 +253,7 @@ OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
 OS_RETURN_E kernel_interrupt_remove_int_handler(const uint32_t interrupt_line)
 {
     uint32_t word;
-    
+
     if(interrupt_line < MIN_INTERRUPT_LINE ||
        interrupt_line > MAX_INTERRUPT_LINE)
     {
@@ -284,7 +289,7 @@ OS_RETURN_E kernel_interrupt_register_irq_handler(const uint32_t irq_number,
                                        )
 {
     int32_t int_line;
-    
+
     /* Get the interrupt line attached to the IRQ number. */
     int_line = interrupt_driver.driver_get_irq_int_line(irq_number);
 
@@ -349,7 +354,7 @@ uint32_t kernel_interrupt_get_state(void)
 }
 
 
-OS_RETURN_E kernel_interrupt_set_irq_mask(const uint32_t irq_number, 
+OS_RETURN_E kernel_interrupt_set_irq_mask(const uint32_t irq_number,
                                           const uint32_t enabled)
 {
     #if INTERRUPT_KERNEL_DEBUG == 1

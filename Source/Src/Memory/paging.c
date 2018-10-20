@@ -42,7 +42,6 @@ extern mem_range_t memory_map_data[];
 static mem_range_t current_mem_range;
 static uint8_t*    next_free_frame;
 
-/* Todo page allocator */
 static uint32_t kernel_pgdir[1024] __attribute__((aligned(4096)));
 static uint32_t kernel_page_table[1024][1024] __attribute__((aligned(4096)));
 
@@ -87,6 +86,14 @@ OS_RETURN_E paging_init(void)
     if(i == memory_map_size)
     {
         return OS_ERR_NO_MORE_FREE_MEM;
+    }
+
+    /* Init frame and page allocators */
+    err = paging_alloc_init();
+
+    if(err != OS_NO_ERR)
+    {
+        return err;
     }
 
     kernel_memory_size = meminfo_kernel_total_size() / KERNEL_PAGE_SIZE;
@@ -175,8 +182,6 @@ OS_RETURN_E paging_init(void)
     __asm__ __volatile__("pop %ebp");
     __asm__ __volatile__("pop %eax");
 
-
-
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("CR3 Set to 0x%08x \n", kernel_pgdir);
     #endif
@@ -184,16 +189,7 @@ OS_RETURN_E paging_init(void)
     enabled = 0;
     init = 1;
 
-    err = paging_enable();
-    if(err != OS_NO_ERR)
-    {
-        return err;
-    }
-
-    /* Init frame and page allocators */
-    err = paging_alloc_init();
-
-    return err;
+    return paging_enable();
 }
 
 OS_RETURN_E paging_enable(void)

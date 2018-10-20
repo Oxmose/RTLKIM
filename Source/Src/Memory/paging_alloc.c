@@ -22,6 +22,7 @@
 #include <Memory/meminfo.h> /* mem_range_t */
 #include <Memory/kheap.h>   /* kmalloc */
 #include <Memory/paging.h>  /* KERNEL_PAGE_SIZE */
+#include <Sync/critical.h>  /* ENTER_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -325,24 +326,52 @@ OS_RETURN_E paging_alloc_init(void)
     return OS_NO_ERR;
 }
 
-void* paging_alloc_frame(OS_RETURN_E* err)
+void* kernel_paging_alloc_frame(OS_RETURN_E* err)
 {
-   return get_block(err, &free_frames);
+    uint32_t  word;
+    uint32_t* address;
+
+    ENTER_CRITICAL(word)
+    address = get_block(err, &free_frames);
+    EXIT_CRITICAL(word);
+
+    return (void*)address;
 }
 
-OS_RETURN_E paging_free_frame(void* frame_addr)
+OS_RETURN_E kernel_paging_free_frame(void* frame_addr)
 {
-    return add_free((uint32_t)frame_addr, KERNEL_PAGE_SIZE, &free_frames);
+    OS_RETURN_E err;
+    uint32_t    word;
+
+    ENTER_CRITICAL(word)
+    err = add_free((uint32_t)frame_addr, KERNEL_PAGE_SIZE, &free_frames);
+    EXIT_CRITICAL(word);
+
+    return err;
 }
 
-void* paging_alloc_page(OS_RETURN_E* err)
+void* kernel_paging_alloc_page(OS_RETURN_E* err)
 {
-    return get_block(err, &free_pages);
+    uint32_t  word;
+    uint32_t* address;
+
+    ENTER_CRITICAL(word)
+    address = get_block(err, &free_pages);
+    EXIT_CRITICAL(word);
+
+    return (void*)address;
 }
 
-OS_RETURN_E paging_free_page(void* page_addr)
+OS_RETURN_E kernel_paging_free_page(void* page_addr)
 {
-    return add_free((uint32_t)page_addr, KERNEL_PAGE_SIZE, &free_pages);
+    OS_RETURN_E err;
+    uint32_t    word;
+
+    ENTER_CRITICAL(word)
+    err = add_free((uint32_t)page_addr, KERNEL_PAGE_SIZE, &free_pages);
+    EXIT_CRITICAL(word);
+
+    return err;
 }
 
 /* Test Mode */

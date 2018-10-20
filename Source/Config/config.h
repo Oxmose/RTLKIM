@@ -76,11 +76,11 @@
 /** @brief When VESA drivers are enabled, defines the maximal supported height
  * resolution.
  */
-#define MAX_SUPPORTED_HEIGHT 1080
+#define MAX_SUPPORTED_HEIGHT 800
 /** @brief When VESA drivers are enabled, defines the maximal supported width
  * resolution.
  */
-#define MAX_SUPPORTED_WIDTH  1920
+#define MAX_SUPPORTED_WIDTH  1200
 /** @brief When VESA drivers are enabled, defines the maximal supported color
  * depth.
  */
@@ -158,7 +158,7 @@
 #define KHEAP_KERNEL_DEBUG 0
 
 /** @brief Enables kernel acpi debuging feature. */
-#define ACPI_KERNEL_DEBUG 1
+#define ACPI_KERNEL_DEBUG 0
 
 /** @brief Enables kernel io apic debuging feature. */
 #define IOAPIC_KERNEL_DEBUG 0
@@ -188,9 +188,9 @@
 #define USERQUEUE_KERNEL_DEBUG 0
 
 /** @brief Enables kernel paging debuging feature. */
-#define PAGING_KERNEL_DEBUG 1
+#define PAGING_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
-#define TEST_MODE_ENABLED 1
+#define TEST_MODE_ENABLED 0
 
 #endif /* __CONFIG_H_ */

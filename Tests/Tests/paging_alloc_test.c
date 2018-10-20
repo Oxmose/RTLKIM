@@ -152,16 +152,16 @@ void paging_alloc_test(void)
     kernel_printf("[TESTMODE]Silent alloc\n");
     for(uint32_t i = 0; i < 12226; ++i)
     {
-        frame = paging_alloc_frame(NULL);
+        frame = kernel_paging_alloc_frame(NULL);
     }
     for(uint32_t i = 0; i < 30; ++i)
     {
-        frame = paging_alloc_frame(NULL);
+        frame = kernel_paging_alloc_frame(NULL);
         kernel_printf("[TESTMODE]Allocated 0x%08x\n", (uint32_t)frame);
     }
 
-    paging_free_frame((void*)0x03FDD000);
-    paging_free_frame((void*)0x03FDA000);
+    kernel_paging_free_frame((void*)0x03FDD000);
+    kernel_paging_free_frame((void*)0x03FDA000);
 
     frames = paging_get_free_frames();
 
@@ -173,8 +173,8 @@ void paging_alloc_test(void)
         cursor = cursor->next;
     }
 
-    paging_free_frame((void*)0x03FDB000);
-    paging_free_frame((void*)0x03FDC000);
+    kernel_paging_free_frame((void*)0x03FDB000);
+    kernel_paging_free_frame((void*)0x03FDC000);
 
     frames = paging_get_free_frames();
 
@@ -188,12 +188,12 @@ void paging_alloc_test(void)
         cursor = cursor->next;
     }
 
-    frame = paging_alloc_frame(NULL);
+    frame = kernel_paging_alloc_frame(NULL);
     kernel_printf("[TESTMODE]Allocated 0x%08x\n", (uint32_t)frame);
 
-    paging_free_frame((void*)0x03FD1000);
+    kernel_paging_free_frame((void*)0x03FD1000);
 
-    frame = paging_alloc_frame(NULL);
+    frame = kernel_paging_alloc_frame(NULL);
     kernel_printf("[TESTMODE]Allocated 0x%08x\n", (uint32_t)frame);
 
 
@@ -203,27 +203,27 @@ void paging_alloc_test(void)
     kernel_printf("[TESTMODE]Silent alloc\n");
     for(uint32_t i = 0; i < 0xE0000 - 10; ++i)
     {
-        page = paging_alloc_page(NULL);
+        page = kernel_paging_alloc_page(NULL);
     }
     for(uint32_t i = 0; i < 11; ++i)
     {
-        page = paging_alloc_page(NULL);
+        page = kernel_paging_alloc_page(NULL);
         kernel_printf("[TESTMODE]Allocated 0x%08x\n", (uint32_t)page);
     }
     kernel_printf("[TESTMODE]Silent alloc\n");
     for(uint32_t i = 0; i < 0x1EFFF - 10; ++i)
     {
-        page = paging_alloc_page(NULL);
+        page = kernel_paging_alloc_page(NULL);
     }
     for(uint32_t i = 0; i < 11; ++i)
     {
-        page = paging_alloc_page(NULL);
+        page = kernel_paging_alloc_page(NULL);
         kernel_printf("[TESTMODE]Allocated 0x%08x\n", (uint32_t)page);
     }
 
 
-    paging_free_page((void*)0x03FDD000);
-    paging_free_page((void*)0x03FDA000);
+    kernel_paging_free_page((void*)0x03FDD000);
+    kernel_paging_free_page((void*)0x03FDA000);
 
     pages = paging_get_free_pages();
 
@@ -235,8 +235,8 @@ void paging_alloc_test(void)
         cursor = cursor->next;
     }
 
-    paging_free_page((void*)0x03FDB000);
-    paging_free_page((void*)0x03FDC000);
+    kernel_paging_free_page((void*)0x03FDB000);
+    kernel_paging_free_page((void*)0x03FDC000);
 
     pages = paging_get_free_pages();
 
@@ -250,12 +250,12 @@ void paging_alloc_test(void)
         cursor = cursor->next;
     }
 
-    page = paging_alloc_page(NULL);
+    page = kernel_paging_alloc_page(NULL);
     kernel_printf("[TESTMODE]Allocated 0x%08x\n", (uint32_t)page);
 
-    paging_free_page((void*)0x03FD1000);
+    kernel_paging_free_page((void*)0x03FD1000);
 
-    page = paging_alloc_page(NULL);
+    page = kernel_paging_alloc_page(NULL);
     kernel_printf("[TESTMODE]Allocated 0x%08x\n", (uint32_t)page);
 
 

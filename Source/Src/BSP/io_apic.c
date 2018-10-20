@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file io_apic.c
- * 
+ *
  * @see io_apic.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,13 +10,13 @@
  * @version 1.0
  *
  * @brief IO-APIC (IO advanced programmable interrupt controler) driver.
- * 
+ *
  * @details IO-APIC (IO advanced programmable interrupt controler) driver.
- * Allows to remmap the IO-APIC IRQ, set the IRQs mask and manage EoI for the 
+ * Allows to remmap the IO-APIC IRQ, set the IRQs mask and manage EoI for the
  * X86 IO-APIC.
- * 
+ *
  * @warning This driver also use the LAPIC driver to function correctly.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -28,6 +28,7 @@
 #include <BSP/acpi.h>             /* acpi_get_io_apic_address */
 #include <BSP/lapic.h>            /* lapic_set_int_eoi */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
+#include <Memory/paging.h>        /* kernel_mmap */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -61,7 +62,7 @@ interrupt_driver_t io_apic_driver = {
  * @brief Writes to the IO APIC controller memory.
  *
  * @details Writes to the IO APIC controller memory.
- * 
+ *
  * @param[in] reg The register to write.
  * @param[in] val The value to write to the register.
  */
@@ -73,11 +74,11 @@ __inline__ static void io_apic_write(const uint32_t reg, const uint32_t val)
 
 /**
  * @brief Reads into the IO APIC controller memory.
- * 
+ *
  * @details Reads into the IO APIC controller memory.
  *
  * @param[in] reg The register to read.
- * 
+ *
  * @return The value contained in the register.
  */
 __inline__ static uint32_t io_apic_read(const uint32_t reg)
@@ -99,7 +100,7 @@ OS_RETURN_E io_apic_init(void)
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
-    #endif 
+    #endif
     if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
     {
         return OS_ERR_NOT_SUPPORTED;
@@ -107,6 +108,17 @@ OS_RETURN_E io_apic_init(void)
 
     /* Get IO APIC base address */
     io_apic_base_addr = acpi_get_io_apic_address(0);
+
+    /* Map the IO-APIC */
+    err = kernel_mmap(io_apic_base_addr, io_apic_base_addr, 1,
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_WRITE,
+                      1);
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
 
     /* Maximum entry count */
     read_count = io_apic_read(IOAPICVER);
@@ -126,7 +138,7 @@ OS_RETURN_E io_apic_init(void)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number, 
+OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number,
                                  const uint32_t enabled)
 {
     uint32_t entry_lo   = 0;
@@ -189,7 +201,7 @@ INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t int_number)
     int_type = INTERRUPT_TYPE_REGULAR;
 
     /* If we received a PIC spurious interrupt. */
-    if(int_number >= INT_PIC_IRQ_OFFSET && 
+    if(int_number >= INT_PIC_IRQ_OFFSET &&
        int_number >= INT_PIC_IRQ_OFFSET + 0x0F)
     {
         lapic_set_int_eoi(int_number);
@@ -212,6 +224,6 @@ int32_t io_apic_get_irq_int_line(const uint32_t irq_number)
     {
         return -1;
     }
-    
+
     return irq_number + INT_IOAPIC_IRQ_OFFSET;
 }

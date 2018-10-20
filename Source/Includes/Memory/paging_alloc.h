@@ -49,12 +49,12 @@ typedef struct mem_area mem_area_t;
 
 OS_RETURN_E paging_alloc_init(void);
 
-void* paging_alloc_frame(OS_RETURN_E* err);
+void* kernel_paging_alloc_frame(OS_RETURN_E* err);
 
-OS_RETURN_E paging_free_frame(void* frame_addr);
+OS_RETURN_E kernel_paging_free_frame(void* frame_addr);
 
-void* paging_alloc_page(OS_RETURN_E* err);
+void* kernel_paging_alloc_page(OS_RETURN_E* err);
 
-OS_RETURN_E paging_free_page(void* page_addr);
+OS_RETURN_E kernel_paging_free_page(void* page_addr);
 
 #endif /* __PAGING_ALLOC_H_ */

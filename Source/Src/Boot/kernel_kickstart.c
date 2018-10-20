@@ -96,29 +96,6 @@ void kernel_kickstart(void)
     vga_text_test();
     #endif
 
-    /* Init VESA */
-    #if (ENABLE_VESA == 1 && TEST_MODE_ENABLED == 0) || \
-         (TEST_MODE_ENABLED == 1 && VESA_TEXT_TEST == 1)
-    err = vesa_init();
-    if(err == OS_NO_ERR)
-    {
-        kernel_success("VESA Initialized\n");
-        #if TEST_MODE_ENABLED == 1
-        vesa_text_test();
-        #else
-        err = vesa_text_vga_to_vesa();
-        if(err != OS_NO_ERR)
-        {
-            kernel_error("VESA switch error [%d]\n", err);
-        }
-        #endif
-    }
-    else
-    {
-        kernel_error("VESA Initialization error [%d]\n", err);
-    }
-    #endif
-
     kernel_printf("\n==== Kickstarting RTLK ====\n");
 
     /* Detect CPU */
@@ -144,6 +121,29 @@ void kernel_kickstart(void)
 
     #if TEST_MODE_ENABLED == 1
     paging_alloc_test();
+    #endif
+
+    /* Init VESA */
+    #if (ENABLE_VESA == 1 && TEST_MODE_ENABLED == 0) || \
+         (TEST_MODE_ENABLED == 1 && VESA_TEXT_TEST == 1)
+    err = vesa_init();
+    if(err == OS_NO_ERR)
+    {
+        kernel_success("VESA Initialized\n");
+        #if TEST_MODE_ENABLED == 1
+        vesa_text_test();
+        #else
+        err = vesa_text_vga_to_vesa();
+        if(err != OS_NO_ERR)
+        {
+            kernel_error("VESA switch error [%d]\n", err);
+        }
+        #endif
+    }
+    else
+    {
+        kernel_error("VESA Initialization error [%d]\n", err);
+    }
     #endif
 
     /* Initialize ACPI */

@@ -1,6 +1,6 @@
 [TESTMODE] Paging Alloc Tests
 [TESTMODE] Page range 0x00000000 -> 0xe0000000
-[TESTMODE] Page range 0xe1000000 -> 0xffffffff
+[TESTMODE] Page range 0xe1000000 -> 0x00000000
 [TESTMODE] Frame range 0x01000000 -> 0x03fdf000
 [TESTMODE] Page range 0x00000004 -> 0x00000009
 [TESTMODE] Page range 0x0000000d -> 0x00000021
@@ -22,3 +22,70 @@
 [TESTMODE] Page range 0x00000000 -> 0x00000002
 [TESTMODE] Page range 0x00000003 -> 0x00000021
 [TESTMODE] Page range 0x00000065 -> 0x00000066
+[TESTMODE]Now testing frame allocation 
+[TESTMODE]Silent alloc
+[TESTMODE]Allocated 0x03fc2000
+[TESTMODE]Allocated 0x03fc3000
+[TESTMODE]Allocated 0x03fc4000
+[TESTMODE]Allocated 0x03fc5000
+[TESTMODE]Allocated 0x03fc6000
+[TESTMODE]Allocated 0x03fc7000
+[TESTMODE]Allocated 0x03fc8000
+[TESTMODE]Allocated 0x03fc9000
+[TESTMODE]Allocated 0x03fca000
+[TESTMODE]Allocated 0x03fcb000
+[TESTMODE]Allocated 0x03fcc000
+[TESTMODE]Allocated 0x03fcd000
+[TESTMODE]Allocated 0x03fce000
+[TESTMODE]Allocated 0x03fcf000
+[TESTMODE]Allocated 0x03fd0000
+[TESTMODE]Allocated 0x03fd1000
+[TESTMODE]Allocated 0x03fd2000
+[TESTMODE]Allocated 0x03fd3000
+[TESTMODE]Allocated 0x03fd4000
+[TESTMODE]Allocated 0x03fd5000
+[TESTMODE]Allocated 0x03fd6000
+[TESTMODE]Allocated 0x03fd7000
+[TESTMODE]Allocated 0x03fd8000
+[TESTMODE]Allocated 0x03fd9000
+[TESTMODE]Allocated 0x03fda000
+[TESTMODE]Allocated 0x03fdb000
+[TESTMODE]Allocated 0x03fdc000
+[TESTMODE]Allocated 0x03fdd000
+[TESTMODE]Allocated 0x03fde000
+[TESTMODE]Allocated 0x00000000
+[TESTMODE] Frame range 0x03fda000 -> 0x03fdb000
+[TESTMODE] Frame range 0x03fdd000 -> 0x03fde000
+[TESTMODE] Frame range 0x03fda000 -> 0x03fde000
+[TESTMODE]Allocated 0x03fda000
+[TESTMODE]Allocated 0x03fd1000
+[TESTMODE]Now testing page allocation 
+[TESTMODE]Silent alloc
+[TESTMODE]Allocated 0xdfff6000
+[TESTMODE]Allocated 0xdfff7000
+[TESTMODE]Allocated 0xdfff8000
+[TESTMODE]Allocated 0xdfff9000
+[TESTMODE]Allocated 0xdfffa000
+[TESTMODE]Allocated 0xdfffb000
+[TESTMODE]Allocated 0xdfffc000
+[TESTMODE]Allocated 0xdfffd000
+[TESTMODE]Allocated 0xdfffe000
+[TESTMODE]Allocated 0xdffff000
+[TESTMODE]Allocated 0xe1000000
+[TESTMODE]Silent alloc
+[TESTMODE]Allocated 0xffff6000
+[TESTMODE]Allocated 0xffff7000
+[TESTMODE]Allocated 0xffff8000
+[TESTMODE]Allocated 0xffff9000
+[TESTMODE]Allocated 0xffffa000
+[TESTMODE]Allocated 0xffffb000
+[TESTMODE]Allocated 0xffffc000
+[TESTMODE]Allocated 0xffffd000
+[TESTMODE]Allocated 0xffffe000
+[TESTMODE]Allocated 0xfffff000
+[TESTMODE]Allocated 0x00000000
+[TESTMODE] Page range 0x03fda000 -> 0x03fdb000
+[TESTMODE] Page range 0x03fdd000 -> 0x03fde000
+[TESTMODE] page range 0x03fda000 -> 0x03fde000
+[TESTMODE]Allocated 0x03fda000
+[TESTMODE]Allocated 0x03fd1000

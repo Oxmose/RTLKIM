@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file scheduler.c
- * 
+ *
  * @see scheduler.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,10 +10,10 @@
  * @version 3.0
  *
  * @brief Kernel's thread scheduler.
- * 
- * @details Kernel's thread scheduler. Thread creation and management functions 
+ *
+ * @details Kernel's thread scheduler. Thread creation and management functions
  * are located in this file.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -31,7 +31,7 @@
 #include <IO/kernel_output.h>     /* kernel_success, kernel_error */
 #include <IO/graphic.h>           /* save_color_scheme, $1set_color_scheme */
 #include <Core/kernel_queue.h>    /* kernel_queue_t, kernel_queue_node_t */
-#include <Time/time_management.h> /* time_get_current_uptime(), 
+#include <Time/time_management.h> /* time_get_current_uptime(),
                                    * time_register_scheduler() */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 
@@ -54,7 +54,7 @@ static volatile uint32_t last_given_tid;
 /** @brief The number of thread in the system (dead threads are not accounted).
  */
 static volatile uint32_t thread_count;
-/** @brief First scheduling flag, tells if it's the first time we schedule a 
+/** @brief First scheduling flag, tells if it's the first time we schedule a
  * thread.
  */
 static volatile uint32_t first_sched;
@@ -120,11 +120,11 @@ extern int main(int, char**);
 
 /**
  * @brief Thread's exit point.
- * 
- * @details Exit point of a thread. The function will release the resources of 
- * the thread and manage its children (INIT will inherit them). Put the thread 
- * in a THREAD_STATE_ZOMBIE state. If an other thread is already joining the 
- * active thread, then the joining thread will switch from blocked to ready 
+ *
+ * @details Exit point of a thread. The function will release the resources of
+ * the thread and manage its children (INIT will inherit them). Put the thread
+ * in a THREAD_STATE_ZOMBIE state. If an other thread is already joining the
+ * active thread, then the joining thread will switch from blocked to ready
  * state.
  */
 static void thread_exit(void)
@@ -243,9 +243,9 @@ static void thread_exit(void)
 
 /**
  * @brief Cleans a joined thread footprint in the system.
- * 
- * @details Cleans a thread that is currently being joined by the curent active 
- * thread. Removes the thread from all lists and cleans the lists nodes. 
+ *
+ * @details Cleans a thread that is currently being joined by the curent active
+ * thread. Removes the thread from all lists and cleans the lists nodes.
  *
  * @param[in] thread The thread to clean.
  */
@@ -361,10 +361,10 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
 
 /**
  * @brief Thread routine wrapper.
- * 
+ *
  * @details Thread launch routine. Wrapper for the actual thread routine. The
- * wrapper will call the thread routine, pass its arguments and gather the 
- * return value of the thread function to allow the joining thread to retreive 
+ * wrapper will call the thread routine, pass its arguments and gather the
+ * return value of the thread function to allow the joining thread to retreive
  * it. Some statistics about the thread might be added in this function.
  */
 static void thread_wrapper(void)
@@ -388,19 +388,19 @@ static void thread_wrapper(void)
 
 /*******************************************************************************
  * System's specific functions.
- * 
+ *
  * These are the thread routine used by the kernel to manage the system such as
  * the IDLE or INIT threads.
  ******************************************************************************/
 
 /**
  * @brief Scheduler's main function kickstarter.
- * 
- * @details Main kickstarter, just call the main. This is used to start main in 
+ *
+ * @details Main kickstarter, just call the main. This is used to start main in
  * its own thread.
  *
  * @param[in] args The arguments for the main thread. Unsued at the moment.
- * 
+ *
  * @return The main return state.
  */
 static void* main_kickstart(void* args)
@@ -416,15 +416,15 @@ static void* main_kickstart(void* args)
 
 /**
  * @brief IDLE thread routine.
- * 
- * @details IDLE thread routine. This thread should always be ready, it is the 
+ *
+ * @details IDLE thread routine. This thread should always be ready, it is the
  * only thread running when no other trhread are ready. It allows better power
  * consumption management and CPU usage computation.
  *
  * @param[in] args The argument to send to the IDLE thread, usualy null.
- * 
+ *
  * @warning The IDLE thread routine should never return.
- * 
+ *
  * @return NULL always, should never return.
  */
 static void* idle_sys(void* args)
@@ -515,7 +515,7 @@ static void* init_func(void* args)
     }
     #endif
 
-    err = sched_create_thread(&main_thread, KERNEL_HIGHEST_PRIORITY, "main", 
+    err = sched_create_thread(&main_thread, KERNEL_HIGHEST_PRIORITY, "main",
                               SCHEDULER_MAIN_STACK_SIZE, main_kickstart, (void*)1);
     if(err != OS_NO_ERR)
     {
@@ -542,7 +542,7 @@ static void* init_func(void* args)
     /* Wait all children */
     while(thread_count > sys_thread)
     {
-        
+
         thread_node = kernel_queue_pop(active_thread->children, &err);
 
         while(thread_node != NULL && err == OS_NO_ERR)
@@ -566,7 +566,7 @@ static void* init_func(void* args)
             if(err != OS_NO_ERR)
             {
                 EXIT_CRITICAL(word);
-                kernel_error("Error while deleting thread node in INIT [%d]\n", 
+                kernel_error("Error while deleting thread node in INIT [%d]\n",
                              err);
                 kernel_panic(err);
             }
@@ -604,14 +604,14 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     idle_thread_node = kernel_queue_create_node(idle_thread, &err);
 
     if(err != OS_NO_ERR ||
-       idle_thread == NULL || 
+       idle_thread == NULL ||
        idle_thread_node == NULL)
     {
         if(idle_thread != NULL)
         {
             kfree(idle_thread);
         }
-        else 
+        else
         {
             err = OS_ERR_MALLOC;
         }
@@ -653,7 +653,7 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
         (uint32_t)&idle_thread->stack[stack_index - 17];
     idle_thread->ebp =
         (uint32_t)&idle_thread->stack[stack_index - 1];
-    idle_thread->tss_esp = 
+    idle_thread->tss_esp =
         (uint32_t)&idle_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
 
     /* Init thread stack */
@@ -712,10 +712,10 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
 
 /**
  * @brief Selects the next thread to be scheduled.
- * 
- * @details Selects the next thread to be scheduled. Sets the prev_thread and 
- * active_thread pointers. The function will select the next most prioritary 
- * thread to be executed. This function also wake up sleeping thread which 
+ *
+ * @details Selects the next thread to be scheduled. Sets the prev_thread and
+ * active_thread pointers. The function will select the next most prioritary
+ * thread to be executed. This function also wake up sleeping thread which
  * wake-up time has been reached
  */
 static void select_thread(void)
@@ -833,14 +833,14 @@ static void select_thread(void)
 
 /**
  * @brief Scheduler interrupt handler, executes the conetxt switch.
- * 
+ *
  * @details Scheduling function, set a new ESP to the pre interrupt cpu context
- * and save the old ESP to the current thread stack. The function will call the 
- * select_thread function and then set the CPU registers with the values on the 
+ * and save the old ESP to the current thread stack. The function will call the
+ * select_thread function and then set the CPU registers with the values on the
  * new active_thread stack.
- * 
+ *
  * @warning THIS FUNCTION SHOULD NEVER BE CALLED OUTSIDE OF AN INTERRUPT.
- * 
+ *
  * @param[in, out] cpu_state The pre interrupt CPU state.
  * @param[in] int_id The interrupt id when calling this function.
  * @param[in] stack_state The pre interrupt stack state.
@@ -858,7 +858,7 @@ static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
     {
         active_thread->esp = cpu_state->esp;
     }
-    else 
+    else
     {
         first_sched = 1;
     }
@@ -911,7 +911,7 @@ OS_RETURN_E sched_init(void)
         active_threads_table[i] = kernel_queue_create_queue(&err);
         if(err != OS_NO_ERR)
         {
-            kernel_error("Could not create active_threads_table %d [%d]\n", 
+            kernel_error("Could not create active_threads_table %d [%d]\n",
                          i, err);
             kernel_panic(err);
         }
@@ -940,7 +940,7 @@ OS_RETURN_E sched_init(void)
     }
 
     /* Register SW interrupt scheduling */
-    err = kernel_interrupt_register_int_handler(SCHEDULER_SW_INT_LINE, 
+    err = kernel_interrupt_register_int_handler(SCHEDULER_SW_INT_LINE,
                                                 schedule_int);
     if(err != OS_NO_ERR)
     {
@@ -955,7 +955,7 @@ OS_RETURN_E sched_init(void)
     }
 
     /* Create INIT thread */
-    err = sched_create_thread(&init_thread, KERNEL_HIGHEST_PRIORITY, "init", 
+    err = sched_create_thread(&init_thread, KERNEL_HIGHEST_PRIORITY, "init",
                               SCHEDULER_INIT_STACK_SIZE, init_func, (void*)0);
     if(err != OS_NO_ERR)
     {
@@ -991,8 +991,8 @@ OS_RETURN_E sched_sleep(const unsigned int time_ms)
     active_thread->state       = THREAD_STATE_SLEEPING;
 
     #if SCHED_KERNEL_DEBUG == 1
-    kernel_serial_debug("[%d] Thread %d asleep until %d (%dms)\n", 
-                        (uint32_t)time_get_current_uptime(), 
+    kernel_serial_debug("[%d] Thread %d asleep until %d (%dms)\n",
+                        (uint32_t)time_get_current_uptime(),
                         active_thread->tid,
                         (uint32_t)active_thread->wakeup_time,
                         time_ms);
@@ -1010,6 +1010,10 @@ uint32_t sched_get_thread_count(void)
 
 int32_t sched_get_tid(void)
 {
+    if(first_sched == 0)
+    {
+        return 0;
+    }
     return active_thread->tid;
 }
 
@@ -1104,7 +1108,7 @@ void sched_terminate_thread(void)
     thread_exit();
 }
 
-OS_RETURN_E sched_create_thread(thread_t* thread,                          
+OS_RETURN_E sched_create_thread(thread_t* thread,
                                 const uint32_t priority,
                                 const char* name,
                                 const uint32_t stack_size,
@@ -1135,14 +1139,14 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
     new_thread = kmalloc(sizeof(kernel_thread_t));
     new_thread_node = kernel_queue_create_node(new_thread, &err);
     if(err != OS_NO_ERR ||
-       new_thread == NULL || 
+       new_thread == NULL ||
        new_thread_node == NULL)
     {
         if(new_thread != NULL)
         {
             kfree(new_thread);
         }
-        else 
+        else
         {
             err = OS_ERR_MALLOC;
         }
@@ -1189,7 +1193,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
         (uint32_t)&new_thread->stack[stack_index - 17];
     new_thread->ebp =
         (uint32_t)&new_thread->stack[stack_index - 1];
-    new_thread->tss_esp = 
+    new_thread->tss_esp =
         (uint32_t)&new_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
 
     /* Init thread stack */
@@ -1297,7 +1301,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
     return OS_NO_ERR;
 }
 
-OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val, 
+OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val,
                               THREAD_TERMINATE_CAUSE_E* term_cause)
 {
     if(thread == NULL)

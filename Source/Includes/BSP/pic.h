@@ -85,7 +85,7 @@
 /** @brief Master PIC spurious IRQ number. */
 #define PIC_SPURIOUS_IRQ_MASTER 0x07
 /** @brief Slave PIC spurious IRQ number. */
-#define PIC_SPURIOUS_IRQ_SLAVE 0x0F
+#define PIC_SPURIOUS_IRQ_SLAVE  0x0F
 
 /*******************************************************************************
  * STRUCTURES
