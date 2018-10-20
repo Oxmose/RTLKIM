@@ -34,6 +34,26 @@
         (kernel_error(__FILE__":%u: failed assertion `"#expr"'\n", \
             __LINE__), 0))); kernel_panic(0)\
 
+/** @brief Defines the MIN function, return the minimal value between two
+ * variables.
+ *
+ * @param[in] x The first value to compare.
+ * @param[in] x The second value to compare.
+ *
+ * @return The smallest value.
+ */
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+
+/** @brief Defines the MAX function, return the maximal value between two
+ * variables.
+ *
+ * @param[in] x The first value to compare.
+ * @param[in] x The second value to compare.
+ *
+ * @return The biggest value.
+ */
+#define MAX(x, y) ((x) < (y) ? (y) : (x))
+
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/

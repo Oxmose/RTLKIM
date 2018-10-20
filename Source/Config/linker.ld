@@ -6,8 +6,11 @@ SECTIONS
      */
     kernel_offset = 0xE0000000;
 
-    . = kernel_offset + 0x00100000;
+    . = kernel_offset;
     _start = .;
+
+    . = kernel_offset + 0x00100000;
+
 
     /* Put the multiboot header */
     .multiboot ALIGN(4K) : AT(ADDR(.multiboot) - kernel_offset)
@@ -50,7 +53,11 @@ SECTIONS
     kernel_heap_start = 0x00A00000 + kernel_offset;
 
     /* End of kernel memory heap */
-    kernel_heap_end = 0x001000000 + kernel_offset;
+    kernel_heap_end = 0x01000000 + kernel_offset;
+
+    . = kernel_heap_end;
+
+    _kernel_end = .;
 
     /* END OF ZEROING ZONE */
 

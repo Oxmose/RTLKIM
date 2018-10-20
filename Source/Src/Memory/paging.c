@@ -18,10 +18,11 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Lib/stddef.h>     /* OS_RETURN_E */
-#include <Lib/stdint.h>     /* Generic int types */
-#include <Memory/meminfo.h> /* mem_range_t */
-#include <Boot/multiboot.h> /* MULTIBOOT_MEMORY_AVAILABLE */
+#include <Lib/stddef.h>          /* OS_RETURN_E */
+#include <Lib/stdint.h>          /* Generic int types */
+#include <Memory/meminfo.h>      /* mem_range_t */
+#include <Memory/paging_alloc.h> /* paging_alloc_init */
+#include <Boot/multiboot.h>      /* MULTIBOOT_MEMORY_AVAILABLE */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -34,8 +35,8 @@
  ******************************************************************************/
 
 /* Memory map data */
-extern uint32_t          memory_map_size;
-extern mem_range_t       memory_map_data[];
+extern uint32_t    memory_map_size;
+extern mem_range_t memory_map_data[];
 
 /* Allocation tracking */
 static mem_range_t current_mem_range;
@@ -67,6 +68,8 @@ OS_RETURN_E paging_init(void)
     uint32_t dir_entry_count;
     uint32_t to_map;
     uint32_t start_entry;
+
+    OS_RETURN_E err;
 
     /* Get the first range that is free */
     for(i = 0; i < memory_map_size; ++i)
@@ -172,6 +175,8 @@ OS_RETURN_E paging_init(void)
     __asm__ __volatile__("pop %ebp");
     __asm__ __volatile__("pop %eax");
 
+
+
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("CR3 Set to 0x%08x \n", kernel_pgdir);
     #endif
@@ -179,7 +184,16 @@ OS_RETURN_E paging_init(void)
     enabled = 0;
     init = 1;
 
-    return paging_enable();
+    err = paging_enable();
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
+    /* Init frame and page allocators */
+    err = paging_alloc_init();
+
+    return err;
 }
 
 OS_RETURN_E paging_enable(void)

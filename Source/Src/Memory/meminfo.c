@@ -48,6 +48,9 @@ extern uint8_t _start;
 /** @brief Kernel's static end symbol. */
 extern uint8_t _end;
 
+/** @brief Kernel's limit adderss. */
+extern uint8_t _kernel_end;
+
 /* Heap position in memory */
 /** @brief Kernel's heap start address. */
 extern uint8_t kernel_heap_start;
@@ -166,7 +169,7 @@ uint32_t meminfo_kernel_memory_usage(void)
 
 uint32_t meminfo_kernel_total_size(void)
 {
-    return (uint32_t)&kernel_heap_end - (uint32_t)&_start;
+    return (uint32_t)&_kernel_end - (uint32_t)&_start;
 }
 
 uint32_t meminfo_get_memory_size(void)

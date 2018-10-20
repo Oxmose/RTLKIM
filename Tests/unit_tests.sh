@@ -23,8 +23,9 @@ do
         rm -f *.out
         cd ../Source
         make TESTS=TRUE && (make qemu-test-mode > test.out &)
-        sleep 4
+        sleep 2
         killall qemu-system-x86_64
+        killall make
         mv test.out ../Tests/test.out
         cd ../Tests
     } > /dev/null

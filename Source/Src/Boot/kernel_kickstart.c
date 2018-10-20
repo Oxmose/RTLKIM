@@ -142,6 +142,10 @@ void kernel_kickstart(void)
     err = paging_init();
     INIT_MSG("Paging enabled\n", "Error while enabling paging: %d. HALTING\n",err, 1);
 
+    #if TEST_MODE_ENABLED == 1
+    paging_alloc_test();
+    #endif
+
     /* Initialize ACPI */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing ACPI\n");
