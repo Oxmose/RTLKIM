@@ -46,11 +46,11 @@ void bios_call(uint32_t intnum, bios_int_regs_t* regs)
 	ENTER_CRITICAL(word);
 
 	/* Map the RM core */
-	err = kernel_mmap((void*)0x0000, (void*)0x0000, 0x1000 * 1024,
-	                  PG_DIR_FLAG_PAGE_SIZE_4KB |
-                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                      PG_DIR_FLAG_PAGE_READ_WRITE,
-                      1);
+	err = kernel_direct_mmap((void*)0x0000, (void*)0x0000, 0x1000 * 1024,
+	                         PG_DIR_FLAG_PAGE_SIZE_4KB |
+                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                             PG_DIR_FLAG_PAGE_READ_WRITE,
+                             1);
 	if(err != OS_NO_ERR)
 	{
 		return;

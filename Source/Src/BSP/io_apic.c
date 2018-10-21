@@ -29,6 +29,7 @@
 #include <BSP/lapic.h>            /* lapic_set_int_eoi */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h>        /* kernel_mmap */
+#include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -96,6 +97,7 @@ OS_RETURN_E io_apic_init(void)
     uint32_t    i;
     uint32_t    read_count;
     OS_RETURN_E err;
+    const void* io_apic_phy_addr;
 
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
@@ -107,18 +109,35 @@ OS_RETURN_E io_apic_init(void)
     }
 
     /* Get IO APIC base address */
-    io_apic_base_addr = acpi_get_io_apic_address(0);
+    io_apic_phy_addr = acpi_get_io_apic_address(0);
 
-    /* Map the IO-APIC */
-    err = kernel_mmap(io_apic_base_addr, io_apic_base_addr, 1,
-                      PG_DIR_FLAG_PAGE_SIZE_4KB |
-                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                      PG_DIR_FLAG_PAGE_READ_WRITE,
-                      1);
-    if(err != OS_NO_ERR)
+    /* Get a free page */
+    io_apic_base_addr = kernel_paging_alloc_pages(1, &err);
+    if(io_apic_base_addr == NULL || err != OS_NO_ERR)
     {
         return err;
     }
+
+    /* Map the IO-APIC */
+    err = kernel_direct_mmap(io_apic_base_addr, io_apic_phy_addr, 1,
+                             PG_DIR_FLAG_PAGE_SIZE_4KB |
+                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                             PG_DIR_FLAG_PAGE_READ_WRITE,
+                             1);
+    if(err != OS_NO_ERR)
+    {
+        kernel_paging_free_pages((void*)io_apic_base_addr, 1);
+        return err;
+    }
+
+    /* Add offset */
+    io_apic_base_addr = (void*)(uint32_t)io_apic_base_addr +
+                               ((uint32_t)io_apic_phy_addr & 0xFFF);
+
+    #if IOAPIC_KERNEL_DEBUG == 1
+    kernel_serial_debug("IOAPIC address mapped to 0x%08x\n",
+                        io_apic_base_addr);
+    #endif
 
     /* Maximum entry count */
     read_count = io_apic_read(IOAPICVER);
@@ -131,6 +150,7 @@ OS_RETURN_E io_apic_init(void)
         err = io_apic_set_irq_mask(i, 0);
         if(err != OS_NO_ERR)
         {
+            kernel_paging_free_pages((void*)io_apic_base_addr, 1);
             return err;
         }
     }

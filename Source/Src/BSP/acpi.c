@@ -20,7 +20,7 @@
 #include <Lib/stddef.h>       /* OS_RETURN_E, NULL */
 #include <Lib/string.h>       /* memcpy */
 #include <IO/kernel_output.h> /* kernel_error */
-#include <Memory/paging.h>    /* kernel_mmap */
+#include <Memory/paging.h>    /* kernel_direct_mmap */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -116,7 +116,7 @@ static OS_RETURN_E acpi_parse_apic(acpi_madt_t* madt_ptr)
         return OS_ERR_NULL_POINTER;
     }
 
-    err = kernel_mmap(madt_ptr, madt_ptr,
+    err = kernel_direct_mmap(madt_ptr, madt_ptr,
                       sizeof(acpi_madt_t),
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
@@ -247,7 +247,7 @@ static OS_RETURN_E acpi_parse_facs(acpi_facs_t* facs_ptr)
 
     OS_RETURN_E err;
 
-    err = kernel_mmap(facs_ptr, facs_ptr,
+    err = kernel_direct_mmap(facs_ptr, facs_ptr,
                       sizeof(acpi_facs_t),
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
@@ -294,7 +294,7 @@ static OS_RETURN_E acpi_parse_dsdt(acpi_dsdt_t* dsdt_ptr)
         return OS_ERR_NULL_POINTER;
     }
 
-    err = kernel_mmap(dsdt_ptr, dsdt_ptr,
+    err = kernel_direct_mmap(dsdt_ptr, dsdt_ptr,
                       sizeof(acpi_dsdt_t),
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
@@ -317,7 +317,7 @@ static OS_RETURN_E acpi_parse_dsdt(acpi_dsdt_t* dsdt_ptr)
     /* Verify checksum */
     sum = 0;
 
-    err = kernel_mmap(dsdt_ptr, dsdt_ptr,
+    err = kernel_direct_mmap(dsdt_ptr, dsdt_ptr,
                       dsdt_ptr->header.length,
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
@@ -380,7 +380,7 @@ static OS_RETURN_E acpi_parse_fadt(acpi_fadt_t* fadt_ptr)
         return OS_ERR_NULL_POINTER;
     }
 
-    err = kernel_mmap(fadt_ptr, fadt_ptr,
+    err = kernel_direct_mmap(fadt_ptr, fadt_ptr,
                       sizeof(acpi_fadt_t),
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
@@ -467,7 +467,7 @@ static OS_RETURN_E acpi_parse_dt(acpi_header_t* header)
         return OS_ERR_NULL_POINTER;
     }
 
-    err = kernel_mmap(header, header,
+    err = kernel_direct_mmap(header, header,
                       sizeof(acpi_header_t),
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
@@ -541,7 +541,7 @@ static OS_RETURN_E acpi_parse_rsdt(rsdt_descriptor_t* rsdt_ptr)
         return OS_ERR_NULL_POINTER;
     }
 
-    err = kernel_mmap(rsdt_ptr, rsdt_ptr,
+    err = kernel_direct_mmap(rsdt_ptr, rsdt_ptr,
                       sizeof(rsdt_descriptor_t),
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
@@ -628,7 +628,7 @@ static OS_RETURN_E acpi_parse_xsdt(xsdt_descriptor_t* xsdt_ptr)
         return OS_ERR_NULL_POINTER;
     }
 
-    err = kernel_mmap(xsdt_ptr, xsdt_ptr,
+    err = kernel_direct_mmap(xsdt_ptr, xsdt_ptr,
                       sizeof(xsdt_descriptor_t),
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
@@ -713,7 +713,7 @@ static OS_RETURN_E acpi_parse_rsdp(rsdp_descriptor_t* rsdp_desc)
         return OS_ERR_NULL_POINTER;
     }
 
-    err = kernel_mmap(rsdp_desc, rsdp_desc,
+    err = kernel_direct_mmap(rsdp_desc, rsdp_desc,
                       sizeof(rsdp_descriptor_t),
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |

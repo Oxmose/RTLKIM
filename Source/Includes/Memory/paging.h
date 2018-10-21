@@ -153,11 +153,33 @@ OS_RETURN_E paging_disable(void);
  * - OS_ERR_PAGING_NOT_INIT is returned if paging has not been initialized.
  * - OS_ERR_MAPPING_ALREADY_EXISTS is returned if the page is already mapped.
  */
-OS_RETURN_E kernel_mmap(const void* virt_addr, const void* phys_addr,
-                        const uint32_t mapping_size,
-                        const uint16_t flags,
-                        const uint16_t allow_remap);
+OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
+                               const uint32_t mapping_size,
+                               const uint16_t flags,
+                               const uint16_t allow_remap);
 
+/**
+ * @brief Maps a kernel virtual memory region to a free physical region.
+ *
+ * @details Maps a kernel virtual memory region to a free physical
+ * region. The function will not check any address boundaries. If the page is
+ * already mapped and the allow_remap argument is set to 0 an error will be
+ * returned.
+ *
+ * @param[in] virt_addr The virtual address to map.
+ * @param[in] mapping_size The size of the region to map.
+ * @param[in] flags The flags to be set to the pages created.
+ * @param[in] allow_remap If set to 1, if the page is already mapped, this
+ * mapping will  be replaced. If set to 0, if the page is already mapped, an
+ * error is returned.
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_PAGING_NOT_INIT is returned if paging has not been initialized.
+ * - OS_ERR_MAPPING_ALREADY_EXISTS is returned if the page is already mapped.
+ */
+OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
+                        const uint16_t flags, const uint16_t allow_remap);
 /**
  * @brief Un-maps a kernel virtual memory region from a corresponding physical
  * region.

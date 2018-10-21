@@ -1,6 +1,6 @@
 # Real Time Little Kernel
 
-* RTLK is a x86 kernel created for training and educational purposes. The final version is aimed to support multicore (SMP) architectures. RTLK is designed to execute in kernel mode with paging disabled at the moment. However one of the roadmap objective is to bring paging to the kernel to make it a higher-half kernel. The code of the kernel is not made to be efficient but to be readable and understandable.
+* RTLK is a x86 kernel created for training and educational purposes. The final version is aimed to support multicore (SMP) architectures. RTLK is designed to execute in kernel mode.RTLK is a higher-half kernel located at 0xE0000000. The code of the kernel is not made to be efficient but to be readable and understandable.
 
 * RTLK has a configuration file allowing the kernel to be customized depending on the system it will run on.
 
@@ -9,7 +9,7 @@
 *RTLK Build status*
 
 
-| Status | Master | Dev | 
+| Status | Master | Dev |
 | --- | --- | --- |
 | Travis CI | [![Build Status](https://travis-ci.org/Oxmose/RTLKIM.svg?branch=master)](https://travis-ci.org/Oxmose/RTLKIM) | [![Build Status](https://travis-ci.org/Oxmose/RTLKIM.svg?branch=dev)](https://travis-ci.org/Oxmose/RTLKIM) |
 | Codacy | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/14abd7a3d98d40d1abeb2ba71a06e054)](https://www.codacy.com/app/Oxmose/RTLKIM?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Oxmose/RTLKIM&amp;utm_campaign=Badge_Grade)| N/A |
@@ -42,7 +42,7 @@
 * SMBIOS support.
 * Serial output support.
 * Interrupt API (handlers can be set by the user).
-* 80x25 16colors VGA support. VESA Graphic support. 
+* 80x25 16colors VGA support. VESA Graphic support.
 * Symetric multiprocessing support.
 * FAT32 Filesystem with VFS layer.
 * Time management API.
@@ -50,6 +50,8 @@
 
 ### Memory Management
 
+* Higher Half kernel (starting at 0xE0000000).
+* Paging enabled.
 * Kernel heap for dynamic memory allocation.
 * Memory map detection at boot.
 

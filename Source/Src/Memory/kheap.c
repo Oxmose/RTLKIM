@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file kheap.c
- * 
+ *
  * @see kheap.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,13 +10,13 @@
  * @version 1.0
  *
  * @brief Kernel's heap allocator.
- * 
+ *
  * @details Kernel's heap allocator. Allow to dynamically allocate and dealocate
  * memory on the kernel's heap.
- * 
- * @warning This allocator is not suited to allocate memory for the process, you 
+ *
+ * @warning This allocator is not suited to allocate memory for the process, you
  * should only use it for the kernel.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -229,11 +229,11 @@ static uint32_t memory_chunk_size(const mem_chunk_t* chunk)
 
 /**
  * @brief Returns the slot of a memory chunk for the desired size.
- * 
+ *
  * @details Returns the slot of a memory chunk for the desired size.
- * 
+ *
  * @param[in] size The size of the chunk to get the slot of.
- * 
+ *
  * @return The slot of a memory chunk for the desired size.
  */
 static int32_t memory_chunk_slot(uint32_t size)
@@ -249,9 +249,9 @@ static int32_t memory_chunk_slot(uint32_t size)
 
 /**
  * @brief Removes a memory chunk in the free memory chunks list.
- * 
+ *
  * @details Removes a memory chunk in the free memory chunks list.
- * 
+ *
  * @param[in, out] chunk The chunk to be removed from the list.
  */
 static void remove_free(mem_chunk_t* chunk)
@@ -265,9 +265,9 @@ static void remove_free(mem_chunk_t* chunk)
 
 /**
  * @brief Pushes a memory chunk in the free memory chunks list.
- * 
+ *
  * @details Pushes a memory chunk in the free memory chunks list.
- * 
+ *
  * @param[in, out] chunk The chunk to be placed in the list.
  */
 static void push_free(mem_chunk_t *chunk)
@@ -391,10 +391,10 @@ void* kmalloc(uint32_t size)
     kheap_mem_used += size2 - len - HEADER_SIZE;
 
     #if KHEAP_KERNEL_DEBUG == 1
-    kernel_serial_debug("Kheap allocated 0x%8x -> %dB (%dB free, %dB used)\n", 
-                        chunk->data, 
-                        size2 - len - HEADER_SIZE, 
-                        mem_free, mem_used);
+    kernel_serial_debug("Kheap allocated 0x%8x -> %dB (%dB free, %dB used)\n",
+                        chunk->data,
+                        size2 - len - HEADER_SIZE,
+                        mem_free, kheap_mem_used);
     #endif
 
     EXIT_CRITICAL(word);

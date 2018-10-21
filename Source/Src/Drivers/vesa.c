@@ -30,6 +30,7 @@
 #include <IO/graphic.h>       /* structures */
 #include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h>    /* kernel_mmap */
+#include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -411,11 +412,11 @@ OS_RETURN_E vesa_init(void)
         }
 
         /* The mode is compatible, save it */
-        new_mode->width       = vbe_mode_info_base.width;
-        new_mode->height      = vbe_mode_info_base.height;
-        new_mode->bpp         = vbe_mode_info_base.bpp;
-        new_mode->mode_id     = modes[i];
-        new_mode->framebuffer = vbe_mode_info_base.framebuffer;
+        new_mode->width           = vbe_mode_info_base.width;
+        new_mode->height          = vbe_mode_info_base.height;
+        new_mode->bpp             = vbe_mode_info_base.bpp;
+        new_mode->mode_id         = modes[i];
+        new_mode->framebuffer_phy = vbe_mode_info_base.framebuffer;
 
         /* Save mode in list */
         new_mode->next = saved_modes;
@@ -595,11 +596,15 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     vesa_mode_t*    cursor;
     uint32_t        word;
     OS_RETURN_E     err;
+    uint32_t        page_count;
+    uint32_t        buffer_size;
 
     if(vesa_supported == 0)
     {
         return OS_ERR_VESA_NOT_SUPPORTED;
     }
+
+    err = OS_NO_ERR;
 
     /* Search for the mode in the saved modes */
     cursor = saved_modes;
@@ -623,34 +628,41 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
 
     ENTER_CRITICAL(word);
 
-    /* MMap the new buffer */
-    err = kernel_mmap((void*)cursor->framebuffer, (void*)cursor->framebuffer,
-                    cursor->width * cursor->height * (cursor->bpp / 4),
-                    PG_DIR_FLAG_PAGE_SIZE_4KB |
-                    PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                    PG_DIR_FLAG_PAGE_READ_WRITE,
-                    1);
-    if(err != OS_NO_ERR)
+    buffer_size = cursor->width *
+                  cursor->height *
+                  (cursor->bpp / 4);
+    page_count  = buffer_size / KERNEL_PAGE_SIZE;
+    if(buffer_size % KERNEL_PAGE_SIZE != 0)
     {
+        ++page_count;
+    }
+
+    /* Get a new pages */
+    cursor->framebuffer = (uint32_t)kernel_paging_alloc_pages(page_count, &err);
+    if(cursor->framebuffer == 0 || err != OS_NO_ERR)
+    {
+        EXIT_CRITICAL(word);
         return err;
     }
 
-    /* Set the VESA mode */
-    regs.ax = BIOS_CALL_SET_VESA_MODE;
-    regs.bx = cursor->mode_id | VESA_FLAG_LFB_ENABLE;
-    bios_call(BIOS_INTERRUPT_VESA, &regs);
-
-    /* Check call result */
-    if(regs.ax != 0x004F)
+    /* Mmap the new buffer */
+    err = kernel_direct_mmap((void*)cursor->framebuffer,
+                             (void*)cursor->framebuffer_phy,
+                             cursor->width * cursor->height * (cursor->bpp / 4),
+                             PG_DIR_FLAG_PAGE_SIZE_4KB |
+                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                             PG_DIR_FLAG_PAGE_READ_WRITE,
+                             1);
+    if(err != OS_NO_ERR)
     {
         EXIT_CRITICAL(word);
-        return OS_ERR_VESA_MODE_NOT_SUPPORTED;
+        return err;
     }
 
-    current_mode = cursor;
+    cursor->framebuffer += (cursor->framebuffer_phy & 0xFFF);
 
     /* Set the last collumn array */
-    last_columns_size = sizeof(uint32_t) * current_mode->height / font_height;
+    last_columns_size = sizeof(uint32_t) * cursor->height / font_height;
     if(last_columns != NULL)
     {
         kfree(last_columns);
@@ -663,8 +675,39 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     }
     memset(last_columns, 0, last_columns_size);
 
+    /* Set the VESA mode */
+    regs.ax = BIOS_CALL_SET_VESA_MODE;
+    regs.bx = cursor->mode_id | VESA_FLAG_LFB_ENABLE;
+    bios_call(BIOS_INTERRUPT_VESA, &regs);
+
+    /* Check call result */
+    if(regs.ax != 0x004F)
+    {
+        EXIT_CRITICAL(word);
+        return OS_ERR_VESA_MODE_NOT_SUPPORTED;
+    }
     /* Tell generic driver we loaded a VESA mode, ID mapped */
     graphic_set_selected_driver(&vesa_driver);
+
+
+    /* Unmap the old buffer if it exists */
+    if(current_mode != NULL)
+    {
+        buffer_size = current_mode->width *
+                  current_mode->height *
+                  (current_mode->bpp / 4);
+        page_count  = buffer_size / KERNEL_PAGE_SIZE;
+        if(buffer_size % KERNEL_PAGE_SIZE != 0)
+        {
+            ++page_count;
+        }
+
+        err = kernel_munmap((void*)current_mode->framebuffer, buffer_size);
+        err |= kernel_paging_free_pages((void*)current_mode->framebuffer,
+                                        page_count);
+    }
+
+    current_mode = cursor;
 
     EXIT_CRITICAL(word);
 
@@ -672,7 +715,7 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     kernel_serial_debug("VESA Mode set %d\n", mode.mode_id);
     #endif
 
-    return OS_NO_ERR;
+    return err;
 }
 
 OS_RETURN_E vesa_get_pixel(const uint16_t x, const uint16_t y,
