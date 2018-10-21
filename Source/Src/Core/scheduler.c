@@ -656,6 +656,14 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     idle_thread->tss_esp =
         (uint32_t)&idle_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
 
+    __asm__ __volatile__(
+        "mov %%cr3, %%eax\n\t"
+        "mov %%eax, %0\n\t"
+    : "=m" (idle_thread->cr3)
+    : /* no input */
+    : "%eax"
+    );
+
     /* Init thread stack */
     idle_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
     idle_thread->stack[stack_index - 2]  = THREAD_INIT_CS;
@@ -872,6 +880,15 @@ static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
     kernel_serial_debug("CPU Sched %d -> %d\n",
                         prev_thread->tid, active_thread->tid);
     #endif
+
+     /* Restore thread CR3 */
+    __asm__ __volatile__("push %eax");
+    __asm__ __volatile__("push %ebp");
+    __asm__ __volatile__("mov %esp, %ebp");
+    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(active_thread->cr3));
+    __asm__ __volatile__("mov %ebp, %esp");
+    __asm__ __volatile__("pop %ebp");
+    __asm__ __volatile__("pop %eax");
 
     /* Restore thread esp */
     cpu_state->esp = active_thread->esp;
@@ -1195,6 +1212,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
         (uint32_t)&new_thread->stack[stack_index - 1];
     new_thread->tss_esp =
         (uint32_t)&new_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
+    new_thread->cr3 = active_thread->cr3;
 
     /* Init thread stack */
     new_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;

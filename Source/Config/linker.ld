@@ -8,7 +8,6 @@ SECTIONS
 
     . = kernel_offset;
     _start = .;
-
     . = kernel_offset + 0x00100000;
 
 
@@ -61,6 +60,12 @@ SECTIONS
 
     /* END OF ZEROING ZONE */
 
+    . = 0x100000;
+    .kernel_main ALIGN(4K) : AT(_kernel_end - kernel_offset)
+    {
+        *(.kernel_main)
+    }
+    . = _kernel_end;
     /**********************************************
      * SPECIFIC DATA STRUCTURES BASE ADDRESS
      *********************************************/
