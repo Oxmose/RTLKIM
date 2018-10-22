@@ -529,12 +529,12 @@ static OS_RETURN_E acpi_parse_dt(acpi_header_t* header)
  */
 static OS_RETURN_E acpi_parse_rsdt(rsdt_descriptor_t* rsdt_ptr)
 {
-    uint32_t *range_begin;
-    uint32_t *range_end;
-    int8_t   sum;
-    uint8_t  i;
+    volatile uint32_t *range_begin;
+    volatile uint32_t *range_end;
+    volatile int8_t   sum;
+    volatile uint8_t  i;
 
-    OS_RETURN_E err = OS_NO_ERR;
+    OS_RETURN_E err;
 
     if(rsdt_ptr == NULL)
     {
@@ -558,7 +558,7 @@ static OS_RETURN_E acpi_parse_rsdt(rsdt_descriptor_t* rsdt_ptr)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing RSDT at 0x%08x\n", (uint32_t)rsdt_ptr);
+    kernel_serial_debug("Parsing RSDT at 0x%08x and %d\n", (uint32_t)rsdt_ptr, *(uint32_t*)rsdt_ptr);
     #endif
 
     /* Verify checksum */
@@ -587,7 +587,7 @@ static OS_RETURN_E acpi_parse_rsdt(rsdt_descriptor_t* rsdt_ptr)
     /* Parse each SDT of the RSDT */
     while(range_begin < range_end)
     {
-        uint32_t address = *range_begin;
+        volatile uint32_t address = *range_begin;
 
         #if ACPI_KERNEL_DEBUG == 1
         kernel_serial_debug("Parsing SDT at 0x%08x\n", (uint32_t)address);

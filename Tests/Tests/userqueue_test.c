@@ -87,12 +87,12 @@ void userqueue_test(void)
          
     }
 
-    if(sched_create_thread(&thread1, 1, "thread1", 1024, th1_fn, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread1, 1, "thread1", 1024, th1_fn, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while creating the main thread!\n");
          
     }
-    if(sched_create_thread(&thread2, 1, "thread2", 1024, th2_fn, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread2, 1, "thread2", 1024, th2_fn, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while creating the main thread!\n");
          
@@ -130,12 +130,12 @@ void userqueue_test(void)
          
     }
 
-    if(sched_create_thread(&thread1, 1, "thread1", 1024, th1_fn, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread1, 1, "thread1", 1024, th1_fn, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while creating the main thread!\n");
          
     }
-    if(sched_create_thread(&thread2, 1, "thread2", 1024, th3_fn, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread2, 1, "thread2", 1024, th3_fn, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while creating the main thread!\n");
          

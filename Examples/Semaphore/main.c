@@ -35,7 +35,7 @@ int main(void)
 
     for(i = 0; i < THREAD_COUNT; ++i)
     {
-        err = sched_create_thread(&threads[i], i % 10, "sem_ex", 512,
+        err = sched_create_kernel_thread(&threads[i], i % 10, "sem_ex", 512,
                                   thread_routine, (void*)i);
         if(err != OS_NO_ERR)
         {

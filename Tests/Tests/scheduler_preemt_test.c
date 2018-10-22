@@ -51,7 +51,7 @@ void scheduler_preemt_test(void)
 
     for(int i = 0; i < 3; ++i)
     {
-        err = sched_create_thread(&thread[i], 5, "test", 
+        err = sched_create_kernel_thread(&thread[i], 5, "test", 
                                   1024, print_th_pre, (void*)i);
         if(err != OS_NO_ERR)
         {

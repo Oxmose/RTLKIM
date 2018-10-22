@@ -43,6 +43,8 @@ struct mem_area
 
 typedef struct mem_area mem_area_t;
 
+extern mem_area_t* kernel_free_pages;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -58,5 +60,13 @@ void* kernel_paging_alloc_pages(const uint32_t page_count, OS_RETURN_E* err);
 
 OS_RETURN_E kernel_paging_free_pages(void* page_addr,
                                      const uint32_t page_count);
+
+void* paging_alloc_pages(const uint32_t page_count, OS_RETURN_E* err);
+
+void* paging_alloc_pages_from(const void* start_address,
+                              const uint32_t page_count,
+                              OS_RETURN_E* err);
+
+OS_RETURN_E paging_free_pages(void* page_addr, const uint32_t page_count);
 
 #endif /* __PAGING_ALLOC_H_ */

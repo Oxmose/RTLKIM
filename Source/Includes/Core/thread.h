@@ -134,6 +134,24 @@ enum THREAD_TERMINATE_CAUSE
  */
 typedef enum THREAD_TERMINATE_CAUSE THREAD_TERMINATE_CAUSE_E;
 
+/**
+ * @brief Define the thread's types in the kernel.
+ */
+enum THREAD_TYPE
+{
+    /** @brief Kernel thread type, create by and for the kernel. */
+    THREAD_TYPE_KERNEL,
+
+    /** @brief User thread type, created by the kernel for the user. */
+    THREAD_TYPE_USER
+};
+
+/**
+ * @brief Defines THREAD_TYPE_e type as a shorcut for enum THREAD_TYPE.
+ */
+typedef enum THREAD_TYPE THREAD_TYPE_E;
+
+
 /** @brief This is the representation of the thread for the kernel. */
 struct kernel_thread
 {
@@ -143,6 +161,9 @@ struct kernel_thread
     int32_t ptid;
     /** @brief Thread's name. */
     char    name[THREAD_MAX_NAME_LENGTH];
+
+    /** @brief Thread's type. */
+    THREAD_TYPE_E type;
 
     /** @brief Thread's priority assigned at creation. */
     uint32_t init_prio;
@@ -187,8 +208,14 @@ struct kernel_thread
     /** @brief Thread's stack. */
     uint32_t* stack;
 
+    /** @brief Thread's stack size. */
+    uint32_t stack_size;
+
     /** @brief Thread's CR3 page directory pointer. */
     uint32_t cr3;
+
+    /** @brief Thread's free page table address. */
+    uint32_t free_page_table;
 
     /** @brief Wake up time limit for the sleeping thread. */
     uint64_t wakeup_time;

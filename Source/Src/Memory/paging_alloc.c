@@ -23,6 +23,7 @@
 #include <Memory/kheap.h>   /* kmalloc */
 #include <Memory/paging.h>  /* KERNEL_PAGE_SIZE */
 #include <Sync/critical.h>  /* ENTER_CRITICAL */
+#include <Core/scheduler.h> /* sched_get_thread_free_page_table */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -35,7 +36,7 @@
  ******************************************************************************/
 static mem_area_t* kernel_free_frames;
 
-static mem_area_t* kernel_free_pages;
+mem_area_t* kernel_free_pages;
 
 /** @brief Memory map structure's size. */
 extern uint32_t    memory_map_size;
@@ -248,8 +249,69 @@ static void* get_block(mem_area_t** list, const uint32_t block_count,
     address = selected->start;
 
     /* Modify the block */
-    selected->size -= KERNEL_PAGE_SIZE;
-    selected->start += KERNEL_PAGE_SIZE;
+    selected->size -= KERNEL_PAGE_SIZE * block_count;
+    selected->start += KERNEL_PAGE_SIZE * block_count;
+
+    if(selected->size == 0)
+    {
+        remove_free(selected, list);
+    }
+
+    if(err != NULL)
+    {
+        *err = OS_NO_ERR;
+    }
+    return (void*)address;
+}
+
+static void* get_block_from(const void* page_start_address, mem_area_t** list,
+                            const uint32_t block_count,
+                            OS_RETURN_E* err)
+{
+    mem_area_t* cursor;
+    mem_area_t* selected;
+    uint32_t    address;
+    uint32_t    end_alloc;
+    uint32_t    end_block;
+    /* Search for the next block with this size */
+    cursor = *list;
+    selected = NULL;
+    while(cursor)
+    {
+         /* Check if the size of the block is ok */
+        if(cursor->start + cursor->size >=
+           KERNEL_PAGE_SIZE * block_count + (uint32_t)page_start_address &&
+           cursor->size >= KERNEL_PAGE_SIZE * block_count)
+        {
+            selected = cursor;
+            break;
+        }
+        cursor = cursor->next;
+    }
+    if(selected == NULL)
+    {
+        if(err != NULL)
+        {
+            *err = OS_ERR_NO_MORE_FREE_MEM;
+        }
+
+        return NULL;
+    }
+
+    /* Save the block address */
+    address = (uint32_t)page_start_address;
+
+    end_alloc = (uint32_t)page_start_address + KERNEL_PAGE_SIZE * block_count;
+    end_block = selected->start + selected->size;
+
+    /* Modify the block */
+    selected->size -= (KERNEL_PAGE_SIZE * block_count + end_block - end_alloc);
+
+    /* Check if we need to create a new block */
+    if(end_block > end_alloc)
+    {
+        add_free(end_alloc, end_block - end_alloc, list);
+    }
 
     if(selected->size == 0)
     {
@@ -367,6 +429,63 @@ OS_RETURN_E kernel_paging_free_pages(void* page_addr, const uint32_t page_count)
     ENTER_CRITICAL(word)
     err = add_free((uint32_t)page_addr, page_count * KERNEL_PAGE_SIZE,
                    &kernel_free_pages);
+    EXIT_CRITICAL(word);
+
+    return err;
+}
+
+void* paging_alloc_pages(const uint32_t page_count, OS_RETURN_E* err)
+{
+    uint32_t    word;
+    uint32_t*   address;
+    mem_area_t* free_pages_table;
+
+    /* Get the current's thread free page table */
+    free_pages_table = (mem_area_t*)sched_get_thread_free_page_table();
+
+    ENTER_CRITICAL(word)
+    address = get_block(&free_pages_table, page_count, err);
+    EXIT_CRITICAL(word);
+
+    return (void*)address;
+}
+
+void* paging_alloc_pages_from(const void* page_start_address,
+                              const uint32_t page_count,
+                              OS_RETURN_E* err)
+{
+    uint32_t    word;
+    uint32_t*   address;
+    mem_area_t* free_pages_table;
+
+    /* Get the current's thread free page table */
+    free_pages_table = (mem_area_t*)sched_get_thread_free_page_table();
+
+    ENTER_CRITICAL(word)
+    address = get_block_from(page_start_address, &free_pages_table,
+                             page_count, err);
+    EXIT_CRITICAL(word);
+
+    return (void*)address;
+}
+
+OS_RETURN_E paging_free_pages(void* page_addr, const uint32_t page_count)
+{
+    OS_RETURN_E err;
+    uint32_t    word;
+    mem_area_t* free_pages_table;
+
+    if((uint32_t)page_addr + page_count * KERNEL_PAGE_SIZE > KERNEL_MEM_OFFSET)
+    {
+        return OS_ERR_UNAUTHORIZED_ACTION;
+    }
+
+    /* Get the current's thread free page table */
+    free_pages_table = (mem_area_t*)sched_get_thread_free_page_table();
+
+    ENTER_CRITICAL(word)
+    err = add_free((uint32_t)page_addr, page_count * KERNEL_PAGE_SIZE,
+                   &free_pages_table);
     EXIT_CRITICAL(word);
 
     return err;

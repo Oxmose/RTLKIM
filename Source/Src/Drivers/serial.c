@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file serial.c
- * 
+ *
  * @see serial.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,14 +10,14 @@
  * @version 1.0
  *
  * @brief Serial communication driver.
- * 
+ *
  * @details Serial communication driver. Initializes the serial ports as in and
- * output. The serial can be used to output data or communicate with other 
+ * output. The serial can be used to output data or communicate with other
  * prepherals that support this communication method. Only COM1 to COM4 are
  * supported by this driver.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
- * 
+ *
  * @warning Only COM1 and COM2 are initialized for input.
  ******************************************************************************/
 
@@ -46,12 +46,12 @@ static uint8_t serial_init_done = 0;
 
 /**
  * @brief Sets line parameters for the desired port.
- * 
+ *
  * @details Sets line parameters for the desired port.
  *
  * @param[in] attr The settings for the port's line.
  * @param[in] com The port to set.
- * 
+ *
  * @return OS_NO_ERR on success, no other value is returned.
  */
 static OS_RETURN_E set_line(const uint8_t attr, const uint32_t com)
@@ -63,12 +63,12 @@ static OS_RETURN_E set_line(const uint8_t attr, const uint32_t com)
 
 /**
  * @brief Sets buffer parameters for the desired port.
- * 
+ *
  * @details Sets buffer parameters for the desired port.
  *
  * @param[in] attr The settings for the port's buffer.
  * @param[in] com The port to set.
- * 
+ *
  * @return OS_NO_ERR on success, no other value is returned.
  */
 static OS_RETURN_E set_buffer(const uint8_t attr, const uint32_t com)
@@ -80,12 +80,12 @@ static OS_RETURN_E set_buffer(const uint8_t attr, const uint32_t com)
 
 /**
  * @brief Sets the port's baudrate.
- * 
+ *
  * @details Sets the port's baudrate.
  *
  * @param[in] rate The desired baudrate for the port.
  * @param[in] com The port to set.
- * 
+ *
  * @return OS_NO_ERR on success, no other value is returned.
  */
 static OS_RETURN_E set_baudrate(SERIAL_BAUDRATE_E rate, const uint32_t com)
@@ -127,6 +127,10 @@ OS_RETURN_E serial_init(void)
         else if(i == 3)
         {
             com = SERIAL_COM4_BASE;
+        }
+        else
+        {
+            com = SERIAL_COM1_BASE;
         }
 
         attr = SERIAL_DATA_LENGTH_8 | SERIAL_STOP_BIT_1;
@@ -215,7 +219,7 @@ uint8_t serial_read(const uint32_t port)
 {
     //uint32_t word;
     //ENTER_CRITICAL(word);
-    
+
     /* Wait for data to be received */
     while (serial_received(port) == 0);
 

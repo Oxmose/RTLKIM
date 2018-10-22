@@ -113,7 +113,7 @@ OS_RETURN_E io_apic_init(void)
 
     /* Get a free page */
     io_apic_base_addr = kernel_paging_alloc_pages(1, &err);
-    if(io_apic_base_addr == NULL || err != OS_NO_ERR)
+    if(io_apic_base_addr == NULL)
     {
         return err;
     }

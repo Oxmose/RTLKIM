@@ -23,6 +23,8 @@
 #include <Lib/string.h>           /* strncpy */
 #include <Lib/stdlib.h>           /* uitoa */
 #include <Memory/kheap.h>         /* kmalloc, kfree */
+#include <Memory/paging_alloc.h>  /* kernel_paging_alloc */
+#include <Memory/paging.h>        /* KERNEL_PAGE_SIZE */
 #include <Cpu/cpu.h>              /* cpu_hlt */
 #include <Cpu/cpu_settings.h>     /* cpu_settings_set_tss_int_esp() */
 #include <Interrupt/panic.h>      /* kernel_panic */
@@ -254,6 +256,8 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
     kernel_queue_node_t* node;
     OS_RETURN_E          err;
     uint32_t             word;
+    uint32_t             stack_page_count;
+    uint32_t             i;
 
     ENTER_CRITICAL(word);
 
@@ -352,7 +356,33 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
                          thread->tid);
     #endif
 
-    kfree(thread->stack);
+    /* Free the thread stack */
+    if(thread->type == THREAD_TYPE_KERNEL)
+    {
+        kfree(thread->stack);
+    }
+    else
+    {
+        stack_page_count = thread->stack_size / KERNEL_PAGE_SIZE;
+        if(thread->stack_size % KERNEL_PAGE_SIZE != 0)
+        {
+            stack_page_count++;
+        }
+        for(i = 1; i < stack_page_count; ++i)
+        {
+            /* Releases the frame */
+            kernel_paging_free_frames(
+                paging_get_phys_address(
+                    (void*)((uint32_t)thread->stack * i *
+                        KERNEL_PAGE_SIZE)), 1);
+
+            /* Unmapp the frame */
+            kernel_munmap((void*)((uint32_t)thread->stack * i * KERNEL_PAGE_SIZE),
+                        KERNEL_PAGE_SIZE);
+        }
+        /* Free all pages */
+        paging_free_pages(thread->stack, stack_page_count + 1);
+    }
     kfree(thread);
     --thread_count;
 
@@ -515,7 +545,7 @@ static void* init_func(void* args)
     }
     #endif
 
-    err = sched_create_thread(&main_thread, KERNEL_HIGHEST_PRIORITY, "main",
+    err = sched_create_kernel_thread(&main_thread, KERNEL_HIGHEST_PRIORITY, "main",
                               SCHEDULER_MAIN_STACK_SIZE, main_kickstart, (void*)1);
     if(err != OS_NO_ERR)
     {
@@ -629,6 +659,7 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     idle_thread->function       = idle_sys;
     idle_thread->joining_thread = NULL;
     idle_thread->state          = THREAD_STATE_RUNNING;
+    idle_thread->stack_size     = idle_stack_size;
 
     idle_thread->children = kernel_queue_create_queue(&err);
     if(err != OS_NO_ERR)
@@ -663,6 +694,7 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     : /* no input */
     : "%eax"
     );
+    idle_thread->free_page_table = (uint32_t)kernel_free_pages;
 
     /* Init thread stack */
     idle_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
@@ -972,7 +1004,7 @@ OS_RETURN_E sched_init(void)
     }
 
     /* Create INIT thread */
-    err = sched_create_thread(&init_thread, KERNEL_HIGHEST_PRIORITY, "init",
+    err = sched_create_kernel_thread(&init_thread, KERNEL_HIGHEST_PRIORITY, "init",
                               SCHEDULER_INIT_STACK_SIZE, init_func, (void*)0);
     if(err != OS_NO_ERR)
     {
@@ -1125,12 +1157,12 @@ void sched_terminate_thread(void)
     thread_exit();
 }
 
-OS_RETURN_E sched_create_thread(thread_t* thread,
-                                const uint32_t priority,
-                                const char* name,
-                                const uint32_t stack_size,
-                                void* (*function)(void*),
-                                void* args)
+OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
+                                       const uint32_t priority,
+                                       const char* name,
+                                       const uint32_t stack_size,
+                                       void* (*function)(void*),
+                                       void* args)
 {
     OS_RETURN_E          err;
     kernel_thread_t*     new_thread;
@@ -1181,6 +1213,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
     new_thread->function       = function;
     new_thread->joining_thread = NULL;
     new_thread->state          = THREAD_STATE_READY;
+    new_thread->stack_size     = stack_size;
 
     new_thread->children = kernel_queue_create_queue(&err);
     if(err != OS_NO_ERR)
@@ -1213,6 +1246,7 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
     new_thread->tss_esp =
         (uint32_t)&new_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
     new_thread->cr3 = active_thread->cr3;
+    new_thread->free_page_table = active_thread->free_page_table;
 
     /* Init thread stack */
     new_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
@@ -1298,6 +1332,354 @@ OS_RETURN_E sched_create_thread(thread_t* thread,
         kernel_queue_remove(active_threads_table[priority], new_thread_node);
         kernel_queue_remove(global_threads_table, seconde_new_thread_node);
         kfree(new_thread->stack);
+        kfree(new_thread);
+        EXIT_CRITICAL(word);
+        return err;
+    }
+
+    ++thread_count;
+
+    EXIT_CRITICAL(word);
+
+    #if SCHED_KERNEL_DEBUG == 1
+    kernel_serial_debug("Created thread %d\n", new_thread->tid);
+    #endif
+
+    if(thread != NULL)
+    {
+        *thread = new_thread;
+    }
+
+    return OS_NO_ERR;
+}
+
+OS_RETURN_E sched_create_user_thread(thread_t* thread,
+                                     const uint32_t priority,
+                                     const char* name,
+                                     const uint32_t stack_size,
+                                     void* (*function)(void*),
+                                     void* args)
+{
+    OS_RETURN_E          err;
+    kernel_thread_t*     new_thread;
+    kernel_queue_node_t* new_thread_node;
+    kernel_queue_node_t* seconde_new_thread_node;
+    kernel_queue_node_t* children_new_thread_node;
+    uint32_t             stack_index;
+    uint32_t             word;
+    uint32_t             stack_page_count;
+    uint32_t             i;
+    uint32_t             j;
+    void*                phy_addr;
+
+    if(thread != NULL)
+    {
+        *thread = NULL;
+    }
+
+    /* Check if priority is valid */
+    if(priority > KERNEL_LOWEST_PRIORITY)
+    {
+        return OS_ERR_FORBIDEN_PRIORITY;
+    }
+
+    ENTER_CRITICAL(word);
+
+    new_thread = kmalloc(sizeof(kernel_thread_t));
+    new_thread_node = kernel_queue_create_node(new_thread, &err);
+    if(err != OS_NO_ERR ||
+       new_thread == NULL ||
+       new_thread_node == NULL)
+    {
+        if(new_thread != NULL)
+        {
+            kfree(new_thread);
+        }
+        else
+        {
+            err = OS_ERR_MALLOC;
+        }
+        EXIT_CRITICAL(word);
+        return err;
+    }
+    memset(new_thread, 0, sizeof(kernel_thread_t));
+
+    /* Init thread settings */
+    new_thread->tid            = ++last_given_tid;
+    new_thread->ptid           = active_thread->tid;
+    new_thread->priority       = priority;
+    new_thread->init_prio      = priority;
+    new_thread->args           = args;
+    new_thread->function       = function;
+    new_thread->joining_thread = NULL;
+    new_thread->state          = THREAD_STATE_READY;
+    new_thread->stack_size     = stack_size;
+
+    new_thread->children = kernel_queue_create_queue(&err);
+    if(err != OS_NO_ERR)
+    {
+        kernel_queue_delete_node(&new_thread_node);
+        kfree(new_thread);
+        EXIT_CRITICAL(word);
+        return err;
+    }
+
+    /* Init thread stack and align stack size */
+    stack_index = (stack_size + ALIGN - 1) & (~(ALIGN - 1));
+    stack_index /= sizeof(uint32_t);
+
+    /* Allocated pages and frames for the stack */
+    stack_page_count = stack_size / KERNEL_STACK_SIZE;
+    if(stack_size % KERNEL_STACK_SIZE != 0)
+    {
+        ++stack_page_count;
+    }
+    /* The stack is just before the kernel zone */
+    new_thread->stack = paging_alloc_pages_from(
+        (void*)(KERNEL_MEM_OFFSET - stack_page_count * KERNEL_PAGE_SIZE),
+        stack_page_count + 1,
+        &err);
+    if(new_thread->stack == NULL)
+    {
+        kernel_queue_delete_node(&new_thread_node);
+        kernel_queue_delete_queue(&new_thread->children);
+        kfree(new_thread);
+        EXIT_CRITICAL(word);
+        return err;
+    }
+
+    /* Get the frames for the thread stack, there is not need that is is
+     * contiguous. Map the stack pages and frames, note that the first page is
+     * not mapped sostack overflows generate NULL pointer exception.
+     */
+    /* Try to get a contiguous mapp */
+    phy_addr = kernel_paging_alloc_frames(stack_page_count, &err);
+    if(phy_addr == NULL)
+    {
+        /* If we didnt get the contiguous frame zone, just get them one by one */
+        for(i = 1; i < stack_page_count + 1; ++i)
+        {
+            kernel_mmap((void*)((uint32_t)new_thread->stack * i *
+                        KERNEL_PAGE_SIZE),
+                      KERNEL_PAGE_SIZE,
+                      PG_DIR_FLAG_PAGE_SIZE_4KB |
+                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                      PG_DIR_FLAG_PAGE_READ_WRITE,
+                      0);
+            if(err != OS_NO_ERR)
+            {
+                for(j = 1; j < i; ++j)
+                {
+                    /* Releases the frame */
+                    kernel_paging_free_frames(
+                        paging_get_phys_address(
+                            (void*)((uint32_t)new_thread->stack * j *
+                                KERNEL_PAGE_SIZE)), 1);
+
+                    /* Unmapp the frame */
+                    kernel_munmap((void*)((uint32_t)new_thread->stack * j *
+                                    KERNEL_PAGE_SIZE),
+                                   KERNEL_PAGE_SIZE);
+                }
+                /* Free all pages */
+                paging_free_pages((void*)((uint32_t)new_thread->stack),
+                                  stack_page_count + 1);
+                kernel_queue_delete_node(&new_thread_node);
+                kernel_queue_delete_queue(&new_thread->children);
+                kfree(new_thread);
+                EXIT_CRITICAL(word);
+                return err;
+            }
+        }
+    }
+    else
+    {
+        err = kernel_direct_mmap(new_thread->stack + KERNEL_PAGE_SIZE,
+                                 phy_addr,
+                                 stack_page_count * KERNEL_PAGE_SIZE,
+                                 PG_DIR_FLAG_PAGE_SIZE_4KB |
+                                 PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                                 PG_DIR_FLAG_PAGE_READ_WRITE,
+                                 0);
+
+        if(err != OS_NO_ERR)
+        {
+            paging_free_pages(new_thread->stack, stack_page_count + 1);
+            kernel_paging_free_frames(phy_addr, stack_page_count);
+            kernel_queue_delete_node(&new_thread_node);
+            kernel_queue_delete_queue(&new_thread->children);
+            kfree(new_thread);
+            EXIT_CRITICAL(word);
+            return err;
+        }
+    }
+
+
+    /* Init thread context */
+    new_thread->eip = (uint32_t) thread_wrapper;
+    new_thread->esp =
+        (uint32_t)&new_thread->stack[stack_index - 17];
+    new_thread->ebp =
+        (uint32_t)&new_thread->stack[stack_index - 1];
+    new_thread->tss_esp =
+        (uint32_t)&new_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
+    new_thread->cr3 = active_thread->cr3;
+    new_thread->free_page_table = active_thread->free_page_table;
+
+    /* Init thread stack */
+    new_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
+    new_thread->stack[stack_index - 2]  = THREAD_INIT_CS;
+    new_thread->stack[stack_index - 3]  = new_thread->eip;
+    new_thread->stack[stack_index - 4]  = 0; /* UNUSED (error core) */
+    new_thread->stack[stack_index - 5]  = 0; /* UNUSED (int id) */
+    new_thread->stack[stack_index - 6]  = THREAD_INIT_DS;
+    new_thread->stack[stack_index - 7]  = THREAD_INIT_ES;
+    new_thread->stack[stack_index - 8]  = THREAD_INIT_FS;
+    new_thread->stack[stack_index - 9]  = THREAD_INIT_GS;
+    new_thread->stack[stack_index - 10] = THREAD_INIT_SS;
+    new_thread->stack[stack_index - 11] = THREAD_INIT_EAX;
+    new_thread->stack[stack_index - 12] = THREAD_INIT_EBX;
+    new_thread->stack[stack_index - 13] = THREAD_INIT_ECX;
+    new_thread->stack[stack_index - 14] = THREAD_INIT_EDX;
+    new_thread->stack[stack_index - 15] = THREAD_INIT_ESI;
+    new_thread->stack[stack_index - 16] = THREAD_INIT_EDI;
+    new_thread->stack[stack_index - 17] = new_thread->ebp;
+    new_thread->stack[stack_index - 18] = new_thread->esp;
+
+    strncpy(new_thread->name, name, THREAD_MAX_NAME_LENGTH);
+
+    /* Add thread to the system's queues. */
+    seconde_new_thread_node = kernel_queue_create_node(new_thread, &err);
+    if(err != OS_NO_ERR)
+    {
+        kernel_queue_delete_queue(&new_thread->children);
+        kernel_queue_delete_node(&new_thread_node);
+        for(i = 1; i < stack_page_count; ++i)
+        {
+            /* Releases the frame */
+            kernel_paging_free_frames(
+                paging_get_phys_address(
+                    (void*)((uint32_t)new_thread->stack * i *
+                        KERNEL_PAGE_SIZE)), 1);
+
+            /* Unmapp the frame */
+            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
+                            KERNEL_PAGE_SIZE),
+                           KERNEL_PAGE_SIZE);
+        }
+        /* Free all pages */
+        paging_free_pages(new_thread->stack, stack_page_count + 1);
+        kfree(new_thread);
+        EXIT_CRITICAL(word);
+        return err;
+    }
+
+    children_new_thread_node = kernel_queue_create_node(new_thread, &err);
+    if(err != OS_NO_ERR)
+    {
+        kernel_queue_delete_queue(&new_thread->children);
+        kernel_queue_delete_node(&new_thread_node);
+        kernel_queue_delete_node(&seconde_new_thread_node);
+        for(i = 1; i < stack_page_count; ++i)
+        {
+            /* Releases the frame */
+            kernel_paging_free_frames(
+                paging_get_phys_address(
+                    (void*)((uint32_t)new_thread->stack * i *
+                        KERNEL_PAGE_SIZE)), 1);
+
+            /* Unmapp the frame */
+            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
+                            KERNEL_PAGE_SIZE),
+                        KERNEL_PAGE_SIZE);
+        }
+        /* Free all pages */
+        paging_free_pages(new_thread->stack, stack_page_count + 1);
+        kfree(new_thread);
+        EXIT_CRITICAL(word);
+        return err;
+    }
+
+    err = kernel_queue_push(new_thread_node, active_threads_table[priority]);
+    if(err != OS_NO_ERR)
+    {
+        kernel_queue_delete_queue(&new_thread->children);
+        kernel_queue_delete_node(&children_new_thread_node);
+        kernel_queue_delete_node(&new_thread_node);
+        kernel_queue_delete_node(&seconde_new_thread_node);
+        for(i = 1; i < stack_page_count; ++i)
+        {
+            /* Releases the frame */
+            kernel_paging_free_frames(
+                paging_get_phys_address(
+                    (void*)((uint32_t)new_thread->stack * i *
+                        KERNEL_PAGE_SIZE)), 1);
+
+            /* Unmapp the frame */
+            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
+                            KERNEL_PAGE_SIZE),
+                        KERNEL_PAGE_SIZE);
+        }
+        /* Free all pages */
+        paging_free_pages(new_thread->stack, stack_page_count + 1);
+        kfree(new_thread);
+        EXIT_CRITICAL(word);
+        return err;
+    }
+
+     err = kernel_queue_push(seconde_new_thread_node, global_threads_table);
+     if(err != OS_NO_ERR)
+     {
+         kernel_queue_delete_queue(&new_thread->children);
+         kernel_queue_delete_node(&children_new_thread_node);
+         kernel_queue_delete_node(&new_thread_node);
+         kernel_queue_delete_node(&seconde_new_thread_node);
+         kernel_queue_remove(active_threads_table[priority], new_thread_node);
+         for(i = 1; i < stack_page_count; ++i)
+        {
+            /* Releases the frame */
+            kernel_paging_free_frames(
+                paging_get_phys_address(
+                    (void*)((uint32_t)new_thread->stack * i *
+                        KERNEL_PAGE_SIZE)), 1);
+
+            /* Unmapp the frame */
+            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
+                            KERNEL_PAGE_SIZE),
+                        KERNEL_PAGE_SIZE);
+        }
+        /* Free all pages */
+        paging_free_pages(new_thread->stack, stack_page_count + 1);
+         kfree(new_thread);
+         EXIT_CRITICAL(word);
+         return err;
+     }
+
+
+    err = kernel_queue_push(children_new_thread_node, active_thread->children);
+    if(err != OS_NO_ERR)
+    {
+        kernel_queue_delete_queue(&new_thread->children);
+        kernel_queue_delete_node(&children_new_thread_node);
+        kernel_queue_delete_node(&new_thread_node);
+        kernel_queue_delete_node(&seconde_new_thread_node);
+        kernel_queue_remove(active_threads_table[priority], new_thread_node);
+        kernel_queue_remove(global_threads_table, seconde_new_thread_node);
+        for(i = 1; i < stack_page_count; ++i)
+        {
+            /* Releases the frame */
+            kernel_paging_free_frames(
+                paging_get_phys_address(
+                    (void*)((uint32_t)new_thread->stack * i *
+                        KERNEL_PAGE_SIZE)), 1);
+
+            /* Unmapp the frame */
+            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
+                            KERNEL_PAGE_SIZE),
+                        KERNEL_PAGE_SIZE);
+        }
+        /* Free all pages */
+        paging_free_pages(new_thread->stack, stack_page_count + 1);
         kfree(new_thread);
         EXIT_CRITICAL(word);
         return err;
@@ -1461,4 +1843,22 @@ uint64_t sched_get_schedule_count(void)
 uint64_t sched_get_idle_schedule_count(void)
 {
     return idle_sched_count;
+}
+
+uint32_t sched_get_thread_free_page_table(void)
+{
+    if(first_sched == 1)
+    {
+        return (uint32_t)kernel_free_pages;
+    }
+    return active_thread->free_page_table;
+}
+
+uint32_t sched_get_thread_phys_pgdir(void)
+{
+    if(first_sched == 1)
+    {
+        return (uint32_t)kernel_pgdir - KERNEL_MEM_OFFSET;
+    }
+    return active_thread->cr3;
 }

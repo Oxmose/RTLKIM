@@ -48,6 +48,9 @@ extern uint8_t _start;
 /** @brief Kernel's static end symbol. */
 extern uint8_t _end;
 
+/** @brief Kernel's static memory limit. */
+extern uint8_t kernel_static_limit;
+
 /** @brief Kernel's limit adderss. */
 extern uint8_t _kernel_end;
 
@@ -126,13 +129,6 @@ OS_RETURN_E memory_map_init(void)
     static_free = (uint32_t)&kernel_heap_start - (uint32_t)&_end;
     size        = (uint32_t)&_end - (uint32_t)&_start;
 
-    if((uint32_t)&_end >(uint32_t)&kernel_heap_start)
-    {
-        kernel_error("Error, kernel size if too big (%d), consider modifying "
-                     "the configuration file.\n", (uint32_t)&_end );
-        kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
-    }
-
     kernel_info("Kernel memory ranges:\n\t[STATIC: 0x%08x - 0x%08x]\n"
                  "\t[DYNAMIC: 0x%08x - 0x%08x]\n",
                 (uint32_t)&_start, (uint32_t)&_end,
@@ -148,6 +144,13 @@ OS_RETURN_E memory_map_init(void)
                 total_memory / 1024 / 1024);
     kernel_info("Used memory: %uKb | %uMb\n", static_used_memory / 1024,
                 static_used_memory / 1024 / 1024);
+
+    if((uint32_t)&_end > (uint32_t)&kernel_static_limit)
+    {
+        kernel_error("Error, kernel size if too big (%u), consider modifying "
+                     "the configuration file.\n", (uint32_t)&_end );
+        kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
+    }
 
     return OS_NO_ERR;
 }

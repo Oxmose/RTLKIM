@@ -76,7 +76,7 @@ kernel_timer_t lapic_timer_driver = {
  */
 __inline__ static uint32_t lapic_read(uint32_t reg)
 {
-    return mapped_io_read_32(lapic_base_addr + reg);
+    return mapped_io_read_32((void*)((uint32_t)lapic_base_addr + reg));
 }
 
 /* Write Local APIC register, the acces is a memory mapped IO.
@@ -86,7 +86,7 @@ __inline__ static uint32_t lapic_read(uint32_t reg)
  */
 __inline__ static void lapic_write(uint32_t reg, uint32_t data)
 {
-    mapped_io_write_32(lapic_base_addr + reg, data);
+    mapped_io_write_32((void*)((uint32_t)lapic_base_addr + reg), data);
 }
 
 /* LAPIC dummy hamdler.
@@ -158,7 +158,7 @@ OS_RETURN_E lapic_init(void)
 
     /* Get a free page */
     lapic_base_addr = kernel_paging_alloc_pages(1, &err);
-    if(lapic_base_addr == NULL || err != OS_NO_ERR)
+    if(lapic_base_addr == NULL)
     {
         return err;
     }
@@ -176,8 +176,8 @@ OS_RETURN_E lapic_init(void)
     }
 
     /* Add offset */
-    lapic_base_addr = (void*)(uint32_t)lapic_base_addr +
-                             ((uint32_t)lapic_phys_addr & 0xFFF);
+    lapic_base_addr = (void*)((uint32_t)lapic_base_addr +
+                             ((uint32_t)lapic_phys_addr & 0xFFF));
 
     /* Enable all interrupts */
     lapic_write(LAPIC_TPR, 0);

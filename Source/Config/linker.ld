@@ -48,8 +48,16 @@ SECTIONS
 
     _end = .;
 
+    kernel_static_limit = 0x00500000 + kernel_offset;
+
+    /* SIZE = 4096bits, ends at kernel_static_limit + 0x1000 */
+    kernel_current_pgdir = kernel_static_limit;
+
+    /* SIZE = 4096bits, ends at kernel_current_pgdir + 0x1000 */
+    kernel_current_pgtable = kernel_current_pgdir + 0x1000;
+
     /* Beginning of kernel memory heap */
-    kernel_heap_start = 0x00A00000 + kernel_offset;
+    kernel_heap_start = 0x00600000 + kernel_offset;
 
     /* End of kernel memory heap */
     kernel_heap_end = 0x01000000 + kernel_offset;
@@ -66,6 +74,7 @@ SECTIONS
         *(.kernel_main)
     }
     . = _kernel_end;
+
     /**********************************************
      * SPECIFIC DATA STRUCTURES BASE ADDRESS
      *********************************************/

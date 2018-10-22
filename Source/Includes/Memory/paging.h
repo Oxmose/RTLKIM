@@ -85,6 +85,9 @@
  * STRUCTURES
  ******************************************************************************/
 
+/** @brief Kernel's page directory */
+extern uint32_t kernel_pgdir[1024];
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -196,5 +199,21 @@ OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
  * - OS_ERR_MEMORY_NOT_MAPPED is returned if the page is not mapped.
  */
 OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size);
+
+
+/**
+ * @brief Returns the physical address to which is mapped the given virtual
+ * address.
+ *
+ * @details Returns the physical address to which is mapped the given virtual
+ * address for the current thread. If the virtual address is not mapped, then
+ * NULL is returned.
+ *
+ * @param[in] virt_addr The virtual address to translate.
+ *
+ * @return The function returns the physical address to which is mapped the
+ * given virtual address. NULL is returned if the address is not mapped.
+ */
+void* paging_get_phys_address(const void* virt_addr);
 
 #endif /* __PAGING_H_ */

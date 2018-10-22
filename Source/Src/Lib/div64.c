@@ -40,6 +40,9 @@
 /* Combine two `digits' to make a single two-digit number. */
 #define	COMBINE(a, b) (((uint32_t)(a) << HALF_BITS) | (b))
 
+#define UINT_MAX UINT32_MAX
+#define USHRT_MAX UINT16_MAX
+
 /* select a type for digits in base B: use unsigned short if they fit */
 #if UINT_MAX == 0xffffffffU && USHRT_MAX >= 0xffff
 typedef unsigned short digit;

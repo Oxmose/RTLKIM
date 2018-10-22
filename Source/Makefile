@@ -52,12 +52,25 @@ OBJCOPY = objcopy
 QEMU = qemu-system-x86_64
 QEMU_I386 = qemu-system-i386
 
-DEBUG_FLAGS = -O0 -g
-EXTRA_FLAGS = -O2
+DEBUG_FLAGS = -Og -g
+EXTRA_FLAGS = -O2 -g
+
+CWARNS = -Waggregate-return -Wcast-align -Wdisabled-optimization \
+         -Wdiv-by-zero -Wendif-labels -Wformat-extra-args -Wformat-nonliteral \
+		 -Wformat-security -Wformat-y2k -Wimplicit -Wimport -Winit-self \
+		 -Winline -Winvalid-pch -Wjump-misses-init -Wlogical-op \
+		 -Werror=missing-braces \
+		 -Wno-missing-format-attribute -Wmissing-include-dirs -Wmultichar \
+		 -Wpointer-arith -Wreturn-type -Wsequence-point -Wsign-compare \
+		 -Wstrict-aliasing -Wstrict-aliasing=2 -Wswitch -Wswitch-default \
+		 -Werror=undef -Wno-unused -Wvariadic-macros -Wwrite-strings \
+		 -Werror=implicit-function-declaration \
+		 -Werror=nested-externs -Werror=old-style-definition \
+		 -Werror=strict-prototypes
 
 CFLAGS = -m32 -std=c11 -nostdinc -fno-builtin -nostdlib -fno-stack-protector \
-         -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c -fno-pie \
-		 -no-pie -MD -ffreestanding
+         -nostartfiles -nodefaultlibs -Wall -Wextra -c -fno-pie \
+		 -no-pie -MD -ffreestanding $(CWARNS)
 
 ifeq ($(DEBUG), TRUE)
 CFLAGS += $(DEBUG_FLAGS)
