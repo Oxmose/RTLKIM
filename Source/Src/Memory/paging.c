@@ -332,7 +332,7 @@ OS_RETURN_E paging_disable(void)
 
 
 #pragma GCC push_options
-#pragma GCC optimize ("O1")
+#pragma GCC optimize ("O0")
 
 OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
                                const uint32_t mapping_size,

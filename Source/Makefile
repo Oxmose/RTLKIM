@@ -66,11 +66,71 @@ CWARNS = -Waggregate-return -Wcast-align -Wdisabled-optimization \
 		 -Werror=undef -Wno-unused -Wvariadic-macros -Wwrite-strings \
 		 -Werror=implicit-function-declaration \
 		 -Werror=nested-externs -Werror=old-style-definition \
-		 -Werror=strict-prototypes
+		 -Werror=strict-prototypes -Wabi -Waddress -Waggregate-return \
+		 -Waggressive-loop-optimizations -Warray-bounds \
+		 -Wattributes -Wbad-function-cast -Wbool-compare \
+		 -Wbuiltin-macro-redefined \
+		 -Wc99-c11-compat -Wcast-align \
+		 -Wcast-qual -Wchar-subscripts -Wchkp \
+		 -Wclobbered -Wcomment \
+		 -Wconversion -Wcoverage-mismatch \
+		 -Wcpp  -Wdate-time -Wdeclaration-after-statement \
+		 -Wdeprecated \
+		 -Wdeprecated-declarations -Wdesignated-init -Wdisabled-optimization \
+		 -Wdiscarded-array-qualifiers -Wdiscarded-qualifiers -Wdiv-by-zero \
+		 -Wdouble-promotion -Wempty-body -Wendif-labels \
+		 -Wenum-compare \
+		 -Wextra -Wfloat-equal -Wformat-contains-nul -Wformat-extra-args \
+		 -Wformat-nonliteral -Wformat-security -Wformat-signedness \
+		 -Wformat-y2k \
+		 -Wformat-zero-length -Wfree-nonheap-object \
+		 -Wignored-qualifiers -Wimplicit -Wimplicit-function-declaration \
+		 -Wimplicit-int \
+		 -Wincompatible-pointer-types -Winit-self \
+		 -Winline -Wint-conversion -Wint-to-pointer-cast \
+		 -Winvalid-memory-model \
+		 -Winvalid-pch -Wjump-misses-init \
+		 -Wlogical-not-parentheses -Wlogical-op \
+		 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args \
+		 -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers \
+		 -Wmissing-include-dirs -Wmissing-parameter-type -Wmissing-prototypes \
+		 -Wmultichar -Wnarrowing -Wnested-externs \
+		 -Wnonnull -Wodr \
+		 -Wold-style-declaration -Wold-style-definition \
+		 -Wopenmp-simd -Woverflow -Woverlength-strings \
+		 -Woverride-init -Wpacked -Wpacked-bitfield-compat -Wpadded \
+		 -Wparentheses -Wpedantic -Wpointer-arith \
+		 -Wpointer-sign -Wpointer-to-int-cast -Wpragmas \
+		 -Wredundant-decls -Wreturn-local-addr \
+		 -Wreturn-type -Wsequence-point -Wshadow \
+		 -Wshift-count-negative -Wshift-count-overflow -Wsign-compare \
+		 -Wsizeof-array-argument \
+		 -Wsizeof-pointer-memaccess -Wstack-protector \
+		 -Wstrict-prototypes -Wsuggest-attribute=const \
+		 -Wsuggest-attribute=format -Wsuggest-attribute=noreturn \
+		 -Wsuggest-attribute=pure -Wsuggest-final-methods \
+		 -Wsuggest-final-types -Wswitch \
+		 -Wswitch-bool -Wswitch-default -Wswitch-enum -Wsync-nand \
+		 -Wsystem-headers -Wtraditional \
+		 -Wtraditional-conversion -Wtrampolines -Wtrigraphs -Wtype-limits \
+		 -Wundef -Wuninitialized \
+		 -Wunknown-pragmas -Wunsafe-loop-optimizations \
+		 -Wunsuffixed-float-constants -Wunused -Wunused-but-set-parameter \
+		 -Wunused-but-set-variable \
+		 -Wunused-function -Wunused-label -Wunused-local-typedefs \
+		 -Wunused-macros -Wunused-parameter -Wunused-result \
+		 -Wunused-value -Wunused-variable \
+		 -Wvarargs -Wvariadic-macros \
+		 -Wvector-operation-performance -Wvla \
+		 -Wvolatile-register-var -Wwrite-strings
 
 CFLAGS = -m32 -std=c11 -nostdinc -fno-builtin -nostdlib -fno-stack-protector \
-         -nostartfiles -nodefaultlibs -Wall -Wextra -c -fno-pie \
-		 -no-pie -MD -ffreestanding $(CWARNS)
+         -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c -fno-pie \
+		 -no-pie -MD -ffreestanding
+
+ifeq ($(WARNS), TRUE)
+CFLAGS += $(CWARNS)
+endif
 
 ifeq ($(DEBUG), TRUE)
 CFLAGS += $(DEBUG_FLAGS)
