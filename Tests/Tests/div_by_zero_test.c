@@ -21,7 +21,7 @@ void div_by_zero_test(void)
     OS_RETURN_E err;
 
 
-    err = sched_create_thread(&thread, 5, "test", 
+    err = sched_create_kernel_thread(&thread, 5, "test", 
                                 1024, thread_func, (void*)0);
     if(err != OS_NO_ERR)
     {

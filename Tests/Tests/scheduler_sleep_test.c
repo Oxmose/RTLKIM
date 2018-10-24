@@ -32,7 +32,7 @@ void scheduler_sleep_test(void)
 
     kernel_printf("[TESTMODE] Scheduler tests sarts\n");
 
-    err = sched_create_thread(&thread, 0, "test", 
+    err = sched_create_kernel_thread(&thread, 0, "test", 
                                   1024, print_th, NULL);
     if(err != OS_NO_ERR)
     {

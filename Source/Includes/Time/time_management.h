@@ -58,7 +58,7 @@ struct kernel_timer
      * 
      * @param[in] frequency The frequency to apply to the timer source.
      * 
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is rate. 
      * - OS_ERR_OUT_OF_BOUND is returned if the frequency is out of the bounds
      * defined by the timer source.
@@ -72,7 +72,7 @@ struct kernel_timer
      * 
      * @details The function should enable the timer's inetrrupt.
      *
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the timer is 
      * not supported.
@@ -84,7 +84,7 @@ struct kernel_timer
      * 
      * @details The function should disable the timer's inetrrupt.
      *
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the timer is 
      * not supported.
@@ -99,7 +99,7 @@ struct kernel_timer
      * 
      * @param[in] handler The handler of the timer's interrupt.
      * 
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_NULL_POINTER is returned if the handler is NULL.
      * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the timer interrupt 
@@ -119,7 +119,7 @@ struct kernel_timer
      *
      * @details The function should remove the timer tick handler.
      * 
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the timer interrupt 
      *   line is not allowed. 
@@ -163,7 +163,7 @@ extern kernel_timer_t null_timer;
  * @warning All the interrupt managers and timer sources drivers must be 
  * initialized before using this function.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER if the main timer driver is NULL or has NULL function
  *   pointers. This value is also returned is the RTC or AUX driver is not NULL
@@ -253,7 +253,7 @@ void time_wait_no_sched(const uint32_t ms);
  * 
  * @param[in] scheduler_call The scheduling routine to call every tick.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER if the scheduler routine pointer is NULL.
  */

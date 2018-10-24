@@ -208,17 +208,17 @@ void mutex_test(void)
 
     lock_res = 0;
 
-    if(sched_create_thread(&thread_mutex1, 1, "thread1", 1024, mutex_thread_1, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_mutex1, 1, "thread1", 1024, mutex_thread_1, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         return;
     }
-    if(sched_create_thread(&thread_mutex2, 1, "thread1", 1024, mutex_thread_2, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_mutex2, 1, "thread1", 1024, mutex_thread_2, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         return;
     }
-    if(sched_create_thread(&thread_mutex3, 1, "thread1", 1024, mutex_thread_3, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_mutex3, 1, "thread1", 1024, mutex_thread_3, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         return;
@@ -237,7 +237,7 @@ void mutex_test(void)
 
     /* Test non recursive mutex */
     int ret;
-    if((sched_create_thread(&thread_mutex1, 1, "thread1", 1024, test_rec, (void*)0)) != OS_NO_ERR)
+    if((sched_create_kernel_thread(&thread_mutex1, 1, "thread1", 1024, test_rec, (void*)0)) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         return;
@@ -268,7 +268,7 @@ void mutex_test(void)
         return;
     }
 
-    if((sched_create_thread(&thread_mutex1, 1, "thread1", 1024, test_rec, (void*)1)) != OS_NO_ERR)
+    if((sched_create_kernel_thread(&thread_mutex1, 1, "thread1", 1024, test_rec, (void*)1)) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         return;
@@ -312,19 +312,19 @@ void mutex_test(void)
 
     printf("[TESTMODE]\n");
 
-    if((sched_create_thread(&thread_mutex1, 1, "thread1", 1024, test_inherit, (void*)1)) != OS_NO_ERR)
+    if((sched_create_kernel_thread(&thread_mutex1, 1, "thread1", 1024, test_inherit, (void*)1)) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         return;
     }
 
-    if((sched_create_thread(&thread_mutex2, 5, "thread1", 1024, test_inherit, (void*)2)) != OS_NO_ERR)
+    if((sched_create_kernel_thread(&thread_mutex2, 5, "thread1", 1024, test_inherit, (void*)2)) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         return;
     }
 
-    if((sched_create_thread(&thread_mutex3, 10, "thread1", 1024, test_inherit, (void*)3)) != OS_NO_ERR)
+    if((sched_create_kernel_thread(&thread_mutex3, 10, "thread1", 1024, test_inherit, (void*)3)) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         return;

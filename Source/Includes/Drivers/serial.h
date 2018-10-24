@@ -199,7 +199,7 @@ typedef enum SERIAL_BAUDRATE SERIAL_BAUDRATE_E;
  * @details Initializes all the serial communication ports supported by the 
  * driver and ennables the interrupt related to the serial hardware.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - There is not other possible return value.
  */

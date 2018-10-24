@@ -390,7 +390,7 @@ typedef enum cpuid_requests CPUID_REQ_E;
  *
  * @param[out] info The pointer to the structure to receive the data.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if info if NULL.
  * 
@@ -418,7 +418,7 @@ int32_t cpu_cpuid_capable(void);
  * @param[in] print If not set to 0, the function will print a message with
  * the collected data.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_UNAUTHORIZED_ACTION is retuned if the kernel could not detect the 
  * CPU.

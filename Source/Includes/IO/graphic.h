@@ -180,7 +180,7 @@ struct kernel_graphic_driver
      * @param[in] line The line index where to place the cursor.
      * @param[in] column The column index where to place the cursor.
      * 
-     * @return The succes state or the error code.
+     * @return The success state or the error code.
      * - OS_NO_ERR is returned if no error is encountered.  
      * - OS_ERR_OUT_OF_BOUND is returned if the parameters are out of bound.
      */
@@ -195,7 +195,7 @@ struct kernel_graphic_driver
      * @param[out] buffer The cursor buffer in which the current cursor position 
      * is going to be saved.
      * 
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
      */
@@ -209,7 +209,7 @@ struct kernel_graphic_driver
      * 
      * @param[in] buffer The buffer containing the cursor's attributes.
      * 
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_OUT_OF_BOUND is returned if the positions of the buffer are out 
      * of bound.
@@ -248,7 +248,7 @@ struct kernel_graphic_driver
      * @param[out] buffer The buffer that will receive the current color scheme 
      * used by the screen.
      * 
-     * @return The succes state or the error code. 
+     * @return The success state or the error code. 
      * - OS_NO_ERR is returned if no error is encountered. 
      * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
      */
@@ -307,7 +307,7 @@ typedef struct kernel_graphic_driver kernel_graphic_driver_t;
  * 
  * @param[in] driver The driver to select.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER if the graphic driver is NULL or has NULL function 
  * pointers. 
@@ -328,7 +328,7 @@ void graphic_clear_screen(void);
  * @param[in] line The line index where to place the cursor.
  * @param[in] column The column index where to place the cursor.
  * 
- * @return The succes state or the error code.
+ * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.  
  * - OS_ERR_OUT_OF_BOUND is returned if the parameters are out of bound.
  */
@@ -343,7 +343,7 @@ OS_RETURN_E graphic_put_cursor_at(const uint32_t line, const uint32_t column);
  * @param[out] buffer The cursor buffer in which the current cursor position is
  * going to be saved.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
  */
@@ -357,7 +357,7 @@ OS_RETURN_E graphic_save_cursor(cursor_t* buffer);
  * 
  * @param[in] buffer The buffer containing the cursor's attributes.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_UNAUTHORIZED_ACTION is returned if the positions of the buffer are
  * out of bound.
@@ -395,7 +395,7 @@ void graphic_set_color_scheme(const colorscheme_t color_scheme);
  * @param[out] buffer The buffer that will receive the current color scheme used 
  * by the screen.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the buffer pointer is NULL.
  */

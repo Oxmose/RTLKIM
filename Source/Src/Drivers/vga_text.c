@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file vga_text.c
- * 
+ *
  * @see vga_text.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,11 +10,11 @@
  * @version 1.5
  *
  * @brief VGA text mode driver.
- * 
+ *
  * @details Allows the kernel to display text and general ASCII characters to be
- * displayed on the screen. Includes cursor management, screen colors management 
+ * displayed on the screen. Includes cursor management, screen colors management
  * and other fancy screen driver things.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -44,9 +44,9 @@ static colorscheme_t screen_scheme = {
 
 /** @brief Stores the curent screen's cursor settings. */
 static cursor_t      screen_cursor;
-/** 
- * @brief Stores the curent screen's cursor settings ofthe last printed 
- * character. 
+/**
+ * @brief Stores the curent screen's cursor settings ofthe last printed
+ * character.
  */
 static cursor_t      last_printed_cursor;
 
@@ -82,12 +82,12 @@ kernel_graphic_driver_t vga_text_driver = {
  *
  * @details Prints a character to the selected coordinates by setting the memory
  * accordingly.
- * 
+ *
  * @param[in] line The line index where to write the character.
  * @param[in] column The colums index where to write the character.
  * @param[in] character The character to display on the screem.
- * 
- * @return The succes state or the error code. OS_NO_ERR if no error is 
+ *
+ * @return The success state or the error code. OS_NO_ERR if no error is
  * encountered. OS_ERR_OUT_OF_BOUND is returned if the parameters are
  * out of bound.
  */
@@ -97,7 +97,7 @@ static OS_RETURN_E vga_print_char(const uint32_t line, const uint32_t column,
     uint16_t* screen_mem;
     uint32_t  word;
 
-    if(line > VGA_TEXT_SCREEN_LINE_SIZE - 1 || 
+    if(line > VGA_TEXT_SCREEN_LINE_SIZE - 1 ||
        column > VGA_TEXT_SCREEN_COL_SIZE - 1)
     {
         return OS_ERR_OUT_OF_BOUND;
@@ -112,7 +112,7 @@ static OS_RETURN_E vga_print_char(const uint32_t line, const uint32_t column,
     *screen_mem = character |
                   ((screen_scheme.background << 8) & 0xF000) |
                   ((screen_scheme.foreground << 8) & 0x0F00);
-    
+
     EXIT_CRITICAL(word);
 
     return OS_NO_ERR;
@@ -120,9 +120,9 @@ static OS_RETURN_E vga_print_char(const uint32_t line, const uint32_t column,
 
 /**
  * @brief Processes the character in parameters.
- * 
- * @details Check the character nature and code. Corresponding to the 
- * character's code, an action is taken. A regular character will be printed 
+ *
+ * @details Check the character nature and code. Corresponding to the
+ * character's code, an action is taken. A regular character will be printed
  * whereas \n will create a line feed.
  *
  * @param[in] character The character to process.
@@ -246,14 +246,14 @@ static void vga_process_char(const char character)
 uint16_t* vga_get_framebuffer(const uint32_t line, const uint32_t column)
 {
     /* Avoid overflow on text mode */
-    if(line > VGA_TEXT_SCREEN_LINE_SIZE - 1 || 
+    if(line > VGA_TEXT_SCREEN_LINE_SIZE - 1 ||
        column > VGA_TEXT_SCREEN_COL_SIZE -1)
     {
-        return (uint16_t*)(VGA_TEXT_FRAMEBUFFER);
+        return (uint16_t*)(VGA_TEXT_FRAMEBUFFER + KERNEL_MEM_OFFSET);
     }
 
     /* Returns the mem adress of the coordinates */
-    return (uint16_t*)(VGA_TEXT_FRAMEBUFFER + 2 *
+    return (uint16_t*)(VGA_TEXT_FRAMEBUFFER + KERNEL_MEM_OFFSET + 2 *
            (column + line * VGA_TEXT_SCREEN_COL_SIZE));
 }
 
@@ -285,7 +285,7 @@ OS_RETURN_E vga_put_cursor_at(const uint32_t line, const uint32_t column)
     uint32_t word;
 
     /* Checks the values of line and column */
-    if(column > VGA_TEXT_SCREEN_COL_SIZE || 
+    if(column > VGA_TEXT_SCREEN_COL_SIZE ||
        line > VGA_TEXT_SCREEN_LINE_SIZE)
     {
         return OS_ERR_OUT_OF_BOUND;
@@ -306,7 +306,7 @@ OS_RETURN_E vga_put_cursor_at(const uint32_t line, const uint32_t column)
 
     /* Send high part to the screen */
     cpu_outb(VGA_TEXT_CURSOR_COMM_HIGH, VGA_TEXT_SCREEN_COMM_PORT);
-    cpu_outb((int8_t)((cursor_position & 0xFF00) >> 8), 
+    cpu_outb((int8_t)((cursor_position & 0xFF00) >> 8),
              VGA_TEXT_SCREEN_DATA_PORT);
 
     EXIT_CRITICAL(word);
@@ -336,7 +336,7 @@ OS_RETURN_E vga_save_cursor(cursor_t* buffer)
 
 OS_RETURN_E vga_restore_cursor(const cursor_t buffer)
 {
-    if(buffer.x >= VGA_TEXT_SCREEN_COL_SIZE || 
+    if(buffer.x >= VGA_TEXT_SCREEN_COL_SIZE ||
        buffer.y >= VGA_TEXT_SCREEN_LINE_SIZE)
     {
         return OS_ERR_OUT_OF_BOUND;
@@ -368,8 +368,8 @@ void vga_scroll(const SCROLL_DIRECTION_E direction, const uint32_t lines_count)
     {
         uint32_t i;
         uint32_t j;
-       
-        
+
+
         /* For each line scroll we want */
         for(j = 0; j < to_scroll; ++j)
         {
@@ -388,7 +388,7 @@ void vga_scroll(const SCROLL_DIRECTION_E direction, const uint32_t lines_count)
         {
             vga_print_char(VGA_TEXT_SCREEN_LINE_SIZE - 1, i, ' ');
         }
-        
+
     }
 
     /* Replace cursor */

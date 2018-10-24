@@ -105,7 +105,7 @@ kernel_queue_node_t* kernel_queue_create_node(void* data, OS_RETURN_E *error);
  *
  * @param[in, out] node The node pointer of pointer to destroy.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the node is NULL.
  * - OS_ERR_UNAUTHORIZED_ACTION is returned if the node is still used in a list.
@@ -135,7 +135,7 @@ kernel_queue_t* kernel_queue_create_queue(OS_RETURN_E *error);
  *
  * @param[in, out] queue The queue pointer of pointer to destroy.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the queue is NULL.
  * - OS_ERR_UNAUTHORIZED_ACTION is returned if the queue is not empty.
@@ -151,7 +151,7 @@ OS_RETURN_E kernel_queue_delete_queue(kernel_queue_t** queue);
  * @param[in] node A now node to add in the queue.
  * @param[in, out] queue The queue to manage.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the queue or the node is 
  *   NULL.
@@ -169,7 +169,7 @@ OS_RETURN_E kernel_queue_push(kernel_queue_node_t* node,
  * @param[in, out] queue The queue to manage.
  * @param[in] priority The element priority.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the queue or the node is 
  *   NULL.
@@ -225,7 +225,7 @@ kernel_queue_node_t* kernel_queue_find(kernel_queue_t* queue, void* data,
  * @param[in, out] queue The queue containing the node.
  * @param[in] node The node to remove.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the queue or the node is 
  *   NULL.

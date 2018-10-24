@@ -100,7 +100,7 @@ typedef struct mutex mutex_t;
  * thread that acquired the mutex will inherit. MUTEX_PRIORITY_ELEVATION_NONE 
  * means not priority elevation on aquirance.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_FORBIDEN_PRIORITY is returned if the desired priority is not 
  *   allowed.
@@ -118,7 +118,7 @@ OS_RETURN_E mutex_init(mutex_t* mutex, const uint32_t flags,
  *
  * @param[in, out] mutex The mutex to destroy.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the mutex to destroy is 
  *   NULL.
@@ -135,7 +135,7 @@ OS_RETURN_E mutex_destroy(mutex_t* mutex);
  * 
  * @param[in] mutex The mutex to pend on.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the mutex is NULL.
  * - OS_ERR_MUTEX_UNINITIALIZED is returned if the mutex has not been 
@@ -151,7 +151,7 @@ OS_RETURN_E mutex_pend(mutex_t* mutex);
  * 
  * @param[in] mutex The mutex to post.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the mutex is NULL.
  * - OS_ERR_MUTEX_UNINITIALIZED is returned if the mutex has not been 
@@ -169,7 +169,7 @@ OS_RETURN_E mutex_post(mutex_t* mutex);
  * @param[in] mutex The mutex to pend on.
  * @param[out] value The buffer that receive the mutex state.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the pointer to the mutex is NULL.
  * - OS_ERR_MUTEX_UNINITIALIZED is returned if the mutex has not been 

@@ -73,7 +73,7 @@ typedef struct mailbox mailbox_t;
  * @param[out] mailbox A pointer to the mailbox to initialize. If NULL, the 
  * function will immediatly return with the according error code.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the mailbox to 
  *   initialize is NULL.
@@ -92,7 +92,7 @@ OS_RETURN_E mailbox_init(mailbox_t *mailbox);
  * @param[out] error A pointer to the variable that contains the function 
  * success state. May be NULL.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the mailbox to 
  *   initialize is NULL.
@@ -114,7 +114,7 @@ void* mailbox_pend(mailbox_t *mailbox, OS_RETURN_E *error);
  * pointer is stored in the mailbox, meaning the content of the pointed address
  * might change.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the mailbox to 
  *   initialize is NULL.
@@ -133,7 +133,7 @@ OS_RETURN_E mailbox_post(mailbox_t *mailbox, void *element);
  * @param[in, out] mailbox A pointer to the mailbox to destroy. If NULL, the 
  * function will immediatly return with the according error code.
  *
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OS_ERR_NULL_POINTER is returned if the pointer to the mailbox to 
  *   initialize is NULL.

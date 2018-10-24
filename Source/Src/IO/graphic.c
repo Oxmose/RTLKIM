@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file graphic.c
- * 
+ *
  * @see graphic.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,11 +10,11 @@
  * @version 1.0
  *
  * @brief Graphic drivers abtraction.
- * 
+ *
  * @details Graphic driver abtraction layer. The functions of this module allows
  * to abtract the use of any supported graphic driver and the selection of the
  * desired driver.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -141,12 +141,15 @@ void graphic_console_write_keyboard(const char* str, const uint32_t len)
 
 void graphic_fallback(void)
 {
-    /* Do the switch */
-    bios_int_regs_t regs;
+    if(graphic_driver.put_char != fallback_graphic_driver.put_char)
+    {
+        /* Do the switch */
+        bios_int_regs_t regs;
 
-    regs.ax = BIOS_CALL_SET_VGA_TEXT_MODE;
-    bios_call(BIOS_INTERRUPT_VGA, &regs);
+        regs.ax = BIOS_CALL_SET_VGA_TEXT_MODE;
+        bios_call(BIOS_INTERRUPT_VGA, &regs);
 
 
-    graphic_driver = fallback_graphic_driver;
+        graphic_driver = fallback_graphic_driver;
+    }
 }

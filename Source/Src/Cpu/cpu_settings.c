@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file cpu_settings.c
- * 
+ *
  * @see cpu_settings.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -9,12 +9,12 @@
  *
  * @version 1.0
  *
- * @brief X86 CPU abstraction functions and definitions. 
- * 
- * @details X86 CPU abstraction: setting functions and structures, used to set 
- * the GDT, IDT and TSS of the CPU. This file also ontains the delarations of 
+ * @brief X86 CPU abstraction functions and definitions.
+ *
+ * @details X86 CPU abstraction: setting functions and structures, used to set
+ * the GDT, IDT and TSS of the CPU. This file also ontains the delarations of
  * the 256 interrupt handlers of the x86 interrupts.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -61,12 +61,12 @@ extern uint8_t* kernel_stack;
 
 /**
  * @brief Returns the address of the handler for a given interrupt line.
- * 
- * @details Returns the address of the handler attached to the interrupt ID 
+ *
+ * @details Returns the address of the handler attached to the interrupt ID
  * given as parameter.
  *
  * @param[in] int_id This interrupt ID to get the handler of.
- * 
+ *
  * @return The address of the interrupt handler.
  */
 static uint32_t get_handler(const uint32_t int_id)
@@ -591,10 +591,10 @@ static uint32_t get_handler(const uint32_t int_id)
     }
 }
 
-/** 
+/**
  * @brief Formats a GDT entry.
- * 
- * @details Formats data given as parameter into a standard GDT entry. 
+ *
+ * @details Formats data given as parameter into a standard GDT entry.
  * The result is directly written in the memory pointed by the entry parameter.
  *
  * @param[out] entry The pointer to the entry structure to format.
@@ -644,8 +644,8 @@ static void format_gdt_entry(uint64_t* entry,
 
 /**
  * @brief Formats an IDT entry.
- * 
- * @details Formats data given as parameter into a standard IDT entry. 
+ *
+ * @details Formats data given as parameter into a standard IDT entry.
  * The result is directly written in the memory pointed by the entry parameter.
  *
  * @param[out] entry The pointer to the entry structure to format.
@@ -770,11 +770,11 @@ void cpu_setup_gdt(void)
     __asm__ __volatile__("lgdt %0" :: "m" (cpu_gdt_size), "m" (cpu_gdt_base));
 
     /* Load segment selectors with a far jump for CS*/
-    __asm__ __volatile__("movw %w0,%%ds" :: "r" (KERNEL_DS));
-    __asm__ __volatile__("movw %w0,%%es" :: "r" (KERNEL_DS));
-    __asm__ __volatile__("movw %w0,%%fs" :: "r" (KERNEL_DS));
-    __asm__ __volatile__("movw %w0,%%gs" :: "r" (KERNEL_DS));
-    __asm__ __volatile__("movw %w0,%%ss" :: "r" (KERNEL_DS));
+    __asm__ __volatile__("movw %w0,%%ds\n\t"
+                         "movw %w0,%%es\n\t"
+                         "movw %w0,%%fs\n\t"
+                         "movw %w0,%%gs\n\t"
+                         "movw %w0,%%ss\n\t" :: "r" (KERNEL_DS));
     __asm__ __volatile__("ljmp %0, $flab \n\t flab: \n\t" :: "i" (KERNEL_CS));
 
     kernel_success("GDT Initialized at 0x%08x\n",cpu_gdt_base);

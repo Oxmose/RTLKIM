@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file lapic.h
- * 
+ *
  * @see lapic.c
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,15 +10,15 @@
  * @version 1.0
  *
  * @brief Local APIC (Advanced programmable interrupt controler) driver.
- * 
+ *
  * @details Local APIC (Advanced programmable interrupt controler) driver.
  * Manages x86 IRQs from the IO-APIC. The driver also allow the use of the LAPIC
  * timer as a timer source. IPI (inter processor interrupt) are also possible
  * thanks to the driver.
- * 
+ *
  * @warning This driver uses the PIT (Programmable interval timer) to initialize
  * the LAPIC timer. the PIC must be present and initialized to use this driver.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -140,7 +140,7 @@
 /** @brief LAPIC Timer initial frequency. */
 #define LAPIC_INIT_FREQ                 100
 /** @brief LAPIC Timer vector interrupt masked. */
-#define LAPIC_LVT_INT_MASKED             0x10000
+#define LAPIC_LVT_INT_MASKED            0x10000
 
 /** @brief LAPIC spurious interrupt vector. */
 #define LAPIC_SPURIOUS_INT_LINE MAX_INTERRUPT_LINE
@@ -159,54 +159,54 @@ extern kernel_timer_t lapic_timer_driver;
 
 /**
  * @brief Initializes the CPU Local APIC.
- * 
- * @details Initializes the CPU Local APIC. The function initializes the LAPIC 
- * interrupts (enables them), set the LAPIC destination mode and sets the 
+ *
+ * @details Initializes the CPU Local APIC. The function initializes the LAPIC
+ * interrupts (enables them), set the LAPIC destination mode and sets the
  * spurious vector.
  *
- * @return The succes state or the error code.
- * - OS_NO_ERR is returned if no error is encountered.  
- * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the
  * current system.
  */
 OS_RETURN_E lapic_init(void);
 
 /**
  * @brief Initializes the CPU Local APIC Timer.
- * 
- * @details Initializes the CPU Local APIC Timer. The function initializes the 
+ *
+ * @details Initializes the CPU Local APIC Timer. The function initializes the
  * LAPIC Timer and its interrupt. The Timer is then set to its initial frequency
  * by the driver.
- * 
+ *
  * @warning This function is not to be used by Application Processors, please
  * use lapic_ap_timer_init for this purpose.
  *
- * @return The succes state or the error code.
- * - OS_NO_ERR is returned if no error is encountered.  
- * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the
  * current system.
  */
 OS_RETURN_E lapic_timer_init(void);
 
 /**
  * @brief Initializes the CPU Local APIC Timer for application processor.
- * 
- * @details Initializes the CPU Local APIC Timer. The function initializes the 
+ *
+ * @details Initializes the CPU Local APIC Timer. The function initializes the
  * LAPIC Timer and its interrupt. The Timer is then set to its initial frequency
  * by the driver. This function is to be used for Application Processors only.
  *
  * @warning This function is to be used by Application Processors only.
- * 
- * @return The succes state or the error code.
- * - OS_NO_ERR is returned if no error is encountered.  
- * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the
  * current system.
  */
 OS_RETURN_E lapic_ap_timer_init(void);
 
 /**
  * @brief Returns the current CPU Local APIC ID.
- * 
+ *
  * @details Returns the current CPU Local APIC ID. The current CPU is the CPU on
  * which the function is called.
  *
@@ -216,15 +216,15 @@ int32_t lapic_get_id(void);
 
 /**
  * @brief Send an INIT IPI to the corresponding LAPIC.
- * 
- * @details Sends an INIT IPI to the CPU deisgned by the Local APIC ID given as 
+ *
+ * @details Sends an INIT IPI to the CPU deisgned by the Local APIC ID given as
  * parameter.The ID is checked before sending the IPI.
  *
  * @param[in] lapic_id The Local APIC ID of the CPU to send the IPI to.
- * 
- * @return The succes state or the error code.
- * - OS_NO_ERR is returned if no error is encountered.  
- * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the
  * current system.
  * - OS_ERR_NO_SUCH_LAPIC_ID is returned if the given LAPIC ID does not exist.
  */
@@ -232,16 +232,16 @@ OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id);
 
 /**
  * @brief Sends a STARTUP IPI to the corresponding LAPIC.
- * 
- * @details Sends an STARTUP IPI to the CPU deisgned by the Local APIC ID given 
+ *
+ * @details Sends an STARTUP IPI to the CPU deisgned by the Local APIC ID given
  * as parameter. The ID is checked before sending the IPI.
  *
  * @param[in] lapic_id The Local APIC ID of the CPU to send the IPI to.
  * @param[in] vector The startup IPI vector.
- * 
- * @return The succes state or the error code.
- * - OS_NO_ERR is returned if no error is encountered.  
- * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the
  * current system.
  * - OS_ERR_NO_SUCH_LAPIC_ID is returned if the given LAPIC ID does not exist.
  */
@@ -250,16 +250,16 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
 
 /**
  * @brief Sends an IPI to the corresponding LAPIC.
- * 
- * @details Send an IPI to the CPU deisgned by the Local APIC ID given as 
+ *
+ * @details Send an IPI to the CPU deisgned by the Local APIC ID given as
  * parameter.The ID is checked before sending the IPI.
  *
  * @param[in] lapic_id The Local APIC ID of the CPU to send the IPI to.
  * @param[in] vector The IPI vector.
- * 
- * @return The succes state or the error code.
- * - OS_NO_ERR is returned if no error is encountered.  
- * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the
  * current system.
  * - OS_ERR_NO_SUCH_LAPIC_ID is returned if the given LAPIC ID does not exist.
  */
@@ -270,65 +270,65 @@ OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id,
  * @brief Sets END OF INTERRUPT for the current CPU Local APIC.
  *
  * @details Sets END OF INTERRUPT for the current CPU Local APIC.
- * 
+ *
  * @param[in] interrupt_line The intrrupt line for which the EOI should be set.
- * 
- * @return The succes state or the error code.
- * - OS_NO_ERR is returned if no error is encountered.  
- * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NOT_SUPPORTED is returned if the LAPIC is not supported by the
  * current system.
- * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the interurpt number is not 
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the interurpt number is not
  * supported.
  */
 OS_RETURN_E lapic_set_int_eoi(const uint32_t interrupt_line);
 
 /**
  * @brief Enables LAPIC Timer ticks.
- * 
+ *
  * @details Enables LAPIC Timer ticks by clearing the LAPIC Timer's IRQ mask.
  *
- * @return The succes state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
- * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the LAPIC Timer is 
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the LAPIC Timer is
  * not supported.
  */
 OS_RETURN_E lapic_timer_enable(void);
 
 /**
  * @brief Disables LAPIC Timer ticks.
- * 
+ *
  * @details Disables LAPIC Timer ticks by setting the LAPIC Timer's IRQ mask.
  *
- * @return The succes state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
- * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the LAPIC Timer is 
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the LAPIC Timer is
  * not supported.
  */
 OS_RETURN_E lapic_timer_disable(void);
 
-/** 
+/**
  * @brief Sets the LAPIC Timer's tick frequency.
- * 
- * @details Sets the LAPIC Timer's tick frequency. The value must be between 
+ *
+ * @details Sets the LAPIC Timer's tick frequency. The value must be between
  * 20Hz and 8000Hz.
- * 
+ *
  * @warning The value must be between 20Hz and 8000Hz
  *
  * @param[in] freq The new frequency to be set to the LAPIC Timer.
- * 
- * @return The succes state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_OUT_OF_BOUND is returned if the frequency is out of bounds.
- * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the LAPIC Timer is 
+ * - OS_ERR_NO_SUCH_IRQ_LINE is returned if the IRQ number of the LAPIC Timer is
  * not supported.
  */
 OS_RETURN_E lapic_timer_set_frequency(const uint32_t freq);
 
 /**
  * @brief Returns the LAPIC Timer tick frequency in Hz.
- * 
+ *
  * @details Returns the LAPIC Timer tick frequency in Hz.
- * 
+ *
  * @return The LAPIC Timer tick frequency in Hz.
  */
 uint32_t lapic_timer_get_frequency(void);
@@ -336,18 +336,18 @@ uint32_t lapic_timer_get_frequency(void);
 /**
  * @brief Sets the LAPIC Timer tick handler.
  *
- * @details Sets the LAPIC Timer tick handler. This function will be called at 
+ * @details Sets the LAPIC Timer tick handler. This function will be called at
  * each LAPIC Timer tick received.
- * 
+ *
  * @param[in] handler The handler of the LAPIC Timer interrupt.
- * 
- * @return The succes state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if the handler is NULL.
-  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the LAPIC Timer 
-  * interrupt line is not allowed. 
- * - OS_ERR_NULL_POINTER is returned if the pointer to the handler is NULL. 
- * - OS_ERR_INTERRUPT_ALREADY_REGISTERED is returned if a handler is already 
+  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the LAPIC Timer
+  * interrupt line is not allowed.
+ * - OS_ERR_NULL_POINTER is returned if the pointer to the handler is NULL.
+ * - OS_ERR_INTERRUPT_ALREADY_REGISTERED is returned if a handler is already
  * registered for the LAPIC Timer.
  */
 OS_RETURN_E lapic_timer_set_handler(void(*handler)(
@@ -359,22 +359,22 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
 /**
  * @brief Removes the LAPIC Timer tick handler.
  *
- * @details Removes the LAPIC Timer tick handler. 
- * 
- * @return The succes state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ * @details Removes the LAPIC Timer tick handler.
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the LAPIC Timer interrupt
- * line is not allowed. 
- * - OS_ERR_INTERRUPT_NOT_REGISTERED is returned if the LAPIC Timer line has no 
+ * line is not allowed.
+ * - OS_ERR_INTERRUPT_NOT_REGISTERED is returned if the LAPIC Timer line has no
  * handler attached.
  */
 OS_RETURN_E lapic_timer_remove_handler(void);
 
 /**
  * @brief Returns the LAPIC Timer IRQ number.
- * 
+ *
  * @details Returns the LAPIC Timer IRQ number.
- * 
+ *
  * @return The LAPIC Timer IRQ number.
  */
 uint32_t lapic_timer_get_irq(void);

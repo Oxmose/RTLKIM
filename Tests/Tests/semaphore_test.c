@@ -195,27 +195,27 @@ void semaphore_test(void)
 
     lock_res = 0;
 
-    if(sched_create_thread(&thread_sem1, 1, "thread1", 1024, sem_thread_1, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem1, 1, "thread1", 1024, sem_thread_1, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         
     }
-    if(sched_create_thread(&thread_sem2, 2, "thread1", 1024, sem_thread_2, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem2, 2, "thread1", 1024, sem_thread_2, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         
     }
-    if(sched_create_thread(&thread_sem3, 3, "thread1", 1024, sem_thread_3, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem3, 3, "thread1", 1024, sem_thread_3, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         
     }
-    if(sched_create_thread(&thread_sem4, 4, "thread1", 1024, sem_thread_4, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem4, 4, "thread1", 1024, sem_thread_4, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         
     }
-    if(sched_create_thread(&thread_sem5, 5, "thread1", 1024, sem_thread_5, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem5, 5, "thread1", 1024, sem_thread_5, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
         

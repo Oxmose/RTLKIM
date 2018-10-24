@@ -17,7 +17,7 @@ MODULES = Boot Cpu IO Interrupt     \
 			Time Memory Core        \
 			Lib User                \
 			Sync Communication
-			
+
 ifeq ($(TESTS), TRUE)
 MODULES += ../../Tests/Tests
 endif
@@ -42,7 +42,7 @@ A_SRCS = $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.S))
 C_OBJS = $(C_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 A_OBJS = $(A_SRCS:$(SRC_DIR)/%.S=$(BUILD_DIR)/%.o)
 
-# Linker script's name 
+# Linker script's name
 LINKER_FILE = Config/linker.ld
 
 ######################### Toolchain options
@@ -52,16 +52,89 @@ OBJCOPY = objcopy
 QEMU = qemu-system-x86_64
 QEMU_I386 = qemu-system-i386
 
-DEBUG_FLAGS = -O0 -g
+DEBUG_FLAGS = -Og -g
 EXTRA_FLAGS = -O2
+
+CWARNS = -Waggregate-return -Wcast-align -Wdisabled-optimization \
+         -Wdiv-by-zero -Wendif-labels -Wformat-extra-args -Wformat-nonliteral \
+		 -Wformat-security -Wformat-y2k -Wimplicit -Wimport -Winit-self \
+		 -Winline -Winvalid-pch -Wjump-misses-init -Wlogical-op \
+		 -Werror=missing-braces \
+		 -Wno-missing-format-attribute -Wmissing-include-dirs -Wmultichar \
+		 -Wpointer-arith -Wreturn-type -Wsequence-point -Wsign-compare \
+		 -Wstrict-aliasing -Wstrict-aliasing=2 -Wswitch -Wswitch-default \
+		 -Werror=undef -Wno-unused -Wvariadic-macros -Wwrite-strings \
+		 -Werror=implicit-function-declaration \
+		 -Werror=nested-externs -Werror=old-style-definition \
+		 -Werror=strict-prototypes -Wabi -Waddress -Waggregate-return \
+		 -Waggressive-loop-optimizations -Warray-bounds \
+		 -Wattributes -Wbad-function-cast -Wbool-compare \
+		 -Wbuiltin-macro-redefined \
+		 -Wc99-c11-compat -Wcast-align \
+		 -Wcast-qual -Wchar-subscripts -Wchkp \
+		 -Wclobbered -Wcomment \
+		 -Wconversion -Wcoverage-mismatch \
+		 -Wcpp  -Wdate-time -Wdeclaration-after-statement \
+		 -Wdeprecated \
+		 -Wdeprecated-declarations -Wdesignated-init -Wdisabled-optimization \
+		 -Wdiscarded-array-qualifiers -Wdiscarded-qualifiers -Wdiv-by-zero \
+		 -Wdouble-promotion -Wempty-body -Wendif-labels \
+		 -Wenum-compare \
+		 -Wextra -Wfloat-equal -Wformat-contains-nul -Wformat-extra-args \
+		 -Wformat-nonliteral -Wformat-security -Wformat-signedness \
+		 -Wformat-y2k \
+		 -Wformat-zero-length -Wfree-nonheap-object \
+		 -Wignored-qualifiers -Wimplicit -Wimplicit-function-declaration \
+		 -Wimplicit-int \
+		 -Wincompatible-pointer-types -Winit-self \
+		 -Winline -Wint-conversion -Wint-to-pointer-cast \
+		 -Winvalid-memory-model \
+		 -Winvalid-pch -Wjump-misses-init \
+		 -Wlogical-not-parentheses -Wlogical-op \
+		 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args \
+		 -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers \
+		 -Wmissing-include-dirs -Wmissing-parameter-type -Wmissing-prototypes \
+		 -Wmultichar -Wnarrowing -Wnested-externs \
+		 -Wnonnull -Wodr \
+		 -Wold-style-declaration -Wold-style-definition \
+		 -Wopenmp-simd -Woverflow -Woverlength-strings \
+		 -Woverride-init -Wpacked -Wpacked-bitfield-compat -Wpadded \
+		 -Wparentheses -Wpedantic -Wpointer-arith \
+		 -Wpointer-sign -Wpointer-to-int-cast -Wpragmas \
+		 -Wredundant-decls -Wreturn-local-addr \
+		 -Wreturn-type -Wsequence-point -Wshadow \
+		 -Wshift-count-negative -Wshift-count-overflow -Wsign-compare \
+		 -Wsizeof-array-argument \
+		 -Wsizeof-pointer-memaccess -Wstack-protector \
+		 -Wstrict-prototypes -Wsuggest-attribute=const \
+		 -Wsuggest-attribute=format -Wsuggest-attribute=noreturn \
+		 -Wsuggest-attribute=pure -Wsuggest-final-methods \
+		 -Wsuggest-final-types -Wswitch \
+		 -Wswitch-bool -Wswitch-default -Wswitch-enum -Wsync-nand \
+		 -Wsystem-headers -Wtraditional \
+		 -Wtraditional-conversion -Wtrampolines -Wtrigraphs -Wtype-limits \
+		 -Wundef -Wuninitialized \
+		 -Wunknown-pragmas -Wunsafe-loop-optimizations \
+		 -Wunsuffixed-float-constants -Wunused -Wunused-but-set-parameter \
+		 -Wunused-but-set-variable \
+		 -Wunused-function -Wunused-label -Wunused-local-typedefs \
+		 -Wunused-macros -Wunused-parameter -Wunused-result \
+		 -Wunused-value -Wunused-variable \
+		 -Wvarargs -Wvariadic-macros \
+		 -Wvector-operation-performance -Wvla \
+		 -Wvolatile-register-var -Wwrite-strings
 
 CFLAGS = -m32 -std=c11 -nostdinc -fno-builtin -nostdlib -fno-stack-protector \
          -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c -fno-pie \
-		 -no-pie -MD
+		 -no-pie -MD -ffreestanding
+
+ifeq ($(WARNS), TRUE)
+CFLAGS += $(CWARNS)
+endif
 
 ifeq ($(DEBUG), TRUE)
 CFLAGS += $(DEBUG_FLAGS)
-else 
+else
 CFLAGS += $(EXTRA_FLAGS)
 endif
 
@@ -69,7 +142,7 @@ ASFLAGS = -g -f elf -w+gnu-elf-extensions
 LDFLAGS = -e loader -T $(LINKER_FILE) -melf_i386 -no-pie
 QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 64M \
            -gdb tcp::1234 -smp 4 \
-		   -drive format=raw,file=../Peripherals/hdd_primary_master.img -kernel 
+		   -drive format=raw,file=../Peripherals/hdd_primary_master.img -kernel
 
 ######################### Compile options
 .PHONY: all
@@ -100,10 +173,10 @@ ifeq ($(DEBUG), TRUE)
 endif
 ifeq ($(TESTS), TRUE)
 	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
-	@$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)
-else 
+	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)
+else
 	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
-	@$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
+	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
 endif
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
@@ -111,7 +184,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
 	@$(AS) $(ASFLAGS) $< -o $@
 
 clean:
-	@$(RM) -rf $(BIN_DIR) $(BUILD_DIR) 
+	@$(RM) -rf $(BIN_DIR) $(BUILD_DIR)
 	@$(RM) -f $(TESTS_DIR)/Tests/*.o $(TESTS_DIR)/Tests/*.d
 	@$(RM) -f ../Image/boot/$(KERNEL)
 
@@ -145,7 +218,7 @@ test:
 bootable: all
 	@echo "\e[1m\e[94m============ Creating Bootable ISO ============\e[22m\e[39m"
 	cp $(BIN_DIR)/$(KERNEL) ../Image/boot/
-	@$(RM) -f ../Image/bootable.iso	
+	@$(RM) -f ../Image/bootable.iso
 	grub-mkrescue -o ../Image/bootable.iso ../Image
 	@$(RM) -f ../Image/boot/$(KERNEL)
 	VBoxManage startvm "RTLK"

@@ -8,7 +8,7 @@
  * @version 1.0
  *
  * @brief Kernel's main test bank.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -45,6 +45,7 @@
 #define SEMAPHORE_TEST 0
 #define MAILBOX_TEST 0
 #define USERQUEUE_TEST 0
+#define PAGING_ALLOC_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -76,5 +77,6 @@ void mutex_test(void);
 void semaphore_test(void);
 void mailbox_test(void);
 void userqueue_test(void);
+void paging_alloc_test(void);
 
 #endif /* __TEST_BANK_H_ */

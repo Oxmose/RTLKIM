@@ -8,11 +8,11 @@
  * @version 2.0
  *
  * @brief Thread's structures definitions.
- * 
- * @details Thread's structures definitions. The files sontins all the data 
+ *
+ * @details Thread's structures definitions. The files sontins all the data
  * relative to the thread's management in the system (thread structure, thread
  * state).
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -80,7 +80,7 @@ enum THREAD_STATE
     THREAD_STATE_WAITING
 };
 
-/** 
+/**
  * @brief Defines THREAD_STATE_E type as a shorcut for enum THREAD_STATE.
  */
 typedef enum THREAD_STATE THREAD_STATE_E;
@@ -96,8 +96,8 @@ enum THREAD_WAIT_TYPE
     THREAD_WAIT_TYPE_IO_KEYBOARD
 };
 
-/** 
- * @brief Defines THREAD_WAIT_TYPE_E type as a shorcut for enum 
+/**
+ * @brief Defines THREAD_WAIT_TYPE_E type as a shorcut for enum
  * THREAD_WAIT_TYPE.
  */
 typedef enum THREAD_WAIT_TYPE THREAD_WAIT_TYPE_E;
@@ -111,8 +111,8 @@ enum THREAD_RETURN_STATE
     THREAD_RETURN_STATE_KILLED
 };
 
-/** 
- * @brief Defines THREAD_RETURN_STATE_E type as a shorcut for enum 
+/**
+ * @brief Defines THREAD_RETURN_STATE_E type as a shorcut for enum
  * THREAD_RETURN_STATE.
  */
 typedef enum THREAD_RETURN_STATE THREAD_RETURN_STATE_E;
@@ -128,11 +128,29 @@ enum THREAD_TERMINATE_CAUSE
     THREAD_TERMINATE_CAUSE_PANIC
 };
 
-/** 
- * @brief Defines THREAD_TERMINATE_CAUSE_E type as a shorcut for enum 
+/**
+ * @brief Defines THREAD_TERMINATE_CAUSE_E type as a shorcut for enum
  * THREAD_TERMINATE_CAUSE.
  */
 typedef enum THREAD_TERMINATE_CAUSE THREAD_TERMINATE_CAUSE_E;
+
+/**
+ * @brief Define the thread's types in the kernel.
+ */
+enum THREAD_TYPE
+{
+    /** @brief Kernel thread type, create by and for the kernel. */
+    THREAD_TYPE_KERNEL,
+
+    /** @brief User thread type, created by the kernel for the user. */
+    THREAD_TYPE_USER
+};
+
+/**
+ * @brief Defines THREAD_TYPE_e type as a shorcut for enum THREAD_TYPE.
+ */
+typedef enum THREAD_TYPE THREAD_TYPE_E;
+
 
 /** @brief This is the representation of the thread for the kernel. */
 struct kernel_thread
@@ -144,6 +162,9 @@ struct kernel_thread
     /** @brief Thread's name. */
     char    name[THREAD_MAX_NAME_LENGTH];
 
+    /** @brief Thread's type. */
+    THREAD_TYPE_E type;
+
     /** @brief Thread's priority assigned at creation. */
     uint32_t init_prio;
     /** @brief Thread's current priority. */
@@ -152,14 +173,14 @@ struct kernel_thread
     /** @brief Thread's current state. */
     THREAD_STATE_E           state;
     /** @brief Thread's wait type. This is inly relevant when the thread's state
-     * is THREAD_STATE_WAITING. 
+     * is THREAD_STATE_WAITING.
      */
     THREAD_WAIT_TYPE_E       block_type;
-    /** @brief Thread's return state. This is only relevant when the thread 
+    /** @brief Thread's return state. This is only relevant when the thread
      * returned.
      */
     THREAD_RETURN_STATE_E    return_state;
-    /** @brief Thread's return state. This is only relevant when when 
+    /** @brief Thread's return state. This is only relevant when when
      * return state is not THREAD_RETURN_STATE_RETURNED.
      */
     THREAD_TERMINATE_CAUSE_E return_cause;
@@ -187,6 +208,15 @@ struct kernel_thread
     /** @brief Thread's stack. */
     uint32_t* stack;
 
+    /** @brief Thread's stack size. */
+    uint32_t stack_size;
+
+    /** @brief Thread's CR3 page directory pointer. */
+    uint32_t cr3;
+
+    /** @brief Thread's free page table address. */
+    uint32_t free_page_table;
+
     /** @brief Wake up time limit for the sleeping thread. */
     uint64_t wakeup_time;
 
@@ -202,12 +232,12 @@ struct kernel_thread
     uint32_t end_time;
 };
 
-/** 
+/**
  * @brief Defines kernel_thread_t type as a shorcut for struct kernel_thread_t.
  */
 typedef struct kernel_thread kernel_thread_t;
 
-/** 
+/**
  * @brief Defines the user's thread type.
  */
 typedef kernel_thread_t* thread_t;

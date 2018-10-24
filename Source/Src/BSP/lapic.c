@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file lapic.c
- * 
+ *
  * @see lapic.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,15 +10,15 @@
  * @version 1.0
  *
  * @brief Local APIC (Advanced programmable interrupt controler) driver.
- * 
+ *
  * @details Local APIC (Advanced programmable interrupt controler) driver.
  * Manages x86 IRQs from the IO-APIC. The driver also allow the use of the LAPIC
  * timer as a timer source. IPI (inter processor interrupt) are also possible
  * thanks to the driver.
- * 
+ *
  * @warning This driver uses the PIT (Programmable interval timer) to initialize
  * the LAPIC timer. the PIC must be present and initialized to use this driver.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -32,6 +32,8 @@
 #include <BSP/pit.h>              /* set_pit_freq, emable_pit, diable_pit */
 #include <Time/time_management.h> /* kernel_timer_t */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
+#include <Memory/paging.h>        /* kernel_mmap */
+#include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -44,7 +46,7 @@
  ******************************************************************************/
 
 /* Local APIC controller address */
-static uint8_t* lapic_base_addr;
+static void* lapic_base_addr;
 
 /* Lapic TIMER settings */
 static volatile uint8_t  wait_int;
@@ -74,7 +76,7 @@ kernel_timer_t lapic_timer_driver = {
  */
 __inline__ static uint32_t lapic_read(uint32_t reg)
 {
-    return mapped_io_read_32(lapic_base_addr + reg);
+    return mapped_io_read_32((void*)((uint32_t)lapic_base_addr + reg));
 }
 
 /* Write Local APIC register, the acces is a memory mapped IO.
@@ -84,7 +86,7 @@ __inline__ static uint32_t lapic_read(uint32_t reg)
  */
 __inline__ static void lapic_write(uint32_t reg, uint32_t data)
 {
-    mapped_io_write_32(lapic_base_addr + reg, data);
+    mapped_io_write_32((void*)((uint32_t)lapic_base_addr + reg), data);
 }
 
 /* LAPIC dummy hamdler.
@@ -136,6 +138,9 @@ static void lapic_init_pit_handler(cpu_state_t* cpu_state, uint32_t int_id,
 
 OS_RETURN_E lapic_init(void)
 {
+    OS_RETURN_E err;
+    const void* lapic_phys_addr;
+
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Initialization\n");
     #endif
@@ -149,7 +154,30 @@ OS_RETURN_E lapic_init(void)
     }
 
     /* Get Local APIC base address */
-    lapic_base_addr = acpi_get_lapic_addr();
+    lapic_phys_addr = acpi_get_lapic_addr();
+
+    /* Get a free page */
+    lapic_base_addr = kernel_paging_alloc_pages(1, &err);
+    if(lapic_base_addr == NULL)
+    {
+        return err;
+    }
+
+    /* Map the LAPIC */
+    err = kernel_direct_mmap(lapic_base_addr, lapic_phys_addr, 1,
+                             PG_DIR_FLAG_PAGE_SIZE_4KB |
+                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                             PG_DIR_FLAG_PAGE_READ_WRITE,
+                             1);
+    if(err != OS_NO_ERR)
+    {
+        kernel_paging_free_pages((void*)lapic_base_addr, 1);
+        return err;
+    }
+
+    /* Add offset */
+    lapic_base_addr = (void*)((uint32_t)lapic_base_addr +
+                             ((uint32_t)lapic_phys_addr & 0xFFF));
 
     /* Enable all interrupts */
     lapic_write(LAPIC_TPR, 0);
@@ -234,7 +262,7 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Send STARTUP IPI\n");
     #endif
-    
+
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Initialization\n");
     #endif
@@ -292,7 +320,7 @@ OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id, const uint32_t vector)
         return OS_ERR_NOT_SUPPORTED;
     }
 
-    ENTER_CRITICAL(word);    
+    ENTER_CRITICAL(word);
 
     /* Check LACPI id */
     err = acpi_check_lapic_id(lapic_id);
@@ -352,7 +380,7 @@ OS_RETURN_E lapic_timer_init(void)
     if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
     {
         return OS_ERR_NOT_SUPPORTED;
-    } 
+    }
 
     /* Init LAPIC TIMER */
     wait_int = 1;
@@ -441,7 +469,7 @@ OS_RETURN_E lapic_ap_timer_init(void)
     if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
     {
         return OS_ERR_NOT_SUPPORTED;
-    }    
+    }
 
     ENTER_CRITICAL(word);
 
@@ -496,7 +524,7 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     }
 
     ENTER_CRITICAL(word);
-    
+
     /* Compute the new tick count */
     global_lapic_freq = init_lapic_timer_frequency / frequency;
 
@@ -530,7 +558,7 @@ OS_RETURN_E lapic_timer_enable(void)
     }
 
     ENTER_CRITICAL(word);
-    
+
     /* Enable interrupt */
     lapic_write(LAPIC_TIMER, LAPIC_TIMER_INTERRUPT_LINE |
                 LAPIC_TIMER_MODE_PERIODIC);
@@ -561,7 +589,7 @@ OS_RETURN_E lapic_timer_disable(void)
     }
 
     ENTER_CRITICAL(word);
-    
+
     /* Disable interrupt */
     lapic_write(LAPIC_TIMER, LAPIC_LVT_INT_MASKED);
 
@@ -609,13 +637,13 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
     if(err != OS_NO_ERR)
     {
         EXIT_CRITICAL(word);
-        lapic_timer_enable();        
+        lapic_timer_enable();
         return err;
     }
 
-    err = kernel_interrupt_register_int_handler(LAPIC_TIMER_INTERRUPT_LINE, 
+    err = kernel_interrupt_register_int_handler(LAPIC_TIMER_INTERRUPT_LINE,
                                                 handler);
-    if(err != OS_NO_ERR) 
+    if(err != OS_NO_ERR)
     {
         EXIT_CRITICAL(word);
         return err;

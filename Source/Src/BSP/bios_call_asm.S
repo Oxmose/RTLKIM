@@ -74,7 +74,7 @@ section .text
         sidt [OFFSET_ADDR(idt32_ptr)]        ; Save 32bit IDT pointer
         sgdt [OFFSET_ADDR(gdt32_ptr)]        ; Save 32bit GDT pointer
 
-        load_cpu_struct:
+    load_cpu_struct:
         lgdt [OFFSET_ADDR(gdt16_ptr)]        ; Load 16bit GDT pointer
 
         ; GET THE INT NUMBER
@@ -102,13 +102,17 @@ section .text
         use16
 
         ; LOAD SEGMENT REGISTERS
-
         mov  ax, DATA16
         mov  ds, ax
         mov  es, ax
         mov  fs, ax
         mov  gs, ax
         mov  ss, ax
+
+        ; Disable paging
+        mov eax, cr0
+        and eax, 0x7FF7FFFF
+        mov cr0, eax
 
         ; Disable protected bit in CR0
         mov  eax, cr0
@@ -154,9 +158,15 @@ section .text
     pm_bootstrap:
 
         pusha
+        ; Enable protected mode
         mov  eax, cr0
         inc  eax
         mov  cr0, eax
+
+        ; Enable paging
+        mov eax, cr0
+        or  eax, 0x80010000
+        mov cr0, eax
 
         jmp  dword CODE32:OFFSET_ADDR(pm_mode)  ; Jump to PM mode
 

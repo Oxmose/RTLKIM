@@ -53,7 +53,7 @@
  * @details Blanks the handlers memory and initialize the first 32 exceptions to
  * catch intel exceptions.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  */
 OS_RETURN_E kernel_exception_init(void);
@@ -68,7 +68,7 @@ OS_RETURN_E kernel_exception_init(void);
  * @param[in] exception_line The exception line to attach the handler to.
  * @param[in] handler The handler for the desired exception.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the desired
  * exception line is not allowed. 
@@ -94,7 +94,7 @@ OS_RETURN_E kernel_exception_register_handler(const uint32_t exception_line,
  *
  * @param[in] exception_line The exception line to deattach the handler from.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - OR_ERR_UNAUTHORIZED_INTERRUPT_LINE is returned if the desired
  * exception line is not allowed.

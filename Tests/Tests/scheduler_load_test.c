@@ -29,9 +29,9 @@ void scheduler_load_test(void)
 
     kernel_printf("[TESTMODE] Scheduler tests sarts\n");
 
-    for(int i = 0; i < 2048; ++i)
+    for(int i = 0; i < 1024; ++i)
     {
-        err = sched_create_thread(&thread[i], (63 - (i % 64)), "test", 
+        err = sched_create_kernel_thread(&thread[i], (63 - (i % 64)), "test",
                                   1024, print_th, (void*)i);
         if(err != OS_NO_ERR)
         {
@@ -43,7 +43,7 @@ void scheduler_load_test(void)
 
     kernel_interrupt_restore(1);
 
-    for(int i = 0; i < 2048; ++i)
+    for(int i = 0; i < 1024; ++i)
     {
         sched_wait_thread(thread[i], NULL, NULL);
     }
@@ -56,5 +56,5 @@ void scheduler_load_test(void)
 void scheduler_load_test(void)
 {
 
-} 
+}
 #endif

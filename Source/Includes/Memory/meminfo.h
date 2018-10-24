@@ -20,6 +20,7 @@
 #define __MEMINFO_H_
 
 #include <Lib/stddef.h> /* OS_RETURN_E */
+#include <Lib/stdint.h> /* Generic int types */
 
 /*******************************************************************************
  * CONSTANTS
@@ -59,7 +60,7 @@ typedef struct mem_range mem_range_t;
  * @brief Initializes the kernel's memory map while detecting the system's
  * memory organization.
  * 
- * @return The succes state or the error code. 
+ * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
  * - No other return value is possible.
  */

@@ -3,7 +3,6 @@
 #include <Drivers/ata_pio.h>
 #include <Memory/kheap.h>
 
-#define MIN(x, y) (x < y ? x : y)
 
 int main(int argc, char** argv)
 {

@@ -8,13 +8,13 @@
  * @version 1.0
  *
  * @brief Kernel's main boot sequence.
- * 
+ *
  * @warning At this point interrupts should be disabled.
- * 
+ *
  * @details Kernel's booting sequence. Initializes the rest of the kernel after
  *  GDT, IDT and TSS initialization. Initializes the hardware and software
  * core of the kernel.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -30,6 +30,7 @@
 #include <Interrupt/exceptions.h> /* kernel_exception_init() */
 #include <Interrupt/panic.h>      /* kernel_panic() */
 #include <Memory/meminfo.h>       /* memory_map_init() */
+#include <Memory/paging.h>        /* paging_init() */
 #include <Drivers/vesa.h>         /* init_vesa(), vesa_text_vga_to_vesa() */
 #include <Drivers/keyboard.h>     /* keyboard_init() */
 #include <Drivers/ata_pio.h>      /* ata_pio_init() */
@@ -61,7 +62,7 @@
 /*******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************/
-/** @brief Used for test purposes, this has to be deleted in the final version 
+/** @brief Used for test purposes, this has to be deleted in the final version
  */
 extern int main(void);
 
@@ -69,12 +70,12 @@ extern int main(void);
  * FUNCTIONS
  ******************************************************************************/
 
-/** 
+/**
  * @brief Main boot sequence, C kernel entry point.
- * 
- * @details Main boot sequence, C kernel entry point. Initializes each basic 
+ *
+ * @details Main boot sequence, C kernel entry point. Initializes each basic
  * drivers for the kernel, then init the scheduler and start the system.
- * 
+ *
  * @warning This function should never return. In case of return, the kernel
  * should be able to catch the return as an error.
  */
@@ -93,6 +94,33 @@ void kernel_kickstart(void)
     output_test();
     kheap_test();
     vga_text_test();
+    #endif
+
+    kernel_printf("\n==== Kickstarting RTLK ====\n");
+
+    /* Detect CPU */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Detecting CPU\n");
+    #endif
+    err = cpu_detect(1);
+    INIT_MSG("", "Error while detecting CPU: %d. HALTING\n",err, 1);
+
+    /* Detect memory */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Detecting memory\n");
+    #endif
+    err = memory_map_init();
+    INIT_MSG("", "Error while detecting memory: %d. HALTING\n",err, 1);
+
+    /* Enable paging */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Enabling paging\n");
+    #endif
+    err = paging_init();
+    INIT_MSG("Paging enabled\n", "Error while enabling paging: %d. HALTING\n",err, 1);
+
+    #if TEST_MODE_ENABLED == 1
+    paging_alloc_test();
     #endif
 
     /* Init VESA */
@@ -117,30 +145,14 @@ void kernel_kickstart(void)
         kernel_error("VESA Initialization error [%d]\n", err);
     }
     #endif
-    
-    kernel_printf("\n==== Kickstarting RTLK ====\n");
-
-    /* Detect CPU */
-    #if KERNEL_DEBUG == 1
-    kernel_serial_debug("Detecting CPU\n");
-    #endif
-    err = cpu_detect(1);
-    INIT_MSG("", "Error while detecting CPU: %d. HALTING\n",err, 1);
-
-    /* Detect memory */
-    #if KERNEL_DEBUG == 1
-    kernel_serial_debug("Detecting memory\n");
-    #endif
-    err = memory_map_init();
-    INIT_MSG("", "Error while detecting memory: %d. HALTING\n",err, 1);
 
     /* Initialize ACPI */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing ACPI\n");
     #endif
     err = acpi_init();
-    INIT_MSG("ACPI Initialized\n", 
-            "Error while initializing ACPI: %d. HALTING\n", 
+    INIT_MSG("ACPI Initialized\n",
+            "Error while initializing ACPI: %d. HALTING\n",
             err, 1);
 
     /* Init PIC */
@@ -148,7 +160,7 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing the PIC driver\n");
     #endif
     err = pic_init();
-    INIT_MSG("PIC Initialized\n", 
+    INIT_MSG("PIC Initialized\n",
              "Error while initializing PIC: %d. HALTING\n",err, 1);
     #if TEST_MODE_ENABLED
     pic_driver_test();
@@ -160,7 +172,7 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing the IO-APIC driver\n");
     #endif
     err = io_apic_init();
-    INIT_MSG("IO-APIC Initialized\n", 
+    INIT_MSG("IO-APIC Initialized\n",
              "Error while initializing IO-APIC: %d. HALTING\n",err, 1);
     #if TEST_MODE_ENABLED
     io_apic_driver_test();
@@ -170,8 +182,8 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing LAPIC driver\n");
     #endif
     err = lapic_init();
-    INIT_MSG("LAPIC Initialized\n", 
-             "Error while initializing LAPIC: %d. HALTING\n", 
+    INIT_MSG("LAPIC Initialized\n",
+             "Error while initializing LAPIC: %d. HALTING\n",
             err, 1);
     #if TEST_MODE_ENABLED
     lapic_driver_test();
@@ -185,11 +197,11 @@ void kernel_kickstart(void)
     #if ENABLE_IO_APIC !=  0
     err = kernel_interrupt_init(&io_apic_driver);
     err |= pic_disable();
-    #else 
+    #else
     err = kernel_interrupt_init(&pic_driver);
     #endif
-    INIT_MSG("Kernel Interrupt Manager Initialized\n", 
-             "Error while initializing Kernel Interrupt Manager: %d. HALTING\n", 
+    INIT_MSG("Kernel Interrupt Manager Initialized\n",
+             "Error while initializing Kernel Interrupt Manager: %d. HALTING\n",
             err, 1);
     #if TEST_MODE_ENABLED
     interrupt_ok_test();
@@ -201,8 +213,8 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing the kernel exception manager\n");
     #endif
     err = kernel_exception_init();
-    INIT_MSG("Kernel Exception Manager Initialized\n", 
-             "Error while initializing Kernel Exception Manager: %d. HALTING\n", 
+    INIT_MSG("Kernel Exception Manager Initialized\n",
+             "Error while initializing Kernel Exception Manager: %d. HALTING\n",
             err, 1);
     #if TEST_MODE_ENABLED
     exception_ok_test();
@@ -213,8 +225,8 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing PIT driver\n");
     #endif
     err = pit_init();
-    INIT_MSG("PIT Initialized\n", 
-             "Error while initializing PIT: %d. HALTING\n", 
+    INIT_MSG("PIT Initialized\n",
+             "Error while initializing PIT: %d. HALTING\n",
             err, 1);
     #if TEST_MODE_ENABLED
     pit_driver_test();
@@ -225,8 +237,8 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing RTC driver\n");
     #endif
     err = rtc_init();
-    INIT_MSG("RTC Initialized\n", 
-             "Error while initializing RTC: %d. HALTING\n", 
+    INIT_MSG("RTC Initialized\n",
+             "Error while initializing RTC: %d. HALTING\n",
             err, 1);
     #if TEST_MODE_ENABLED
     rtc_driver_test();
@@ -238,8 +250,8 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing LAPIC Timer driver\n");
     #endif
     err = lapic_timer_init();
-    INIT_MSG("LAPIC Timer Initialized\n", 
-             "Error while initializing LAPIC Timer: %d. HALTING\n", 
+    INIT_MSG("LAPIC Timer Initialized\n",
+             "Error while initializing LAPIC Timer: %d. HALTING\n",
             err, 1);
     #if TEST_MODE_ENABLED
     lapic_timer_driver_test();
@@ -252,11 +264,11 @@ void kernel_kickstart(void)
     #endif
     #if ENABLE_IO_APIC != 0 && ENABLE_LAPIC_TIMER != 0
     err = time_init(&lapic_timer_driver, &rtc_driver, &pit_driver);
-    #else 
+    #else
     err = time_init(&pit_driver, &rtc_driver, NULL);
     #endif
-    INIT_MSG("Time Manager Initialized\n", 
-             "Error while initializing Time Manager: %d. HALTING\n", 
+    INIT_MSG("Time Manager Initialized\n",
+             "Error while initializing Time Manager: %d. HALTING\n",
             err, 1);
     #if TEST_MODE_ENABLED
     time_ok_test();
@@ -272,8 +284,8 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing keyboard driver\n");
     #endif
     err = keyboard_init();
-    INIT_MSG("Keyboard Initialized\n", 
-             "Error while initializing keyboard: %d. HALTING\n", 
+    INIT_MSG("Keyboard Initialized\n",
+             "Error while initializing keyboard: %d. HALTING\n",
             err, 1);
     #if TEST_MODE_ENABLED
     rtc_driver_test();
@@ -284,8 +296,8 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing ATA PIO driver\n");
     #endif
     err = ata_pio_init();
-    INIT_MSG("ATA PIO Initialized\n", 
-             "Error while initializing ATA PIO: %d.\n", 
+    INIT_MSG("ATA PIO Initialized\n",
+             "Error while initializing ATA PIO: %d.\n",
              err, 0);
     #if TEST_MODE_ENABLED
     ata_pio_driver_test();
@@ -296,8 +308,8 @@ void kernel_kickstart(void)
     kernel_serial_debug("Initializing ATA PIO driver\n");
     #endif
     err = sched_init();
-    INIT_MSG("", 
-             "Error while initializing the scheduler: %d.\n", 
+    INIT_MSG("",
+             "Error while initializing the scheduler: %d.\n",
              err, 0);
 
     /* We should never reach this code */

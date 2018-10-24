@@ -187,7 +187,7 @@ OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device)
 }
 
 OS_RETURN_E ata_pio_read_sector(ata_pio_device_t device, const uint32_t sector,
-                            uint8_t* buffer, const uint32_t size)
+                                void* buffer, const uint32_t size)
 {
     uint32_t i;
     uint8_t  status;
@@ -281,11 +281,11 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
         uint16_t data;
         data = cpu_inw(device.port + ATA_PIO_DATA_PORT_OFFSET);
 
-        buffer[i] = data & 0xFF;
+        ((uint8_t*)buffer)[i] = data & 0xFF;
 
         if(i + 1 < size)
         {
-            buffer[i + 1] = (data >> 8) & 0xFF;
+            ((uint8_t*)buffer)[i + 1] = (data >> 8) & 0xFF;
         }
     }
 
@@ -301,7 +301,7 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
 }
 
 OS_RETURN_E ata_pio_write_sector(ata_pio_device_t device, const uint32_t sector,
-                             const uint8_t* buffer, const uint32_t size)
+                                 const void* buffer, const uint32_t size)
 {
     uint32_t i;
     uint32_t word;
@@ -362,10 +362,10 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
     for(i = 0; i < size; i += 2)
     {
         uint16_t data;
-        data = buffer[i] & 0x00FF;
+        data = ((uint8_t*)buffer)[i] & 0x00FF;
         if(i + 1 < size)
         {
-            data |= ((uint16_t)buffer[i + 1]) << 8;
+            data |= ((uint16_t)((uint8_t*)buffer)[i + 1]) << 8;
         }
         cpu_outw(data, device.port + ATA_PIO_DATA_PORT_OFFSET);
     }

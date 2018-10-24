@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file vesa.c
- * 
+ *
  * @see vesa.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,11 +10,11 @@
  * @version 1.5
  *
  * @brief VESA VBE 2 graphic driver.
- * 
- * @details VESA VBE 2 graphic drivers. Allows the kernel to have a generic high 
- * resolution output. The driver provides regular console output management and 
+ *
+ * @details VESA VBE 2 graphic drivers. Allows the kernel to have a generic high
+ * resolution output. The driver provides regular console output management and
  * generic screen drawing functions.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -29,6 +29,8 @@
 #include <Drivers/serial.h>   /* serial_write */
 #include <IO/graphic.h>       /* structures */
 #include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
+#include <Memory/paging.h>    /* kernel_mmap */
+#include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -107,7 +109,7 @@ kernel_graphic_driver_t vesa_driver = {
  */
 uint32_t transparent_char = 0;
 
-/** @brief Buffer that saves the background of the cursor to restore it next 
+/** @brief Buffer that saves the background of the cursor to restore it next
  * time the cursor moves.
  */
 uint8_t save_buff[256] = {0};
@@ -118,9 +120,9 @@ uint8_t save_buff[256] = {0};
 
 /**
  * @brief Processes the character in parameters.
- * 
- * @details Check the character nature and code. Corresponding to the 
- * character's code, an action is taken. A regular character will be printed 
+ *
+ * @details Check the character nature and code. Corresponding to the
+ * character's code, an action is taken. A regular character will be printed
  * whereas \n will create a line feed.
  *
  * @param[in] character The character to process.
@@ -168,7 +170,7 @@ static void vesa_process_char(const char character)
 
         /* Display character */
         vesa_drawchar(character, screen_cursor.x - font_width, screen_cursor.y,
-                      screen_scheme.foreground, 
+                      screen_scheme.foreground,
                       transparent_char ? 0 : screen_scheme.background);
 
         /* Manage end of line cursor position */
@@ -206,13 +208,13 @@ static void vesa_process_char(const char character)
                         vesa_drawchar(' ', screen_cursor.x, screen_cursor.y,
                                       screen_scheme.foreground,
                                       transparent_char ? 0 : screen_scheme.background);
-                        vesa_drawchar(' ', 
+                        vesa_drawchar(' ',
                                 screen_cursor.x - font_width, screen_cursor.y,
                                 screen_scheme.foreground,
                                 transparent_char ? 0 : screen_scheme.background);
                         vesa_put_cursor_at(screen_cursor.y,
                                            screen_cursor.x - font_width);
-                        last_columns[(screen_cursor.y / font_height)] = 
+                        last_columns[(screen_cursor.y / font_height)] =
                                                                 screen_cursor.x;
                     }
                 }
@@ -223,13 +225,13 @@ static void vesa_process_char(const char character)
                         vesa_drawchar(' ', screen_cursor.x, screen_cursor.y,
                                       screen_scheme.foreground,
                                       transparent_char ? 0 : screen_scheme.background);
-                        vesa_drawchar(' ', 
+                        vesa_drawchar(' ',
                                 screen_cursor.x - font_width, screen_cursor.y,
                                 screen_scheme.foreground,
                                 transparent_char ? 0 : screen_scheme.background);
                         vesa_put_cursor_at(screen_cursor.y,
                                            screen_cursor.x - font_width);
-                        last_columns[(screen_cursor.y / font_height)] = 
+                        last_columns[(screen_cursor.y / font_height)] =
                                                                 screen_cursor.x;
 
                     }
@@ -238,8 +240,8 @@ static void vesa_process_char(const char character)
                         vesa_drawchar(' ', screen_cursor.x, screen_cursor.y,
                                       screen_scheme.foreground,
                                       transparent_char ? 0 : screen_scheme.background);
-                        vesa_drawchar(' ', 
-                            last_columns[(screen_cursor.y / font_height) - 1], 
+                        vesa_drawchar(' ',
+                            last_columns[(screen_cursor.y / font_height) - 1],
                             screen_cursor.y - font_height,
                             screen_scheme.foreground,
                             transparent_char ? 0 : screen_scheme.background);
@@ -273,8 +275,8 @@ static void vesa_process_char(const char character)
                 /* remove cursor */
                 for(i = screen_cursor.x; i < current_mode->width; ++i)
                 {
-                    for(j = screen_cursor.y; 
-                        j < screen_cursor.y + font_height; 
+                    for(j = screen_cursor.y;
+                        j < screen_cursor.y + font_height;
                         ++j)
                     {
                         vesa_draw_pixel(i, j,
@@ -285,17 +287,17 @@ static void vesa_process_char(const char character)
                     }
                 }
                 last_columns[(screen_cursor.y / font_height)] = screen_cursor.x;
-                if(screen_cursor.y + font_height <= 
+                if(screen_cursor.y + font_height <=
                    current_mode->height - font_height)
                 {
                     /* remove cursor */
-                    for(i = screen_cursor.x; 
-                        i < current_mode->width && 
+                    for(i = screen_cursor.x;
+                        i < current_mode->width &&
                         i < screen_cursor.x + font_width;
                          ++i)
                     {
-                        for(j = screen_cursor.y; 
-                            j < screen_cursor.y + font_height; 
+                        for(j = screen_cursor.y;
+                            j < screen_cursor.y + font_height;
                             ++j)
                         {
                             vesa_draw_pixel(i, j,
@@ -306,7 +308,7 @@ static void vesa_process_char(const char character)
                         }
                     }
                     vesa_put_cursor_at(screen_cursor.y + font_height, 0);
-                    last_columns[(screen_cursor.y / font_height)] = 
+                    last_columns[(screen_cursor.y / font_height)] =
                                                                 screen_cursor.x;
                 }
                 else
@@ -365,7 +367,6 @@ OS_RETURN_E vesa_init(void)
     /* Issue call */
     bios_call(BIOS_INTERRUPT_VESA, &regs);
 
-
     /* Check call result */
     if(regs.ax != 0x004F || strncmp(vbe_info_base.signature, "VESA", 4) != 0)
     {
@@ -411,11 +412,11 @@ OS_RETURN_E vesa_init(void)
         }
 
         /* The mode is compatible, save it */
-        new_mode->width       = vbe_mode_info_base.width;
-        new_mode->height      = vbe_mode_info_base.height;
-        new_mode->bpp         = vbe_mode_info_base.bpp;
-        new_mode->mode_id     = modes[i];
-        new_mode->framebuffer = vbe_mode_info_base.framebuffer;
+        new_mode->width           = vbe_mode_info_base.width;
+        new_mode->height          = vbe_mode_info_base.height;
+        new_mode->bpp             = vbe_mode_info_base.bpp;
+        new_mode->mode_id         = modes[i];
+        new_mode->framebuffer_phy = vbe_mode_info_base.framebuffer;
 
         /* Save mode in list */
         new_mode->next = saved_modes;
@@ -428,7 +429,7 @@ OS_RETURN_E vesa_init(void)
     {
         vesa_supported = 1;
     }
-    else 
+    else
     {
         return OS_ERR_VESA_NOT_SUPPORTED;
     }
@@ -449,7 +450,7 @@ OS_RETURN_E vesa_text_vga_to_vesa(void)
     vesa_mode_t*      cursor;
     uint16_t*         vga_fb;
     cursor_t          vga_cursor;
-    uint16_t          temp_buffer[VGA_TEXT_SCREEN_LINE_SIZE * 
+    uint16_t          temp_buffer[VGA_TEXT_SCREEN_LINE_SIZE *
                                   VGA_TEXT_SCREEN_COL_SIZE];
     colorscheme_t     new_colorscheme;
     colorscheme_t     old_colorscheme = screen_scheme;
@@ -458,7 +459,7 @@ OS_RETURN_E vesa_text_vga_to_vesa(void)
     vga_save_cursor(&vga_cursor);
     vga_fb = vga_get_framebuffer(0, 0);
     memcpy(temp_buffer, vga_fb,
-           sizeof(uint16_t) * 
+           sizeof(uint16_t) *
            VGA_TEXT_SCREEN_LINE_SIZE * VGA_TEXT_SCREEN_COL_SIZE);
 
     /* Set VESA mode */
@@ -594,11 +595,16 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     uint32_t        last_columns_size;
     vesa_mode_t*    cursor;
     uint32_t        word;
+    OS_RETURN_E     err;
+    uint32_t        page_count;
+    uint32_t        buffer_size;
 
     if(vesa_supported == 0)
     {
         return OS_ERR_VESA_NOT_SUPPORTED;
     }
+
+    err = OS_NO_ERR;
 
     /* Search for the mode in the saved modes */
     cursor = saved_modes;
@@ -622,22 +628,41 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
 
     ENTER_CRITICAL(word);
 
-    /* Set the VESA mode */
-    regs.ax = BIOS_CALL_SET_VESA_MODE;
-    regs.bx = cursor->mode_id | VESA_FLAG_LFB_ENABLE;
-    bios_call(BIOS_INTERRUPT_VESA, &regs);
-
-    /* Check call result */
-    if(regs.ax != 0x004F)
+    buffer_size = cursor->width *
+                  cursor->height *
+                  (cursor->bpp / 4);
+    page_count  = buffer_size / KERNEL_PAGE_SIZE;
+    if(buffer_size % KERNEL_PAGE_SIZE != 0)
     {
-        EXIT_CRITICAL(word);
-        return OS_ERR_VESA_MODE_NOT_SUPPORTED;
+        ++page_count;
     }
 
-    current_mode = cursor;
+    /* Get a new pages */
+    cursor->framebuffer = (uint32_t)kernel_paging_alloc_pages(page_count, &err);
+    if(cursor->framebuffer == 0 || err != OS_NO_ERR)
+    {
+        EXIT_CRITICAL(word);
+        return err;
+    }
+
+    /* Mmap the new buffer */
+    err = kernel_direct_mmap((void*)cursor->framebuffer,
+                             (void*)cursor->framebuffer_phy,
+                             cursor->width * cursor->height * (cursor->bpp / 4),
+                             PG_DIR_FLAG_PAGE_SIZE_4KB |
+                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                             PG_DIR_FLAG_PAGE_READ_WRITE,
+                             1);
+    if(err != OS_NO_ERR)
+    {
+        EXIT_CRITICAL(word);
+        return err;
+    }
+
+    cursor->framebuffer += (cursor->framebuffer_phy & 0xFFF);
 
     /* Set the last collumn array */
-    last_columns_size = sizeof(uint32_t) * current_mode->height / font_height;
+    last_columns_size = sizeof(uint32_t) * cursor->height / font_height;
     if(last_columns != NULL)
     {
         kfree(last_columns);
@@ -650,8 +675,39 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     }
     memset(last_columns, 0, last_columns_size);
 
+    /* Set the VESA mode */
+    regs.ax = BIOS_CALL_SET_VESA_MODE;
+    regs.bx = cursor->mode_id | VESA_FLAG_LFB_ENABLE;
+    bios_call(BIOS_INTERRUPT_VESA, &regs);
+
+    /* Check call result */
+    if(regs.ax != 0x004F)
+    {
+        EXIT_CRITICAL(word);
+        return OS_ERR_VESA_MODE_NOT_SUPPORTED;
+    }
     /* Tell generic driver we loaded a VESA mode, ID mapped */
     graphic_set_selected_driver(&vesa_driver);
+
+
+    /* Unmap the old buffer if it exists */
+    if(current_mode != NULL)
+    {
+        buffer_size = current_mode->width *
+                  current_mode->height *
+                  (current_mode->bpp / 4);
+        page_count  = buffer_size / KERNEL_PAGE_SIZE;
+        if(buffer_size % KERNEL_PAGE_SIZE != 0)
+        {
+            ++page_count;
+        }
+
+        err = kernel_munmap((void*)current_mode->framebuffer, buffer_size);
+        err |= kernel_paging_free_pages((void*)current_mode->framebuffer,
+                                        page_count);
+    }
+
+    current_mode = cursor;
 
     EXIT_CRITICAL(word);
 
@@ -659,7 +715,7 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     kernel_serial_debug("VESA Mode set %d\n", mode.mode_id);
     #endif
 
-    return OS_NO_ERR;
+    return err;
 }
 
 OS_RETURN_E vesa_get_pixel(const uint16_t x, const uint16_t y,
@@ -759,11 +815,11 @@ __inline__ OS_RETURN_E vesa_draw_pixel(const uint16_t x, const uint16_t y,
 }
 
 __inline__ OS_RETURN_E vesa_draw_rectangle(const uint16_t x, const uint16_t y,
-                                           const uint16_t width, 
+                                           const uint16_t width,
                                            const uint16_t height,
-                                           const uint8_t alpha, 
+                                           const uint8_t alpha,
                                            const uint8_t red,
-                                           const uint8_t green, 
+                                           const uint8_t green,
                                            const uint8_t blue)
 {
     uint16_t i;
@@ -878,7 +934,7 @@ void vesa_clear_screen(void)
            current_mode->width *
            current_mode->height *
            (current_mode->bpp / 8));
-           
+
     vesa_put_cursor_at(0, 0);
 
     EXIT_CRITICAL(word);
@@ -895,12 +951,12 @@ OS_RETURN_E vesa_put_cursor_at(const uint32_t line, const uint32_t column)
     uint32_t index = 0;
     for(i = 0; i < 16; ++i)
     {
-        vesa_draw_pixel(screen_cursor.x, screen_cursor.y + i, 
-        save_buff[index], save_buff[index + 1], 
+        vesa_draw_pixel(screen_cursor.x, screen_cursor.y + i,
+        save_buff[index], save_buff[index + 1],
         save_buff[index + 2], save_buff[index + 3]);
         index += 4;
-        vesa_draw_pixel(screen_cursor.x + 1, screen_cursor.y + i, 
-        save_buff[index], save_buff[index + 1], 
+        vesa_draw_pixel(screen_cursor.x + 1, screen_cursor.y + i,
+        save_buff[index], save_buff[index + 1],
         save_buff[index + 2], save_buff[index + 3]);
         index += 4;
     }
@@ -914,13 +970,13 @@ OS_RETURN_E vesa_put_cursor_at(const uint32_t line, const uint32_t column)
         uint32_t index = 0;
         for(i = 0; i < 16; ++i)
         {
-            vesa_get_pixel(column, line + i, 
-            &save_buff[index], &save_buff[index + 1], 
+            vesa_get_pixel(column, line + i,
+            &save_buff[index], &save_buff[index + 1],
             &save_buff[index + 2], &save_buff[index + 3]);
             index += 4;
             vesa_draw_pixel(column, line + i, 0xFF, 0xFF, 0xFF, 0xFF);
-            vesa_get_pixel(column + 1, line + i, 
-            &save_buff[index], &save_buff[index + 1], 
+            vesa_get_pixel(column + 1, line + i,
+            &save_buff[index], &save_buff[index + 1],
             &save_buff[index + 2], &save_buff[index + 3]);
             index += 4;
             vesa_draw_pixel(column + 1, line + i, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -1048,12 +1104,12 @@ void vesa_set_color_scheme(const colorscheme_t color_scheme)
     /* Translate color to RGB */
     if(screen_scheme.vga_color != 0)
     {
-        screen_scheme.foreground = 
+        screen_scheme.foreground =
                                 vga_color_table[color_scheme.foreground & 0x0F];
-		screen_scheme.background = 
+		screen_scheme.background =
                                 vga_color_table[color_scheme.background >> 4];
     }
-    else 
+    else
     {
         screen_scheme.foreground = color_scheme.foreground;
         screen_scheme.background = color_scheme.background;
