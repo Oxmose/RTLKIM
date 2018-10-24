@@ -914,13 +914,7 @@ static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
     #endif
 
      /* Restore thread CR3 */
-    __asm__ __volatile__("push %eax");
-    __asm__ __volatile__("push %ebp");
-    __asm__ __volatile__("mov %esp, %ebp");
     __asm__ __volatile__("mov %%eax, %%cr3": :"a"(active_thread->cr3));
-    __asm__ __volatile__("mov %ebp, %esp");
-    __asm__ __volatile__("pop %ebp");
-    __asm__ __volatile__("pop %eax");
 
     /* Restore thread esp */
     cpu_state->esp = active_thread->esp;

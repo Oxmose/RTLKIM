@@ -65,9 +65,11 @@ static uint32_t enabled;
 
 __inline__ static void invalidate_tlb(void)
 {
+    uint32_t tmp;
+
     /* Invalidate the TLB */
-    __asm__ __volatile__("movl	%cr3,%eax");
-	__asm__ __volatile__("movl	%eax,%cr3");
+    __asm__ __volatile__("mov %%cr3, %0\n\t"
+	                     "mov %0, %%cr3" : "=r" (tmp));
 }
 
 static void* map_pgtable(void* pgtable_addr)
@@ -224,14 +226,8 @@ OS_RETURN_E paging_init(void)
     }
 
     /* Set CR3 register */
-    __asm__ __volatile__("push %eax");
-    __asm__ __volatile__("push %ebp");
-    __asm__ __volatile__("mov %esp, %ebp");
     __asm__ __volatile__("mov %%eax, %%cr3": :"a"((uint32_t)kernel_pgdir -
                                                   KERNEL_MEM_OFFSET));
-    __asm__ __volatile__("mov %ebp, %esp");
-    __asm__ __volatile__("pop %ebp");
-    __asm__ __volatile__("pop %eax");
 
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("CR3 Set to 0x%08x \n", kernel_pgdir);
@@ -281,15 +277,9 @@ OS_RETURN_E paging_enable(void)
     }
 
     /* Enable paging and write protect */
-    __asm__ __volatile__("push %eax");
-    __asm__ __volatile__("push %ebp");
-    __asm__ __volatile__("mov %esp, %ebp");
-    __asm__ __volatile__("mov %cr0, %eax");
-    __asm__ __volatile__("or $0x80010000, %eax");
-    __asm__ __volatile__("mov %eax, %cr0");
-    __asm__ __volatile__("mov %ebp, %esp");
-    __asm__ __volatile__("pop %ebp");
-    __asm__ __volatile__("pop %eax");
+    __asm__ __volatile__("mov %%cr0, %%eax\n\t"
+                         "or $0x80010000, %%eax\n\t"
+                         "mov %%eax, %%cr0" : : : "eax");
 
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Paging enabled\n");
@@ -313,14 +303,9 @@ OS_RETURN_E paging_disable(void)
     }
 
     /* Disable paging and write protect */
-    __asm__ __volatile__("push %ebp");
-    __asm__ __volatile__("mov %esp, %ebp");
-    __asm__ __volatile__("mov %cr0, %eax");
-    __asm__ __volatile__("and $0x7FF7FFFF, %eax");
-    __asm__ __volatile__("mov %eax, %cr0");
-    __asm__ __volatile__("mov %ebp, %esp");
-    __asm__ __volatile__("pop %ebp");
-
+    __asm__ __volatile__("mov %%cr0, %%eax\n\t"
+                         "and $0x7FF7FFFF, %%eax\n\t"
+                         "mov %%eax, %%cr0" : : : "eax");
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Paging disabled\n");
     #endif
@@ -329,10 +314,6 @@ OS_RETURN_E paging_disable(void)
 
     return OS_NO_ERR;
 }
-
-
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
 
 OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
                                const uint32_t mapping_size,
@@ -458,7 +439,6 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
 
     return OS_NO_ERR;
 }
-#pragma GCC pop_options
 
 OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
                         const uint16_t flags, const uint16_t allow_remap)

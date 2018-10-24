@@ -53,7 +53,7 @@ QEMU = qemu-system-x86_64
 QEMU_I386 = qemu-system-i386
 
 DEBUG_FLAGS = -Og -g
-EXTRA_FLAGS = -O2 -g
+EXTRA_FLAGS = -O2
 
 CWARNS = -Waggregate-return -Wcast-align -Wdisabled-optimization \
          -Wdiv-by-zero -Wendif-labels -Wformat-extra-args -Wformat-nonliteral \
@@ -173,10 +173,10 @@ ifeq ($(DEBUG), TRUE)
 endif
 ifeq ($(TESTS), TRUE)
 	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
-	@$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)
+	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)
 else
 	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
-	@$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
+	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
 endif
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
