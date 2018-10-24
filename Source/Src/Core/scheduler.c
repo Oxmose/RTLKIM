@@ -1346,7 +1346,7 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
 
     return OS_NO_ERR;
 }
-
+#if 0
 OS_RETURN_E sched_create_user_thread(thread_t* thread,
                                      const uint32_t priority,
                                      const char* name,
@@ -1694,7 +1694,7 @@ OS_RETURN_E sched_create_user_thread(thread_t* thread,
 
     return OS_NO_ERR;
 }
-
+#endif
 OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val,
                               THREAD_TERMINATE_CAUSE_E* term_cause)
 {
