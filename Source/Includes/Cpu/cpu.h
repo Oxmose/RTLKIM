@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file cpu.h
- * 
+ *
  * @see cpu.c
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,10 +10,10 @@
  * @version 1.0
  *
  * @brief X86 CPU management functions
- * 
+ *
  * @details X86 CPU manipulation functions. Wraps inline assembly calls for ease
  * of development.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -36,7 +36,7 @@
 #define CPU_FLAG_CPU_CPUID_CAPABLE 0x00200000
 
 /****************************
- * General Features 
+ * General Features
  ***************************/
 
 /** @brief CPUID Streaming SIMD Extensions 3 flag. */
@@ -46,189 +46,189 @@
 /** @brief CPUID 64-Bit Debug Store Area flag. */
 #define ECX_DTES64    (1 << 2)
 /** @brief CPUID MONITOR/MWAIT flag. */
-#define ECX_MONITOR   (1 << 3)    
+#define ECX_MONITOR   (1 << 3)
 /** @brief CPUID CPL Qualified Debug Store flag. */
-#define ECX_DS_CPL    (1 << 4)    
+#define ECX_DS_CPL    (1 << 4)
 /** @brief CPUID Virtual Machine Extensions flag. */
-#define ECX_VMX       (1 << 5)    
+#define ECX_VMX       (1 << 5)
 /** @brief CPUID Safer Mode Extensions flag. */
-#define ECX_SMX       (1 << 6)    
+#define ECX_SMX       (1 << 6)
 /** @brief CPUID Enhanced SpeedStep Technology flag. */
-#define ECX_EST       (1 << 7)    
+#define ECX_EST       (1 << 7)
 /** @brief CPUID Thermal Monitor 2 flag. */
-#define ECX_TM2       (1 << 8)    
+#define ECX_TM2       (1 << 8)
 /** @brief CPUID Supplemental Streaming SIMD Extensions 3 flag. */
-#define ECX_SSSE3     (1 << 9)    
+#define ECX_SSSE3     (1 << 9)
 /** @brief CPUID L1 Context ID flag. */
-#define ECX_CNXT_ID   (1 << 10)   
+#define ECX_CNXT_ID   (1 << 10)
 /** @brief CPUID Fused Multiply Add flag. */
-#define ECX_FMA       (1 << 12)   
+#define ECX_FMA       (1 << 12)
 /** @brief CPUID CMPXCHG16B Instruction flag. */
-#define ECX_CX16      (1 << 13)   
+#define ECX_CX16      (1 << 13)
 /** @brief CPUID xTPR Update Control flag. */
-#define ECX_XTPR      (1 << 14)   
+#define ECX_XTPR      (1 << 14)
 /** @brief CPUID Perf/Debug Capability MSR flag. */
-#define ECX_PDCM      (1 << 15)   
+#define ECX_PDCM      (1 << 15)
 /** @brief CPUID Process-context Identifiers flag. */
-#define ECX_PCID      (1 << 17)   
+#define ECX_PCID      (1 << 17)
 /** @brief CPUID Direct Cache Access flag. */
-#define ECX_DCA       (1 << 18)   
+#define ECX_DCA       (1 << 18)
 /** @brief CPUID Streaming SIMD Extensions 4.1 flag. */
-#define ECX_SSE41     (1 << 19)   
+#define ECX_SSE41     (1 << 19)
 /** @brief CPUID Streaming SIMD Extensions 4.2 flag. */
-#define ECX_SSE42     (1 << 20)   
+#define ECX_SSE42     (1 << 20)
 /** @brief CPUID Extended xAPIC Support flag. */
-#define ECX_X2APIC    (1 << 21)   
+#define ECX_X2APIC    (1 << 21)
 /** @brief CPUID MOVBE Instruction flag. */
-#define ECX_MOVBE     (1 << 22)   
+#define ECX_MOVBE     (1 << 22)
 /** @brief CPUID POPCNT Instruction flag. */
-#define ECX_POPCNT    (1 << 23)   
+#define ECX_POPCNT    (1 << 23)
 /** @brief CPUID Local APIC supports TSC Deadline flag. */
-#define ECX_TSC       (1 << 24)   
+#define ECX_TSC       (1 << 24)
 /** @brief CPUID AESNI Instruction flag. */
-#define ECX_AESNI     (1 << 25)   
+#define ECX_AESNI     (1 << 25)
 /** @brief CPUID XSAVE/XSTOR States flag. */
-#define ECX_XSAVE     (1 << 26)   
+#define ECX_XSAVE     (1 << 26)
 /** @brief CPUID OS Enabled Extended State Management flag. */
-#define ECX_OSXSAVE   (1 << 27)   
+#define ECX_OSXSAVE   (1 << 27)
 /** @brief CPUID AVX Instructions flag. */
-#define ECX_AVX       (1 << 28)   
+#define ECX_AVX       (1 << 28)
 /** @brief CPUID 16-bit Floating Point Instructions flag. */
-#define ECX_F16C      (1 << 29)   
+#define ECX_F16C      (1 << 29)
 /** @brief CPUID RDRAND Instruction flag. */
-#define ECX_RDRAND    (1 << 30)   
+#define ECX_RDRAND    (1 << 30)
 /** @brief CPUID Floating-Point Unit On-Chip flag. */
-#define EDX_FPU       (1 << 0)    
+#define EDX_FPU       (1 << 0)
 /** @brief CPUID Virtual 8086 Mode Extensions flag. */
-#define EDX_VME       (1 << 1)    
+#define EDX_VME       (1 << 1)
 /** @brief CPUID Debugging Extensions flag. */
-#define EDX_DE        (1 << 2)    
+#define EDX_DE        (1 << 2)
 /** @brief CPUID Page Size Extension flag. */
-#define EDX_PSE       (1 << 3)    
+#define EDX_PSE       (1 << 3)
 /** @brief CPUID Time Stamp Counter flag. */
-#define EDX_TSC       (1 << 4)    
+#define EDX_TSC       (1 << 4)
 /** @brief CPUID Model Specific Registers flag. */
-#define EDX_MSR       (1 << 5)    
+#define EDX_MSR       (1 << 5)
 /** @brief CPUID Physical Address Extension flag. */
-#define EDX_PAE       (1 << 6)    
+#define EDX_PAE       (1 << 6)
 /** @brief CPUID Machine-Check Exception flag. */
-#define EDX_MCE       (1 << 7)    
+#define EDX_MCE       (1 << 7)
 /** @brief CPUID CMPXCHG8 Instruction flag. */
-#define EDX_CX8       (1 << 8)    
+#define EDX_CX8       (1 << 8)
 /** @brief CPUID APIC On-Chip flag. */
-#define EDX_APIC      (1 << 9)    
+#define EDX_APIC      (1 << 9)
 /** @brief CPUID SYSENTER/SYSEXIT instructions flag. */
-#define EDX_SEP       (1 << 11)   
+#define EDX_SEP       (1 << 11)
 /** @brief CPUID Memory Type Range Registers flag. */
-#define EDX_MTRR      (1 << 12)   
+#define EDX_MTRR      (1 << 12)
 /** @brief CPUID Page Global Bit flag. */
-#define EDX_PGE       (1 << 13)   
+#define EDX_PGE       (1 << 13)
 /** @brief CPUID Machine-Check Architecture flag. */
-#define EDX_MCA       (1 << 14)   
+#define EDX_MCA       (1 << 14)
 /** @brief CPUID Conditional Move Instruction flag. */
-#define EDX_CMOV      (1 << 15)   
+#define EDX_CMOV      (1 << 15)
 /** @brief CPUID Page Attribute Table flag. */
-#define EDX_PAT       (1 << 16)   
+#define EDX_PAT       (1 << 16)
 /** @brief CPUID 36-bit Page Size Extension flag. */
-#define EDX_PSE36     (1 << 17)   
+#define EDX_PSE36     (1 << 17)
 /** @brief CPUID Processor Serial Number flag. */
-#define EDX_PSN       (1 << 18)   
+#define EDX_PSN       (1 << 18)
 /** @brief CPUID CLFLUSH Instruction flag. */
-#define EDX_CLFLUSH   (1 << 19)   
+#define EDX_CLFLUSH   (1 << 19)
 /** @brief CPUID Debug Store flag. */
-#define EDX_DS        (1 << 21)   
+#define EDX_DS        (1 << 21)
 /** @brief CPUID Thermal Monitor and Clock Facilities flag. */
-#define EDX_ACPI      (1 << 22)   
+#define EDX_ACPI      (1 << 22)
 /** @brief CPUID MMX Technology flag. */
-#define EDX_MMX       (1 << 23)   
+#define EDX_MMX       (1 << 23)
 /** @brief CPUID FXSAVE and FXSTOR Instructions flag. */
-#define EDX_FXSR      (1 << 24)   
+#define EDX_FXSR      (1 << 24)
 /** @brief CPUID Streaming SIMD Extensions flag. */
-#define EDX_SSE       (1 << 25)   
+#define EDX_SSE       (1 << 25)
 /** @brief CPUID Streaming SIMD Extensions 2 flag. */
-#define EDX_SSE2      (1 << 26)   
+#define EDX_SSE2      (1 << 26)
 /** @brief CPUID Self Snoop flag. */
-#define EDX_SS        (1 << 27)   
+#define EDX_SS        (1 << 27)
 /** @brief CPUID Multi-Threading flag. */
-#define EDX_HTT       (1 << 28)   
+#define EDX_HTT       (1 << 28)
 /** @brief CPUID Thermal Monitor flag. */
-#define EDX_TM        (1 << 29)   
+#define EDX_TM        (1 << 29)
 /** @brief CPUID Pending Break Enable flag. */
-#define EDX_PBE       (1 << 31)   
+#define EDX_PBE       (1 << 31)
 
 /****************************
- * Extended Features 
+ * Extended Features
  ***************************/
 /** @brief CPUID SYSCALL/SYSRET flag. */
-#define EDX_SYSCALL   (1 << 11) 
+#define EDX_SYSCALL   (1 << 11)
 /** @brief CPUID Multiprocessor flag. */
-#define EDX_MP        (1 << 19) 
+#define EDX_MP        (1 << 19)
 /** @brief CPUID Execute Disable Bit flag. */
-#define EDX_XD        (1 << 20)   
+#define EDX_XD        (1 << 20)
 /** @brief CPUID MMX etended flag. */
-#define EDX_MMX_EX    (1 << 22)   
+#define EDX_MMX_EX    (1 << 22)
 /** @brief CPUID FXSAVE/STOR available flag. */
-#define EDX_FXSR     (1 << 24)   
+#define EDX_FXSR     (1 << 24)
 /** @brief CPUID FXSAVE/STOR optimized flag. */
-#define EDX_FXSR_OPT  (1 << 25)   
+#define EDX_FXSR_OPT  (1 << 25)
 /** @brief CPUID 1 GB Pages flag. */
-#define EDX_1GB_PAGE  (1 << 26)   
+#define EDX_1GB_PAGE  (1 << 26)
 /** @brief CPUID RDTSCP and IA32_TSC_AUX flag. */
-#define EDX_RDTSCP    (1 << 27)   
+#define EDX_RDTSCP    (1 << 27)
 /** @brief CPUID 64-bit Architecture flag. */
-#define EDX_64_BIT    (1 << 29)   
+#define EDX_64_BIT    (1 << 29)
 /** @brief CPUID 3D Now etended flag. */
-#define EDX_3DNOW_EX  (1 << 30)   
+#define EDX_3DNOW_EX  (1 << 30)
 /** @brief CPUID 3D Now flag. */
-#define EDX_3DNOW     (1 << 31)   
+#define EDX_3DNOW     (1 << 31)
 /** @brief CPUID LAHF Available in long mode flag */
-#define ECX_LAHF_LM   (1 << 0)   
+#define ECX_LAHF_LM   (1 << 0)
 /** @brief CPUID Hyperthreading not valid flag */
-#define ECX_CMP_LEG   (1 << 1) 
+#define ECX_CMP_LEG   (1 << 1)
 /** @brief CPUID Secure Virtual Machine flag */
-#define ECX_SVM       (1 << 2) 
+#define ECX_SVM       (1 << 2)
 /** @brief CPUID Extended API space flag */
-#define ECX_EXTAPIC   (1 << 3) 
+#define ECX_EXTAPIC   (1 << 3)
 /** @brief CPUID CR8 in protected mode flag */
-#define ECX_CR8_LEG   (1 << 4) 
+#define ECX_CR8_LEG   (1 << 4)
 /** @brief CPUID ABM available flag */
-#define ECX_ABM       (1 << 5) 
+#define ECX_ABM       (1 << 5)
 /** @brief CPUID SSE4A flag */
-#define ECX_SSE4A     (1 << 6) 
+#define ECX_SSE4A     (1 << 6)
 /** @brief CPUID Misaligne SSE mode flag */
-#define ECX_MISASSE   (1 << 7) 
+#define ECX_MISASSE   (1 << 7)
 /** @brief CPUID Prefetch flag */
-#define ECX_PREFETCH  (1 << 8) 
+#define ECX_PREFETCH  (1 << 8)
 /** @brief CPUID OS Visible workaround flag */
-#define ECX_OSVW      (1 << 9) 
+#define ECX_OSVW      (1 << 9)
 /** @brief CPUID Instruction based sampling flag */
-#define ECX_IBS       (1 << 10)   
+#define ECX_IBS       (1 << 10)
 /** @brief CPUID XIO intruction set flag */
-#define ECX_XOP       (1 << 11) 
+#define ECX_XOP       (1 << 11)
 /** @brief CPUID SKINIT instructions flag */
-#define ECX_SKINIT    (1 << 12) 
+#define ECX_SKINIT    (1 << 12)
 /** @brief CPUID watchdog timer flag */
-#define ECX_WDT       (1 << 13) 
+#define ECX_WDT       (1 << 13)
 /** @brief CPUID Light weight profiling flag */
-#define ECX_LWP       (1 << 15) 
+#define ECX_LWP       (1 << 15)
 /** @brief CPUID 4 operand fuxed multiply add flag */
-#define ECX_FMA4      (1 << 16) 
+#define ECX_FMA4      (1 << 16)
 /** @brief CPUID Translation cache extension flag */
-#define ECX_TCE       (1 << 17) 
+#define ECX_TCE       (1 << 17)
 /** @brief CPUID NODE_ID MSR flag */
-#define ECX_NODEIDMSR (1 << 19) 
+#define ECX_NODEIDMSR (1 << 19)
 /** @brief CPUID Trailing bit manipulation flag */
-#define ECX_TBM       (1 << 21) 
+#define ECX_TBM       (1 << 21)
 /** @brief CPUID Topology extension flag */
-#define ECX_TOPOEX    (1 << 22) 
+#define ECX_TOPOEX    (1 << 22)
 /** @brief CPUID Core performance counter extensions flag */
-#define ECX_PERF_CORE (1 << 23)   
+#define ECX_PERF_CORE (1 << 23)
 /** @brief CPUID NB performance counter extensions flag */
-#define ECX_PERF_NB   (1 << 24) 
+#define ECX_PERF_NB   (1 << 24)
 /** @brief CPUID Data breakpoint extensions flag */
-#define ECX_DBX       (1 << 26) 
+#define ECX_DBX       (1 << 26)
 /** @brief CPUID Performance TSC flag */
-#define ECX_PERF_TSC  (1 << 27) 
+#define ECX_PERF_TSC  (1 << 27)
 /** @brief CPUID L2I perf counter extensions flag */
 #define ECX_PCX_L2I   (1 << 28)
 
@@ -383,24 +383,24 @@ typedef enum cpuid_requests CPUID_REQ_E;
 
 /**
  * @brief Fills the structure in parameters with the CPU information.
- * 
+ *
  * @details The function will copy the data gathered at boot to the buffer
- * given as parameter. If the pointer to the buffer is NULL then the function 
+ * given as parameter. If the pointer to the buffer is NULL then the function
  * returns an error.
  *
  * @param[out] info The pointer to the structure to receive the data.
- * 
+ *
  * @return The success state or the error code.
- * - OS_NO_ERR is returned if no error is encountered. 
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_NULL_POINTER is returned if info if NULL.
- * 
+ *
  * @warning The function cpu_detect() must have been called at least once before
  * using cpu_get_info. Otherwise the data gatered are undefined.
  */
 OS_RETURN_E cpu_get_info(cpu_info_t* info);
 
 /**
- * @brief Returns 1 if the CPUID intruction is available on the CPU. 0 is 
+ * @brief Returns 1 if the CPUID intruction is available on the CPU. 0 is
  * returned otherwise.
  *
  * @return 1 if the CPUID instruction is available, 0 otherwise.
@@ -408,27 +408,27 @@ OS_RETURN_E cpu_get_info(cpu_info_t* info);
 int32_t cpu_cpuid_capable(void);
 
 /**
- * @brief Detects CPU features and save then in the system's cpu_info_t 
+ * @brief Detects CPU features and save then in the system's cpu_info_t
  * structure. Print the data.
- * 
+ *
  * @details The function requests the CPUID data to the running CPU. The data
- * are then saved in an internatl kernel's structure. The function will also 
+ * are then saved in an internatl kernel's structure. The function will also
  * print the gathered data if the parameter print is not set to 0.
- * 
+ *
  * @param[in] print If not set to 0, the function will print a message with
  * the collected data.
- * 
- * @return The success state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
- * - OS_ERR_UNAUTHORIZED_ACTION is retuned if the kernel could not detect the 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_UNAUTHORIZED_ACTION is returned if the kernel could not detect the
  * CPU.
  */
 OS_RETURN_E cpu_detect(const uint32_t print);
 
 /**
  * @brief Returns the highest support CPUID feature request ID.
- * 
- * @details Returns the highest supported input value for CPUID instruction. 
+ *
+ * @details Returns the highest supported input value for CPUID instruction.
  * ext canbe either 0x0 or 0x80000000 to return highest supported value for
  * basic or extended CPUID information.  Function returns 0 if CPUID
  * is not supported or whatever CPUID returns in eax register.  If sig
@@ -453,9 +453,9 @@ __inline__ static uint32_t cpu_get_cpuid_max (const uint32_t ext)
     return regs[0];
 }
 
-/** 
+/**
  * @brief Returns the CPUID data for a requested leaf.
- * 
+ *
  * @details Returns CPUID data for requested CPUID leaf, as found in returned
  * eax, ebx, ecx and edx registers.  The function checks if CPUID is
  * supported and returns 1 for valid CPUID information or 0 for
@@ -502,7 +502,7 @@ __inline__ static void cpu_hlt(void)
     __asm__ __volatile__ ("hlt":::"memory");
 }
 
-/** 
+/**
  * @brief Returns the current CPU flags.
  *
  * @return The current CPU flags.
@@ -522,7 +522,7 @@ __inline__ static uint32_t cpu_save_flags(void)
     return flags;
 }
 
-/** 
+/**
  * @brief Restores CPU flags
  *
  * @param[in] flags The flags to be restored.
@@ -538,7 +538,7 @@ __inline__ static void cpu_restore_flags(const uint32_t flags)
     );
 }
 
-/** 
+/**
  * @brief Writes byte on port.
  *
  * @param[in] value The value to send to the port.
@@ -549,7 +549,7 @@ __inline__ static void cpu_outb(const uint8_t value, const uint16_t port)
     __asm__ __volatile__("outb %0, %1" : : "a" (value), "Nd" (port));
 }
 
-/** 
+/**
  * @brief Writes word on port.
  *
  * @param[in] value The value to send to the port.
@@ -575,7 +575,7 @@ __inline__ static void cpu_outl(const uint32_t value, const uint16_t port)
  * @brief Reads byte on port.
  *
  * @return The value read from the port.
- * 
+ *
  * @param[in] port The port to which the value has to be read.
  */
 __inline__ static uint8_t cpu_inb(const uint16_t port)
@@ -589,7 +589,7 @@ __inline__ static uint8_t cpu_inb(const uint16_t port)
  * @brief Reads word on port.
  *
  * @return The value read from the port.
- * 
+ *
  * @param[in] port The port to which the value has to be read.
  */
 __inline__ static uint16_t cpu_inw(const uint16_t port)
@@ -603,7 +603,7 @@ __inline__ static uint16_t cpu_inw(const uint16_t port)
  * @brief Reads long on port.
  *
  * @return The value read from the port.
- * 
+ *
  * @param[in] port The port to which the value has to be read.
  */
 __inline__ static uint32_t cpu_inl(const uint16_t port)
@@ -613,22 +613,22 @@ __inline__ static uint32_t cpu_inl(const uint16_t port)
     return rega;
 }
 
-/** 
+/**
  * @brief Compare and swap word atomicaly.
  *
- * @details This function can be used by synchronization primitive to compare 
+ * @details This function can be used by synchronization primitive to compare
  * and swap a word atomicaly. cpu_compare_and_swap implements the usual compare
  * and swap behavior.
- * 
+ *
  * @return The value of the lock, either old val if the lock was not aquired or
  * newval if the lock was aquired.
- * 
+ *
  * @param[in,out] p_val The pointer to the lock.
  * @param[in] oldval The old value to swap.
  * @param[in] newval The new value to be swapped.
  */
 __inline__ static uint32_t cpu_compare_and_swap(volatile uint32_t* p_val,
-                                                const int oldval, 
+                                                const int oldval,
                                                 const int newval)
 {
     uint32_t prev;
@@ -643,8 +643,8 @@ __inline__ static uint32_t cpu_compare_and_swap(volatile uint32_t* p_val,
 
 /**
  * @brief Test and set atomic operation.
- * 
- * @details This function can be used by synchronization primitive to test 
+ *
+ * @details This function can be used by synchronization primitive to test
  * and set a word atomicaly. s implements the usual test and set behavior.
  *
  * @param[in,out] lock The spinlock to apply the test on.
@@ -656,10 +656,10 @@ __inline__ static int cpu_test_and_set(volatile uint32_t* lock)
 
 /**
  * @brief Reads the TSC value of the CPU.
- * 
- * @details Reads the current value of the CPU's time-stamp counter and store 
+ *
+ * @details Reads the current value of the CPU's time-stamp counter and store
  * into EDX:EAX. The time-stamp counter contains the amount of clock ticks that
- * have elapsed since the last CPU reset. The value is stored in a 64-bit MSR 
+ * have elapsed since the last CPU reset. The value is stored in a 64-bit MSR
  * and is incremented after each clock cycle.
  *
  * @return The CPU's TSC time stamp.
@@ -680,11 +680,11 @@ __inline__ static uint64_t cpu_rdtsc(void)
 
 /**
  * @brief Memory mapped IO byte write access.
- * 
- * @details Memory mapped IOs byte write access. Avoids compilers to reorganize 
- * memory access, instead of doing : *addr = value, do 
+ *
+ * @details Memory mapped IOs byte write access. Avoids compilers to reorganize
+ * memory access, instead of doing : *addr = value, do
  * mapped_io_write(addr, value) to avoid instruction reorganization.
- * 
+ *
  * @param[in] addr The address of the IO to write.
  * @param[in] value The value to write to the IO.
  */
@@ -696,11 +696,11 @@ __inline__ static void mapped_io_write_8(void* volatile addr,
 
 /**
  * @brief Memory mapped IO half word write access.
- * 
- * @details Memory mapped IOs half word write access. Avoids compilers to 
- * reorganize memory access, instead of doing : *addr = value, do 
+ *
+ * @details Memory mapped IOs half word write access. Avoids compilers to
+ * reorganize memory access, instead of doing : *addr = value, do
  * mapped_io_write(addr, value) to avoid instruction reorganization.
- * 
+ *
  * @param[in] addr The address of the IO to write.
  * @param[in] value The value to write to the IO.
  */
@@ -712,11 +712,11 @@ __inline__ static void mapped_io_write_16(void* volatile addr,
 
 /**
  * @brief Memory mapped IO word write access.
- * 
- * @details Memory mapped IOs word write access. Avoids compilers to reorganize 
- * memory access, instead of doing : *addr = value, do 
+ *
+ * @details Memory mapped IOs word write access. Avoids compilers to reorganize
+ * memory access, instead of doing : *addr = value, do
  * mapped_io_write(addr, value) to avoid instruction reorganization.
- * 
+ *
  * @param[in] addr The address of the IO to write.
  * @param[in] value The value to write to the IO.
  */
@@ -728,11 +728,11 @@ __inline__ static void mapped_io_write_32(void* volatile addr,
 
 /**
  * @brief Memory mapped IO double word write access.
- * 
- * @details Memory mapped IOs double word write access. Avoids compilers to 
- * reorganize memory access, instead of doing : *addr = value, do 
+ *
+ * @details Memory mapped IOs double word write access. Avoids compilers to
+ * reorganize memory access, instead of doing : *addr = value, do
  * mapped_io_write(addr, value) to avoid instruction reorganization.
- * 
+ *
  * @param[in] addr The address of the IO to write.
  * @param[in] value The value to write to the IO.
  */
@@ -744,11 +744,11 @@ __inline__ static void mapped_io_write_64(void* volatile addr,
 
 /**
  * @brief Memory mapped IO byte read access.
- * 
- * @details Memory mapped IOs byte read access. Avoids compilers to reorganize 
- * memory access, instead of doing : value = *addr, do 
+ *
+ * @details Memory mapped IOs byte read access. Avoids compilers to reorganize
+ * memory access, instead of doing : value = *addr, do
  * mapped_io_read(addr, value) to avoid instruction reorganization.
- * 
+ *
  * @param[in] addr The address of the IO to read.
  */
 __inline__ static uint8_t mapped_io_read_8(const volatile void* addr)
@@ -758,11 +758,11 @@ __inline__ static uint8_t mapped_io_read_8(const volatile void* addr)
 
 /**
  * @brief Memory mapped IO half word read access.
- * 
+ *
  * @details Memory mapped IOs half word read access. Avoids compilers to
- * reorganize memory access, instead of doing : value = *addr, do 
+ * reorganize memory access, instead of doing : value = *addr, do
  * mapped_io_read(addr, value) to avoid instruction reorganization.
- * 
+ *
  * @param[in] addr The address of the IO to read.
  */
 __inline__ static uint16_t mapped_io_read_16(const volatile void* addr)
@@ -772,11 +772,11 @@ __inline__ static uint16_t mapped_io_read_16(const volatile void* addr)
 
 /**
  * @brief Memory mapped IO word read access.
- * 
- * @details Memory mapped IOs word read access. Avoids compilers to reorganize 
- * memory access, instead of doing : value = *addr, do 
+ *
+ * @details Memory mapped IOs word read access. Avoids compilers to reorganize
+ * memory access, instead of doing : value = *addr, do
  * mapped_io_read(addr, value) to avoid instruction reorganization.
- * 
+ *
  * @param[in] addr The address of the IO to read.
  */
 __inline__ static uint32_t mapped_io_read_32(const volatile void* addr)
@@ -786,11 +786,11 @@ __inline__ static uint32_t mapped_io_read_32(const volatile void* addr)
 
 /**
  * @brief Memory mapped IO double word read access.
- * 
- * @details Memory mapped IOs double word read access. Avoids compilers to 
- * reorganize memory access, instead of doing : value = *addr, do 
+ *
+ * @details Memory mapped IOs double word read access. Avoids compilers to
+ * reorganize memory access, instead of doing : value = *addr, do
  * mapped_io_read(addr, value) to avoid instruction reorganization.
- * 
+ *
  * @param[in] addr The address of the IO to read.
  */
 __inline__ static uint64_t mapped_io_read_64(const volatile void* addr)

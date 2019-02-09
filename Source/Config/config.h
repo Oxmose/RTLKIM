@@ -39,7 +39,7 @@
  * Features settings
  ******************************************************************************/
 /** @brief Maximal number of CPU to be supported by the kernel. */
-#define MAX_CPU_COUNT      1
+#define MAX_CPU_COUNT      4
 
 /** @brief Enables the use of an IO-APIC instead of the PIC if present if the
  * system.

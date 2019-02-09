@@ -75,13 +75,15 @@ SECTIONS
     /* !!! WARNING 0x7C00 to 0x8000 Are reserved for BIOS calls !!! */
 
     /* Booted CPU count, must be accessible in real mode */
-    init_cpu_count = 0x1000 + kernel_offset;
+    init_cpu_count_phys = 0x1000;
+    init_cpu_count      = init_cpu_count_phys + kernel_offset;
 
     /* VESA Structures, must be placed in lower memory */
     vbe_info_base      = 0x2000 + kernel_offset; /* SIZE = 4096bits, ends at 0x3000 */
     vbe_mode_info_base = 0x3000 + kernel_offset; /* SIZE = 2048bits, ends at 0x3800 */
 
-    /* !!! WARNING 0x7C00 to 0x8000 Are reserved for BIOS calls !!! */
+    /* Init AP relocated code */
+    init_ap_code = 0x4000 + kernel_offset; /* SIZE = 2048bits, ends at 0x4800 */
 
     /* GDT must also be in real mode accessible memory */
     cpu_gdt      = 0x8000 + kernel_offset; /* SIZE = 16384bits, ends at 0xC000 */

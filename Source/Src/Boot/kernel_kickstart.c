@@ -19,6 +19,7 @@
  ******************************************************************************/
 
 #include <Cpu/cpu.h>              /* cpu_detect() */
+#include <Cpu/smp.h>              /* init_smp() */
 #include <IO/kernel_output.h>     /* kernel_output() */
 #include <BSP/pic.h>              /* pic_init(), pic_driver */
 #include <BSP/io_apic.h>          /* io-apic_init(), io_apic_driver */
@@ -177,6 +178,7 @@ void kernel_kickstart(void)
     #if TEST_MODE_ENABLED
     io_apic_driver_test();
     #endif
+
     /* Init LAPIC driver */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing LAPIC driver\n");
@@ -279,6 +281,13 @@ void kernel_kickstart(void)
     kernel_queue_test();
     #endif
 
+    /* Init SMP */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing SMP\n");
+    #endif
+    err = smp_init();
+    INIT_MSG("", "Error while initializing SMP: %d. HALTING\n",err, 1);
+
     /* Init keyboard driver */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing keyboard driver\n");
@@ -305,7 +314,7 @@ void kernel_kickstart(void)
 
     /* Init Scheduler */
     #if KERNEL_DEBUG == 1
-    kernel_serial_debug("Initializing ATA PIO driver\n");
+    kernel_serial_debug("Initializing scheduler\n");
     #endif
     err = sched_init();
     INIT_MSG("",

@@ -55,6 +55,18 @@ static cpu_tss_entry_t cpu_main_tss __attribute__((aligned(4096)));
 /** @brief Kernel stack pointer */
 extern uint8_t* kernel_stack;
 
+/**
+ * @brief AP TSS array
+ *
+ */
+cpu_tss_entry_t cpu_ap_tss[MAX_CPU_COUNT - 1] __attribute__((aligned(4096)));
+
+/** @brief Kernel stacks for APs */
+uint32_t ap_cpu_stacks[MAX_CPU_COUNT - 1][KERNEL_STACK_SIZE];
+
+/** @brief AP stacks size */
+uint32_t ap_cpu_stack_size = KERNEL_STACK_SIZE;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -677,6 +689,8 @@ static void format_idt_entry(uint64_t* entry,
 
 void cpu_setup_gdt(void)
 {
+    uint32_t i;
+
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Setting CPU GDT\n");
     #endif
@@ -761,6 +775,15 @@ void cpu_setup_gdt(void)
                      (uint32_t)&cpu_main_tss,
                      ((uint32_t)(&cpu_main_tss)) + sizeof(cpu_tss_entry_t),
                      tss_seg_type, tss_seg_flags);
+
+    for(i = 1; i < MAX_CPU_COUNT; ++i)
+    {
+        format_gdt_entry(&cpu_gdt[(TSS_SEGMENT + i * 0x08) / 8],
+                         (uint32_t)&cpu_ap_tss[i - 1],
+                         ((uint32_t)(&cpu_ap_tss[i - 1])) +
+                            sizeof(cpu_tss_entry_t),
+                         tss_seg_type, tss_seg_flags);
+    }
 
     /* Set the GDT descriptor */
     cpu_gdt_size = ((sizeof(uint64_t) * GDT_ENTRY_COUNT) - 1);
