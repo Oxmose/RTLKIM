@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file kernel_queue.c
- * 
+ *
  * @see kernel_queue.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,13 +10,11 @@
  * @version 1.5
  *
  * @brief Kernel's queue structures.
- * 
+ *
  * @details Kernel's queue structures. These queues are used by the kernel as
- * priority queue or regular queues. A kernel queue can virtually store every 
+ * priority queue or regular queues. A kernel queue can virtually store every
  * type of data and is just a wrapper.
- * 
- * @warning Kernel's queues are not thread safe.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -25,6 +23,7 @@
 #include <Lib/string.h>      /* memset */
 #include <Memory/kheap.h>    /* kmalloc, kfree */
 #include <Interrupt/panic.h> /* kernel_panic */
+#include <Sync/critical.h>   /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -103,6 +102,8 @@ kernel_queue_t* kernel_queue_create_queue(OS_RETURN_E *error)
     /* Init the structure */
     memset(newqueue, 0, sizeof(kernel_queue_t));
 
+    INIT_SPINLOCK(&newqueue->lock);
+
     if(error != NULL)
     {
         *error = OS_NO_ERR;
@@ -134,6 +135,8 @@ OS_RETURN_E kernel_queue_delete_queue(kernel_queue_t** queue)
 OS_RETURN_E kernel_queue_push(kernel_queue_node_t* node,
                              kernel_queue_t* queue)
 {
+    uint32_t word;
+
     #if QUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Enqueue 0x%08x in queue 0x%08x\n",
                         (uint32_t)node,
@@ -144,6 +147,12 @@ OS_RETURN_E kernel_queue_push(kernel_queue_node_t* node,
     {
         return OS_ERR_NULL_POINTER;
     }
+
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
 
     /* If this queue is empty */
     if(queue->head == NULL)
@@ -168,8 +177,20 @@ OS_RETURN_E kernel_queue_push(kernel_queue_node_t* node,
 
     if(node->next != NULL && node->prev != NULL && node->next == node->prev)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &queue->lock);
+        #else
+        EXIT_CRITICAL(word);
+        #endif
+
         kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
     }
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
+    EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -180,6 +201,7 @@ OS_RETURN_E kernel_queue_push_prio(kernel_queue_node_t* node,
                                    const uint32_t priority)
 {
     kernel_queue_node_t* cursor;
+    uint32_t             word;
 
     #if QUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Enqueue 0x%08x in queue 0x%08x\n",
@@ -191,6 +213,12 @@ OS_RETURN_E kernel_queue_push_prio(kernel_queue_node_t* node,
     {
         return OS_ERR_NULL_POINTER;
     }
+
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
 
     node->priority = priority;
 
@@ -239,15 +267,28 @@ OS_RETURN_E kernel_queue_push_prio(kernel_queue_node_t* node,
 
     if(node->next != NULL && node->prev != NULL && node->next == node->prev)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &queue->lock);
+        #else
+        EXIT_CRITICAL(word);
+        #endif
+
         kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
     }
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
+    EXIT_CRITICAL(word);
+    #endif
     return OS_NO_ERR;
 }
 
 kernel_queue_node_t* kernel_queue_pop(kernel_queue_t* queue,
                                       OS_RETURN_E* error)
 {
-    kernel_queue_node_t*  node;
+    kernel_queue_node_t* node;
+    uint32_t             word;
 
     #if QUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Dequeue kernel element in queue 0x%08x\n",
@@ -275,6 +316,12 @@ kernel_queue_node_t* kernel_queue_pop(kernel_queue_t* queue,
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     /* Dequeue the last item */
     node = queue->tail;
     if(node->prev != NULL)
@@ -299,6 +346,12 @@ kernel_queue_node_t* kernel_queue_pop(kernel_queue_t* queue,
         *error = OS_NO_ERR;
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
+    EXIT_CRITICAL(word);
+    #endif
+
     return node;
 }
 
@@ -306,6 +359,7 @@ kernel_queue_node_t* kernel_queue_find(kernel_queue_t* queue, void* data,
                                        OS_RETURN_E *error)
 {
     kernel_queue_node_t* node;
+    uint32_t             word;
 
     #if QUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Find kernel data 0x%08x in queue 0x%08x\n",
@@ -323,12 +377,24 @@ kernel_queue_node_t* kernel_queue_find(kernel_queue_t* queue, void* data,
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     /* Search for the data */
     node = queue->head;
     while(node != NULL && node->data != data)
     {
         node = node->next;
     }
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
+    EXIT_CRITICAL(word);
+    #endif
 
     /* No such data */
     if(node == NULL)
@@ -352,6 +418,8 @@ OS_RETURN_E kernel_queue_remove(kernel_queue_t* queue,
                                kernel_queue_node_t* node)
 {
     kernel_queue_node_t* cursor;
+    uint32_t             word;
+
     if(queue == NULL || node == NULL)
     {
         return OS_ERR_NULL_POINTER;
@@ -363,6 +431,12 @@ OS_RETURN_E kernel_queue_remove(kernel_queue_t* queue,
                         (uint32_t)queue);
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     /* Search for node in the queue*/
     cursor = queue->head;
     while(cursor != NULL && cursor != node)
@@ -372,6 +446,11 @@ OS_RETURN_E kernel_queue_remove(kernel_queue_t* queue,
 
     if(cursor == NULL)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &queue->lock);
+        #else
+        EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_NO_SUCH_ID;
     }
 
@@ -401,6 +480,12 @@ OS_RETURN_E kernel_queue_remove(kernel_queue_t* queue,
     node->prev = NULL;
 
     node->enlisted = 0;
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
+    EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
