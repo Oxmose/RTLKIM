@@ -22,6 +22,7 @@
 #include <Lib/stdint.h>        /* Generic int types */
 #include <Cpu/cpu_settings.h>  /* KERNEL_CS KERNEL_DS */
 #include <Core/kernel_queue.h> /* kernel_queue_node_t kernel_queue_t */
+#include <Sync/critical.h>     /* spinlock_t */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -230,6 +231,10 @@ struct kernel_thread
     uint32_t start_time;
     /** @brief Thread's end time. */
     uint32_t end_time;
+
+    #if MAX_CPU_COUNT > 1
+    spinlock_t lock;
+    #endif
 };
 
 /**

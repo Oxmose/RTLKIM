@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file pit.c
- * 
+ *
  * @see pit.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,17 +10,17 @@
  * @version 1.0
  *
  * @brief PIT (Programmable interval timer) driver.
- * 
+ *
  * @details PIT (Programmable interval timer) driver. Used as the basic timer
  * source in the kernel. This driver provides basic access to the PIT.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #include <Cpu/cpu.h>              /* cpu_outb */
 #include <IO/kernel_output.h>     /* kernel_printf */
 #include <Interrupt/interrupts.h> /* register_interrupt, cpu_state,
-                                   * stack_state, set_IRQ_mask, 
+                                   * stack_state, set_IRQ_mask,
                                    * kernel_interrupt_set_irq_eoi */
 #include <Lib/stdint.h>           /* Generioc int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E */
@@ -54,14 +54,19 @@ kernel_timer_t pit_driver = {
     .get_irq        = pit_get_irq
 };
 
+#if MAX_CPU_COUNT > 1
+/** @brief Critical section spinlock. */
+static spinlock_t lock = SPINLOCK_INIT_VALUE;
+#endif
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
 
 /**
  * @brief Initial PIT interrupt handler.
- * 
- * @details PIT interrupt handler set at the initialization of the PIT. 
+ *
+ * @details PIT interrupt handler set at the initialization of the PIT.
  * Dummy routine setting EOI.
  *
  * @param[in, out] cpu_state The cpu registers before the interrupt.
@@ -112,7 +117,11 @@ OS_RETURN_E pit_enable(void)
 {
     uint32_t word;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(disabled_nesting > 0)
     {
@@ -123,11 +132,19 @@ OS_RETURN_E pit_enable(void)
         #if PIT_KERNEL_DEBUG == 1
         kernel_serial_debug("Enable PIT\n");
         #endif
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return kernel_interrupt_set_irq_mask(PIT_IRQ_LINE, 1);
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -137,7 +154,11 @@ OS_RETURN_E pit_disable(void)
     OS_RETURN_E err;
     uint32_t    word;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(disabled_nesting < UINT32_MAX)
     {
@@ -149,7 +170,11 @@ OS_RETURN_E pit_disable(void)
     #endif
     err = kernel_interrupt_set_irq_mask(PIT_IRQ_LINE, 0);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }
@@ -164,13 +189,21 @@ OS_RETURN_E pit_set_frequency(const uint32_t freq)
         return OS_ERR_OUT_OF_BOUND;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Disable PIT IRQ */
     err = pit_disable();
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return err;
     }
 
@@ -187,7 +220,11 @@ OS_RETURN_E pit_set_frequency(const uint32_t freq)
     kernel_serial_debug("New PIT frequency set (%d)\n", freq);
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     /* Enable PIT IRQ */
     return pit_enable();
@@ -212,12 +249,20 @@ OS_RETURN_E pit_set_handler(void(*handler)(
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     err = pit_disable();
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return err;
     }
 
@@ -225,7 +270,11 @@ OS_RETURN_E pit_set_handler(void(*handler)(
     err = kernel_interrupt_remove_irq_handler(PIT_IRQ_LINE);
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         pit_enable();
         return err;
     }
@@ -233,7 +282,11 @@ OS_RETURN_E pit_set_handler(void(*handler)(
     err = kernel_interrupt_register_irq_handler(PIT_IRQ_LINE, handler);
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         pit_enable();
         return err;
     }
@@ -242,7 +295,11 @@ OS_RETURN_E pit_set_handler(void(*handler)(
     kernel_serial_debug("New PIT handler set (0x%08x)\n", handler);
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return pit_enable();
 }

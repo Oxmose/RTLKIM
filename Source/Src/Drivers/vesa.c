@@ -107,12 +107,17 @@ kernel_graphic_driver_t vesa_driver = {
 /** @brief Sets if the characters background should be of the screen colorscheme
  * or transparent.
  */
-uint32_t transparent_char = 0;
+static uint32_t transparent_char = 0;
 
 /** @brief Buffer that saves the background of the cursor to restore it next
  * time the cursor moves.
  */
-uint8_t save_buff[256] = {0};
+static uint8_t save_buff[256] = {0};
+
+#if MAX_CPU_COUNT > 1
+/** @brief Critical section spinlock. */
+static spinlock_t lock = SPINLOCK_INIT_VALUE;
+#endif
 
 /*******************************************************************************
  * FUNCTIONS
@@ -626,7 +631,11 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         return OS_ERR_VESA_MODE_NOT_SUPPORTED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     buffer_size = cursor->width *
                   cursor->height *
@@ -641,7 +650,11 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     cursor->framebuffer = (uint32_t)kernel_paging_alloc_pages(page_count, &err);
     if(cursor->framebuffer == 0 || err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return err;
     }
 
@@ -655,7 +668,11 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
                              1);
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return err;
     }
 
@@ -670,7 +687,11 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     last_columns = kmalloc(last_columns_size);
     if(last_columns == NULL)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_MALLOC;
     }
     memset(last_columns, 0, last_columns_size);
@@ -683,7 +704,11 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     /* Check call result */
     if(regs.ax != 0x004F)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_VESA_MODE_NOT_SUPPORTED;
     }
     /* Tell generic driver we loaded a VESA mode, ID mapped */
@@ -709,7 +734,11 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
 
     current_mode = cursor;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     #if VESA_KERNEL_DEBUG == 1
     kernel_serial_debug("VESA Mode set %d\n", mode.mode_id);
@@ -745,7 +774,11 @@ OS_RETURN_E vesa_get_pixel(const uint16_t x, const uint16_t y,
         return OS_ERR_OUT_OF_BOUND;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Get framebuffer address */
     addr = (uint8_t*)(((uint32_t*)current_mode->framebuffer) +
@@ -756,7 +789,11 @@ OS_RETURN_E vesa_get_pixel(const uint16_t x, const uint16_t y,
     *red   = *(addr++);
     *alpha = 0xFF;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -841,7 +878,11 @@ __inline__ OS_RETURN_E vesa_draw_rectangle(const uint16_t x, const uint16_t y,
         return OS_ERR_OUT_OF_BOUND;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     for(i = y; i < y + height; ++i)
     {
@@ -851,7 +892,11 @@ __inline__ OS_RETURN_E vesa_draw_rectangle(const uint16_t x, const uint16_t y,
         }
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -870,7 +915,11 @@ void vesa_drawchar(const unsigned char charracter,
 
     uint8_t pixel[4] = {0};
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     for(cy = 0; cy < 16; ++cy)
     {
@@ -883,7 +932,11 @@ void vesa_drawchar(const unsigned char charracter,
         }
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 uint32_t vesa_get_screen_width(void)
@@ -928,7 +981,11 @@ void vesa_clear_screen(void)
 
     buffer = (uint32_t*)current_mode->framebuffer;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     memset(buffer, 0,
            current_mode->width *
@@ -937,14 +994,22 @@ void vesa_clear_screen(void)
 
     vesa_put_cursor_at(0, 0);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 OS_RETURN_E vesa_put_cursor_at(const uint32_t line, const uint32_t column)
 {
     uint32_t word;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Restore background */
     uint8_t i;
@@ -983,7 +1048,11 @@ OS_RETURN_E vesa_put_cursor_at(const uint32_t line, const uint32_t column)
         }
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -997,13 +1066,21 @@ OS_RETURN_E vesa_save_cursor(cursor_t* buffer)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Save cursor attributes */
     buffer->x = screen_cursor.x;
     buffer->y = screen_cursor.y;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -1050,7 +1127,11 @@ void vesa_scroll(const SCROLL_DIRECTION_E direction,
     bpp_size = ((current_mode->bpp | 7) >> 3);
     line_mem_size = bpp_size * line_size;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Select scroll direction */
     if(direction == SCROLL_DOWN)
@@ -1092,14 +1173,23 @@ void vesa_scroll(const SCROLL_DIRECTION_E direction,
         last_printed_cursor.y = 0;
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 void vesa_set_color_scheme(const colorscheme_t color_scheme)
 {
     uint32_t word;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
+
     screen_scheme.vga_color = color_scheme.vga_color;
     /* Translate color to RGB */
     if(screen_scheme.vga_color != 0)
@@ -1114,7 +1204,11 @@ void vesa_set_color_scheme(const colorscheme_t color_scheme)
         screen_scheme.foreground = color_scheme.foreground;
         screen_scheme.background = color_scheme.background;
     }
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 OS_RETURN_E vesa_save_color_scheme(colorscheme_t* buffer)
@@ -1126,14 +1220,22 @@ OS_RETURN_E vesa_save_color_scheme(colorscheme_t* buffer)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Save color scheme into buffer */
     buffer->vga_color = screen_scheme.vga_color;
     buffer->foreground = screen_scheme.foreground;
     buffer->background = screen_scheme.background;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+        #endif
 
     return OS_NO_ERR;
 }
@@ -1145,20 +1247,39 @@ void vesa_put_string(const char* string)
     uint32_t word;
     for(i = 0; i < strlen(string); ++i)
     {
+        #if MAX_CPU_COUNT > 1
+        ENTER_CRITICAL(word, &lock);
+        #else
         ENTER_CRITICAL(word);
+        #endif
+
         vesa_process_char(string[i]);
         last_printed_cursor = screen_cursor;
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
     }
 }
 
 void vesa_put_char(const char charactrer)
 {
     uint32_t word;
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
+
     vesa_process_char(charactrer);
     last_printed_cursor = screen_cursor;
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 void vesa_console_write_keyboard(const char* string, const uint32_t size)
@@ -1168,9 +1289,19 @@ void vesa_console_write_keyboard(const char* string, const uint32_t size)
     uint32_t word;
     for(i = 0; i < size; ++i)
     {
+        #if MAX_CPU_COUNT > 1
+        ENTER_CRITICAL(word, &lock);
+        #else
         ENTER_CRITICAL(word);
+        #endif
+
         vesa_process_char(string[i]);
+
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
     }
 }
 
@@ -1179,13 +1310,23 @@ void vesa_fill_screen(uint32_t* pointer)
     uint32_t* buffer;
     uint32_t  word;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
+
     buffer = (uint32_t*)current_mode->framebuffer;
     memcpy(buffer, pointer,
            current_mode->width *
            current_mode->height *
            (current_mode->bpp / 8));
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 void vesa_set_transparent_char(const uint32_t enabled)

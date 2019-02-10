@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file ata_pio.h
- * 
+ *
  * @see ata_pio.c
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,19 +10,23 @@
  * @version 1.0
  *
  * @brief ATA (Advanced Technology Attachment) driver.
- * 
+ *
  * @details ATA (Advanced Technology Attachment) driver. Supports hard drive IO
  * through the CPU PIO. The driver can read and write data. No utility function
  * are provided.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #ifndef __ATA_PIO_H_
 #define __ATA_PIO_H_
 
-#include <Lib/stdint.h> /* Generic int types */
-#include <Lib/stddef.h> /* OS_RETURN_E */
+#include <Lib/stdint.h>    /* Generic int types */
+#include <Lib/stddef.h>    /* OS_RETURN_E */
+#include <Sync/critical.h> /* spinlock_t */
+
+/* RTLK Configuration file */
+#include <config.h>
 
 /*******************************************************************************
  * CONSTANTS
@@ -86,7 +90,7 @@ enum ATA_PIO_TYPE
     SLAVE  = 1
 };
 
-/** 
+/**
  * @brief Defines ATA_PIO_TYPE_E type as a shorcut for enum ATA_PIO_TYPE.
  */
 typedef enum ATA_PIO_TYPE ATA_PIO_TYPE_E;
@@ -104,7 +108,7 @@ enum ATA_PIO_PORT
     FOURTH_PORT    = ATA_PIO_FOURTH_PORT_ADDRESS
 };
 
-/** 
+/**
  * @brief Defines ATA_PIO_PORT_E type as a shorcut for enum ATA_PIO_PORT.
  */
 typedef enum ATA_PIO_PORT ATA_PIO_PORT_E;
@@ -116,9 +120,14 @@ struct ata_pio_device
     ATA_PIO_PORT_E port;
     /** @brief Device type. */
     ATA_PIO_TYPE_E type;
+
+    #if MAX_CPU_COUNT > 1
+    /** @brief Critical section spinlock. */
+    spinlock_t lock;
+    #endif
 };
 
-/** 
+/**
  * @brief Defines ata_pio_device_t type as a shorcut for struct ata_pio_device.
  */
 typedef struct ata_pio_device ata_pio_device_t;
@@ -129,77 +138,77 @@ typedef struct ata_pio_device ata_pio_device_t;
 
 /**
  * @brief Initializes the ATA PIO driver settings.
- * 
+ *
  * @details Initializes the ATA PIO driver settings. The driver will detect all
  * the connected ATA device in the system.
  *
- * @return The success state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  */
 OS_RETURN_E ata_pio_init(void);
 
 /**
  * @brief Identifies a given ATA device if connected.
- * 
- * @details Identify the ATA device given as parameter. The function will check 
+ *
+ * @details Identify the ATA device given as parameter. The function will check
  * the presence of a device conected to the port pointed by the device argument.
  *
  * @param[in] device The device to identify.
- * 
- * @return The success state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  * - OS_ERR_ATA_DEVICE_NOT_PRESENT is returned if the device was not detected.
  */
-OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device);
+OS_RETURN_E ata_pio_identify_device(ata_pio_device_t* device);
 
 /**
  * @brief Reads the content of a sector in a buffer.
- * 
- * @details Reads size bytes on the device pointer by the device given as 
- * parameter. The number of bytes to read must be less of equal to the size of 
+ *
+ * @details Reads size bytes on the device pointer by the device given as
+ * parameter. The number of bytes to read must be less of equal to the size of
  * a sector.
- * 
- * @warning The number of bytes to read must be less of equal to the size of 
+ *
+ * @warning The number of bytes to read must be less of equal to the size of
  * a sector.
  *
  * @param[in] device The device to read the data from.
  * @param[in] sector The sector number where the data are located.
  * @param[out] buffer The buffer that is used to store the read data.
  * @param[in] size The number of bytes to read from the device.
- * 
- * @return The success state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  * - OS_ERR_ATA_DEVICE_NOT_PRESENT is returned if the device was not detected.
  * - OS_ERR_ATA_BAD_SECTOR_NUMBER is returned if the sector given in parameters
  *   is not supported.
- * - OS_ERR_ATA_SIZE_TO_HUGE is returned if the size of the data to read is more 
+ * - OS_ERR_ATA_SIZE_TO_HUGE is returned if the size of the data to read is more
  *   than the size of a sector.
  */
-OS_RETURN_E ata_pio_read_sector(const ata_pio_device_t device, 
+OS_RETURN_E ata_pio_read_sector(ata_pio_device_t* device,
                                 const uint32_t sector,
 	                            void* buffer, const uint32_t size);
 
 /**
  * @brief Writes the content of the buffer to the device sector.
- * 
- * @details Writes size bytes on the device pointer by the device given as 
- * parameter. The number of bytes to written must be less of equal to the size 
- * of a sector. Padding is added at the end of the sector, all other data 
+ *
+ * @details Writes size bytes on the device pointer by the device given as
+ * parameter. The number of bytes to written must be less of equal to the size
+ * of a sector. Padding is added at the end of the sector, all other data
  * present in the sector before the write opperation are overwritten.
  *
  * @param[in] device The device to write the data to.
  * @param[in] sector The sector number where the data are to be written.
  * @param[in] buffer The buffer containing the data to write.
  * @param[in] size The number of bytes to read from the device.
- * 
+ *
  * @warning Padding is added at the end of the sector, all other data present in
  * the sector before the write opperation are overwritten.
- * 
- * @return The success state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  * - OS_ERR_ATA_DEVICE_NOT_PRESENT is returned if the device was not detected.
  * - OS_ERR_ATA_BAD_SECTOR_NUMBER is returned if the sector given in parameters
@@ -207,23 +216,23 @@ OS_RETURN_E ata_pio_read_sector(const ata_pio_device_t device,
  * - OS_ERR_ATA_SIZE_TO_HUGE is returned if the size of the data to write is
  *   more than the size of a sector.
  */
-OS_RETURN_E ata_pio_write_sector(const ata_pio_device_t device, 
+OS_RETURN_E ata_pio_write_sector(ata_pio_device_t* device,
                                  const uint32_t sector,
 	                             const void* buffer, const uint32_t size);
 
 /**
  * @brief Asks the device to flush it's buffer.
- * 
- * @details Ask the ATA device to flush the data cache. This is used to ensure 
+ *
+ * @details Ask the ATA device to flush the data cache. This is used to ensure
  * correct writing to the device.
  *
  * @param[in] device The device to be flushed.
- * 
- * @return The success state or the error code. 
- * - OS_NO_ERR is returned if no error is encountered. 
+ *
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_ATA_DEVICE_ERROR is returned if an errored device is detected.
  * - OS_ERR_ATA_DEVICE_NOT_PRESENT is returned if the device was not detected.
  */
-OS_RETURN_E ata_pio_flush(const ata_pio_device_t device);
+OS_RETURN_E ata_pio_flush(ata_pio_device_t* device);
 
 #endif /* __ATA_PIO_H_ */

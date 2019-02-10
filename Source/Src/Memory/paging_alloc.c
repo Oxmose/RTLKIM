@@ -44,8 +44,13 @@ extern uint32_t    memory_map_size;
 /** @brief Memory map storage as an array of range. */
 extern mem_range_t memory_map_data[];
 
-
+/** @brief Kernel end address. */
 extern uint8_t     _kernel_end;
+
+#if MAX_CPU_COUNT > 1
+/** @brief Critical section spinlock. */
+static spinlock_t lock = SPINLOCK_INIT_VALUE;
+#endif
 
 /*******************************************************************************
  * FUNCTIONS
@@ -383,9 +388,19 @@ void* kernel_paging_alloc_frames(const uint32_t frame_count, OS_RETURN_E* err)
     uint32_t  word;
     uint32_t* address;
 
-    ENTER_CRITICAL(word)
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     address = get_block(&kernel_free_frames, frame_count, err);
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return (void*)address;
 }
@@ -396,10 +411,20 @@ OS_RETURN_E kernel_paging_free_frames(void* frame_addr,
     OS_RETURN_E err;
     uint32_t    word;
 
-    ENTER_CRITICAL(word)
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     err = add_free((uint32_t)frame_addr, frame_count * KERNEL_PAGE_SIZE,
                     &kernel_free_frames);
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }
@@ -409,9 +434,19 @@ void* kernel_paging_alloc_pages(const uint32_t page_count, OS_RETURN_E* err)
     uint32_t  word;
     uint32_t* address;
 
-    ENTER_CRITICAL(word)
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     address = get_block(&kernel_free_pages, page_count, err);
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return (void*)address;
 }
@@ -426,10 +461,20 @@ OS_RETURN_E kernel_paging_free_pages(void* page_addr, const uint32_t page_count)
         return OS_ERR_UNAUTHORIZED_ACTION;
     }
 
-    ENTER_CRITICAL(word)
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     err = add_free((uint32_t)page_addr, page_count * KERNEL_PAGE_SIZE,
                    &kernel_free_pages);
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }
@@ -443,9 +488,19 @@ void* paging_alloc_pages(const uint32_t page_count, OS_RETURN_E* err)
     /* Get the current's thread free page table */
     free_pages_table = (mem_area_t*)sched_get_thread_free_page_table();
 
-    ENTER_CRITICAL(word)
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     address = get_block(&free_pages_table, page_count, err);
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return (void*)address;
 }
@@ -461,10 +516,20 @@ void* paging_alloc_pages_from(const void* page_start_address,
     /* Get the current's thread free page table */
     free_pages_table = (mem_area_t*)sched_get_thread_free_page_table();
 
-    ENTER_CRITICAL(word)
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     address = get_block_from(page_start_address, &free_pages_table,
                              page_count, err);
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return (void*)address;
 }
@@ -483,10 +548,20 @@ OS_RETURN_E paging_free_pages(void* page_addr, const uint32_t page_count)
     /* Get the current's thread free page table */
     free_pages_table = (mem_area_t*)sched_get_thread_free_page_table();
 
-    ENTER_CRITICAL(word)
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
+
     err = add_free((uint32_t)page_addr, page_count * KERNEL_PAGE_SIZE,
                    &free_pages_table);
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }

@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file mutex.c
- * 
+ *
  * @see mutex.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,17 +10,17 @@
  * @version 3.0
  *
  * @brief Mutex synchronization primitive.
- * 
- * @details Mutex synchronization primitive implementation. Avoids priority 
- * inversion by allowing the user to set a priority to the mutex, then all 
- * threads that acquire this mutex will see their priority elevated to the 
+ *
+ * @details Mutex synchronization primitive implementation. Avoids priority
+ * inversion by allowing the user to set a priority to the mutex, then all
+ * threads that acquire this mutex will see their priority elevated to the
  * mutex's priority level.
  * The mutex  waiting list is a FIFO with no regard to the waiting threads
  * priority.
- * 
+ *
  * @warning Mutex can only be used when the current system is running and the
  * scheduler initialized.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -58,7 +58,7 @@ OS_RETURN_E mutex_init(mutex_t* mutex, const uint32_t flags,
     }
 
     /* Check priority integrity */
-    if(priority > KERNEL_LOWEST_PRIORITY && 
+    if(priority > KERNEL_LOWEST_PRIORITY &&
        priority != MUTEX_PRIORITY_ELEVATION_NONE)
     {
         return OS_ERR_FORBIDEN_PRIORITY;
@@ -69,6 +69,7 @@ OS_RETURN_E mutex_init(mutex_t* mutex, const uint32_t flags,
 
     mutex->state = 1;
     mutex->flags = flags | priority << 8;
+    INIT_SPINLOCK(&mutex->lock);
 
     mutex->waiting_threads = kernel_queue_create_queue(&err);
     if(err != OS_NO_ERR)
@@ -97,11 +98,19 @@ OS_RETURN_E mutex_destroy(mutex_t* mutex)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mutex->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(mutex->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_MUTEX_UNINITIALIZED;
     }
 
@@ -111,7 +120,11 @@ OS_RETURN_E mutex_destroy(mutex_t* mutex)
     {
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &mutex->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not dequeue thread from mutex[%d]\n", err);
             kernel_panic(err);
         }
@@ -119,7 +132,11 @@ OS_RETURN_E mutex_destroy(mutex_t* mutex)
         err = sched_unlock_thread(node, THREAD_WAIT_TYPE_MUTEX, 0);
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &mutex->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not unlock thread from mutex[%d]\n", err);
             kernel_panic(err);
         }
@@ -132,7 +149,11 @@ OS_RETURN_E mutex_destroy(mutex_t* mutex)
     }
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         kernel_error("Could not dequeue thread from mutex[%d]\n", err);
         kernel_panic(err);
     }
@@ -145,7 +166,11 @@ OS_RETURN_E mutex_destroy(mutex_t* mutex)
     kernel_serial_debug("Mutex 0x%08x destroyed\n", (uint32_t)mutex);
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mutex->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -162,11 +187,19 @@ OS_RETURN_E mutex_pend(mutex_t* mutex)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mutex->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(mutex->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_MUTEX_UNINITIALIZED;
     }
 
@@ -190,7 +223,11 @@ OS_RETURN_E mutex_pend(mutex_t* mutex)
         active_thread = sched_lock_thread(THREAD_WAIT_TYPE_MUTEX);
         if(active_thread == NULL)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &mutex->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not lock this thread to mutex[%d]\n",
                          OS_ERR_NULL_POINTER);
             kernel_panic(OS_ERR_NULL_POINTER);
@@ -199,7 +236,11 @@ OS_RETURN_E mutex_pend(mutex_t* mutex)
         err = kernel_queue_push(active_thread, mutex->waiting_threads);
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &mutex->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not enqueue thread to mutex[%d]\n", err);
             kernel_panic(err);
         }
@@ -210,14 +251,28 @@ OS_RETURN_E mutex_pend(mutex_t* mutex)
                             ((kernel_thread_t*)active_thread->data)->tid);
         #endif
 
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
+
         sched_schedule();
+
+        #if MAX_CPU_COUNT > 1
+        ENTER_CRITICAL(word, &mutex->lock);
+        #else
         ENTER_CRITICAL(word);
+        #endif
     }
 
     if(mutex->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_MUTEX_UNINITIALIZED;
     }
 
@@ -234,8 +289,12 @@ OS_RETURN_E mutex_pend(mutex_t* mutex)
         err = sched_set_priority(prio >> 8);
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &mutex->lock);
+            #else
             EXIT_CRITICAL(word);
-            kernel_error("Could elevate priority mmutex[%d]\n", err);
+            #endif
+            kernel_error("Could not elevate priority mutex[%d]\n", err);
             kernel_panic(err);
         }
     }
@@ -245,7 +304,11 @@ OS_RETURN_E mutex_pend(mutex_t* mutex)
                         sched_get_tid());
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mutex->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -264,11 +327,19 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mutex->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(mutex->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_MUTEX_UNINITIALIZED;
     }
 
@@ -283,7 +354,11 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
         err = sched_set_priority(mutex->acquired_thread_priority);
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &mutex->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could release priority mmutex[%d]\n", err);
             kernel_panic(err);
         }
@@ -297,7 +372,11 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
     {
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &mutex->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not dequeue thread from mutex[%d]\n", err);
             kernel_panic(err);
         }
@@ -308,7 +387,11 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
                             ((kernel_thread_t*)node->data)->tid);
         #endif
 
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
 
         err = sched_unlock_thread(node, THREAD_WAIT_TYPE_MUTEX, 1);
         if(err != OS_NO_ERR)
@@ -327,7 +410,11 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
     }
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         kernel_error("Could not dequeue thread from mutex[%d]\n", err);
         kernel_panic(err);
     }
@@ -339,7 +426,11 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
     #endif
 
     /* If here, we did not find any waiting process */
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mutex->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     if(do_sched)
     {
@@ -359,11 +450,19 @@ OS_RETURN_E mutex_try_pend(mutex_t* mutex, int32_t* value)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mutex->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(mutex->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_MUTEX_UNINITIALIZED;
     }
 
@@ -381,7 +480,11 @@ OS_RETURN_E mutex_try_pend(mutex_t* mutex, int32_t* value)
                             sched_get_tid());
         #endif
 
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_MUTEX_LOCKED;
     }
     else if(mutex != NULL &&mutex->init == 1)
@@ -390,7 +493,11 @@ OS_RETURN_E mutex_try_pend(mutex_t* mutex, int32_t* value)
     }
     else
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mutex->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_MUTEX_UNINITIALIZED;
     }
 
@@ -401,7 +508,11 @@ OS_RETURN_E mutex_try_pend(mutex_t* mutex, int32_t* value)
                         sched_get_tid());
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mutex->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }

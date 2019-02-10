@@ -35,7 +35,6 @@
  ******************************************************************************/
 static int32_t  cpu_count;
 static uint32_t main_core_id;
-
 static const uint32_t* cpu_ids;
 static const local_apic_t** cpu_lapics;
 
@@ -95,8 +94,6 @@ OS_RETURN_E smp_init(void)
     /* Init startup code in low mem */
     ap_boot_loader_init();
 
-    /* Wait for CPU to INIT */
-    init_cpu_count = 1;
 
     /* Init each sleeping core */
     for(i = 0; i < (uint32_t)cpu_count; ++i)
@@ -191,4 +188,9 @@ void smp_ap_core_init(void)
     kernel_error("End of kernel reached by AP Core %d [%d]\n", cpu_id, err);
     kernel_panic(err);
 
+}
+
+uint32_t smp_get_booted_cpu_count(void)
+{
+    return init_cpu_count;
 }

@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file mailbox.c
- * 
+ *
  * @see mailbox.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,14 +10,14 @@
  * @version 3.0
  *
  * @brief Mailbox communication and synchronization primitive.
- * 
+ *
  * @details Mailbox used to send single messages between threads. The mailboxes
  * will block the threads when either full (on a sending thread) or empty (on a
  * receiving thread). The synchronization method used is the semaphore.
- * 
- * @warning Mailboxes can only be used when the current system is running and 
+ *
+ * @warning Mailboxes can only be used when the current system is running and
  * the scheduler initialized.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -55,6 +55,8 @@ OS_RETURN_E mailbox_init(mailbox_t* mailbox)
 
     /* Init the mailbox */
     memset(mailbox, 0, sizeof(mailbox_t));
+
+    INIT_SPINLOCK(&mailbox->lock);
 
     err = sem_init(&mailbox->mailbox_sem_read, 0);
     if(err != OS_NO_ERR)
@@ -95,11 +97,19 @@ OS_RETURN_E mailbox_destroy(mailbox_t* mailbox)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mailbox->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(mailbox->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mailbox->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_MAILBOX_NON_INITIALIZED;
     }
 
@@ -109,7 +119,11 @@ OS_RETURN_E mailbox_destroy(mailbox_t* mailbox)
     err = sem_destroy(&mailbox->mailbox_sem_read);
     err |= sem_destroy(&mailbox->mailbox_sem_write);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mailbox->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }
@@ -135,12 +149,20 @@ void* mailbox_pend(mailbox_t* mailbox, OS_RETURN_E* error)
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mailbox->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Check for mailbox initialization */
     if(mailbox->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mailbox->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
 
         if(error != NULL)
         {
@@ -150,7 +172,11 @@ void* mailbox_pend(mailbox_t* mailbox, OS_RETURN_E* error)
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mailbox->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     /* If the mailbox is empty block thread */
     err = sem_pend(&mailbox->mailbox_sem_read);
@@ -163,11 +189,19 @@ void* mailbox_pend(mailbox_t* mailbox, OS_RETURN_E* error)
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mailbox->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(mailbox->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mailbox->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
 
         if(error != NULL)
         {
@@ -181,7 +215,11 @@ void* mailbox_pend(mailbox_t* mailbox, OS_RETURN_E* error)
 
     err = sem_post(&mailbox->mailbox_sem_write);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mailbox->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     if(err != OS_NO_ERR)
     {
@@ -218,16 +256,28 @@ OS_RETURN_E mailbox_post(mailbox_t* mailbox, void* element)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mailbox->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(mailbox->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mailbox->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
 
         return OS_ERR_MAILBOX_NON_INITIALIZED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mailbox->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     err = sem_pend(&mailbox->mailbox_sem_write);
     if(err != OS_NO_ERR)
@@ -235,14 +285,22 @@ OS_RETURN_E mailbox_post(mailbox_t* mailbox, void* element)
         return OS_ERR_MAILBOX_NON_INITIALIZED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mailbox->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Set value of the mailbox */
     mailbox->value = element;
 
     err = sem_post(&mailbox->mailbox_sem_read);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mailbox->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     if(err != OS_NO_ERR)
     {
@@ -267,11 +325,19 @@ int32_t mailbox_isempty(mailbox_t* mailbox, OS_RETURN_E* error)
         return -1;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &mailbox->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(mailbox->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &mailbox->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
 
         if(error != NULL)
         {
@@ -283,7 +349,11 @@ int32_t mailbox_isempty(mailbox_t* mailbox, OS_RETURN_E* error)
 
     ret = (mailbox->mailbox_sem_read.sem_level == 0);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &mailbox->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     if(error != NULL)
     {

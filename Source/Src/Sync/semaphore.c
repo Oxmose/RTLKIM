@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file semaphore.c
- * 
+ *
  * @see semaphore.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,14 +10,14 @@
  * @version 2.0
  *
  * @brief Semaphore synchronization primitive.
- * 
+ *
  * @details Semaphore synchronization primitive implemantation.
  * The semaphore are used to synchronyse the threads. The semaphore waiting list
  * is a FIFO with no regards of the waiting threads priority.
- * 
- * @warning Semaphores can only be used when the current system is running and 
+ *
+ * @warning Semaphores can only be used when the current system is running and
  * the scheduler initialized.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -57,6 +57,7 @@ OS_RETURN_E sem_init(semaphore_t* sem, const int32_t init_level)
     memset(sem, 0, sizeof(semaphore_t));
 
     sem->sem_level = init_level;
+    INIT_SPINLOCK(&sem->lock);
 
     sem->waiting_threads = kernel_queue_create_queue(&err);
     if(err != OS_NO_ERR)
@@ -85,11 +86,19 @@ OS_RETURN_E sem_destroy(semaphore_t* sem)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &sem->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(sem->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &sem->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_SEM_UNINITIALIZED;
     }
 
@@ -100,14 +109,22 @@ OS_RETURN_E sem_destroy(semaphore_t* sem)
     {
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &sem->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not dequeue thread from semaphore[%d]\n", err);
             kernel_panic(err);
         }
         err = sched_unlock_thread(node, THREAD_WAIT_TYPE_SEM, 0);
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &sem->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not unlock thread from semaphore[%d]\n", err);
             kernel_panic(err);
         }
@@ -120,7 +137,11 @@ OS_RETURN_E sem_destroy(semaphore_t* sem)
     }
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &sem->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         kernel_error("Could not dequeue thread from semaphore[%d]\n", err);
         kernel_panic(err);
     }
@@ -129,7 +150,11 @@ OS_RETURN_E sem_destroy(semaphore_t* sem)
     kernel_serial_debug("Semaphore 0x%08x destroyed\n", (uint32_t)sem);
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &sem->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -145,11 +170,19 @@ OS_RETURN_E sem_pend(semaphore_t* sem)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &sem->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(sem->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &sem->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_SEM_UNINITIALIZED;
     }
 
@@ -163,7 +196,11 @@ OS_RETURN_E sem_pend(semaphore_t* sem)
 
         if(active_thread == NULL)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &sem->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not lock this thread to semaphore[%d]\n",
                          OS_ERR_NULL_POINTER);
             kernel_panic(OS_ERR_NULL_POINTER);
@@ -173,7 +210,11 @@ OS_RETURN_E sem_pend(semaphore_t* sem)
 
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &sem->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not enqueue thread from semaphore[%d]\n", err);
             kernel_panic(err);
         }
@@ -184,14 +225,28 @@ OS_RETURN_E sem_pend(semaphore_t* sem)
                             ((kernel_thread_t*)active_thread->data)->tid);
         #endif
 
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &sem->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
+
         sched_schedule();
+
+        #if MAX_CPU_COUNT > 1
+        ENTER_CRITICAL(word, &sem->lock);
+        #else
         ENTER_CRITICAL(word);
+        #endif
     }
 
     if(sem->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &sem->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_SEM_UNINITIALIZED;
     }
 
@@ -204,7 +259,11 @@ OS_RETURN_E sem_pend(semaphore_t* sem)
                         sched_get_tid());
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &sem->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -220,11 +279,19 @@ OS_RETURN_E sem_post(semaphore_t* sem)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &sem->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(sem->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &sem->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_SEM_UNINITIALIZED;
     }
 
@@ -241,7 +308,11 @@ OS_RETURN_E sem_post(semaphore_t* sem)
         {
             if(err != OS_NO_ERR)
             {
+                #if MAX_CPU_COUNT > 1
+                EXIT_CRITICAL(word, &sem->lock);
+                #else
                 EXIT_CRITICAL(word);
+                #endif
                 kernel_error("Could not dequeue thread from semaphore[%d]\n",
                              err);
                 kernel_panic(err);
@@ -253,7 +324,11 @@ OS_RETURN_E sem_post(semaphore_t* sem)
                                 ((kernel_thread_t*)node->data)->tid);
             #endif
 
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &sem->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
 
             /* Do not schedule in interrupt handlers */
             if(kernel_interrupt_get_state() > 0)
@@ -267,7 +342,11 @@ OS_RETURN_E sem_post(semaphore_t* sem)
 
             if(err != OS_NO_ERR)
             {
+                #if MAX_CPU_COUNT > 1
+                EXIT_CRITICAL(word, &sem->lock);
+                #else
                 EXIT_CRITICAL(word);
+                #endif
                 kernel_error("Could not unlock thread from semaphore[%d]\n",
                              err);
                 kernel_panic(err);
@@ -283,7 +362,11 @@ OS_RETURN_E sem_post(semaphore_t* sem)
         }
         if(err != OS_NO_ERR)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &sem->lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             kernel_error("Could not dequeue thread from semaphore[%d]\n", err);
             kernel_panic(err);
         }
@@ -296,7 +379,11 @@ OS_RETURN_E sem_post(semaphore_t* sem)
     #endif
 
     /* If here, we did not find any waiting process */
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &sem->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -311,11 +398,19 @@ OS_RETURN_E sem_try_pend(semaphore_t* sem, int32_t* value)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &sem->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(sem->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &sem->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_SEM_UNINITIALIZED;
     }
 
@@ -333,7 +428,11 @@ OS_RETURN_E sem_try_pend(semaphore_t* sem, int32_t* value)
                             sched_get_tid());
         #endif
 
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &sem->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_SEM_LOCKED;
     }
     else if(sem != NULL && sem->init == 1)
@@ -342,7 +441,11 @@ OS_RETURN_E sem_try_pend(semaphore_t* sem, int32_t* value)
     }
     else
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &sem->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_SEM_UNINITIALIZED;
     }
 
@@ -353,7 +456,11 @@ OS_RETURN_E sem_try_pend(semaphore_t* sem, int32_t* value)
                         sched_get_tid());
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &sem->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }

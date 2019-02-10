@@ -38,12 +38,21 @@
 /* Assemly function */
 extern void _bios_call(uint8_t intnum, bios_int_regs_t* regs);
 
+#if MAX_CPU_COUNT > 1
+/** @brief Critical section spinlock. */
+static spinlock_t lock = SPINLOCK_INIT_VALUE;
+#endif
+
 void bios_call(uint32_t intnum, bios_int_regs_t* regs)
 {
 	uint32_t  word;
 	OS_RETURN_E err;
 
-	ENTER_CRITICAL(word);
+	#if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
 
 	/* Map the RM core */
 	err = kernel_direct_mmap((void*)0x0000, (void*)0x0000, 0x1000 * 1024,
@@ -58,5 +67,9 @@ void bios_call(uint32_t intnum, bios_int_regs_t* regs)
 
 	_bios_call(intnum, regs);
 
-	EXIT_CRITICAL(word);
+	#if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
+    EXIT_CRITICAL(word);
+    #endif
 }

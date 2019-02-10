@@ -47,6 +47,11 @@ static const void* io_apic_base_addr;
 /** @brief IO-APIC IRQ redirection count. */
 static uint32_t max_redirect_count;
 
+#if MAX_CPU_COUNT > 1
+/** @brief Critical section spinlock. */
+static spinlock_t lock = SPINLOCK_INIT_VALUE;
+#endif
+
 /** @brief IO_PIC driver instance. */
 interrupt_driver_t io_apic_driver = {
     .driver_set_irq_mask     = io_apic_set_irq_mask,
@@ -171,7 +176,11 @@ OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number,
         return OS_ERR_NO_SUCH_IRQ_LINE;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Set the interrupt line */
     entry_lo |= irq_number + INT_IOAPIC_IRQ_OFFSET;
@@ -190,7 +199,11 @@ OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number,
                         irq_number, actual_irq, enabled);
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }

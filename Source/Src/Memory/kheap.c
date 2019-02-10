@@ -60,6 +60,11 @@ uint32_t kheap_mem_used;
 /** @brief Quantity of memory used to store meta data in the kernel's heap. */
 static uint32_t mem_meta;
 
+#if MAX_CPU_COUNT > 1
+/** @brief Critical section spinlock. */
+static spinlock_t lock = SPINLOCK_INIT_VALUE;
+#endif
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -337,7 +342,11 @@ void* kmalloc(uint32_t size)
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     size = (size + ALIGN - 1) & (~(ALIGN - 1));
 
@@ -350,7 +359,11 @@ void* kmalloc(uint32_t size)
 
 	if (n >= NUM_SIZES)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return NULL;
     }
 
@@ -359,7 +372,11 @@ void* kmalloc(uint32_t size)
 		++n;
 		if (n >= NUM_SIZES)
         {
+            #if MAX_CPU_COUNT > 1
+            EXIT_CRITICAL(word, &lock);
+            #else
             EXIT_CRITICAL(word);
+            #endif
             return NULL;
         }
     }
@@ -397,7 +414,11 @@ void* kmalloc(uint32_t size)
                         mem_free, kheap_mem_used);
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return chunk->data;
 }
@@ -415,7 +436,11 @@ void kfree(void* ptr)
         return;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     chunk = (mem_chunk_t*)((int8_t*)ptr - HEADER_SIZE);
     next = CONTAINER(mem_chunk_t, all, chunk->all.next);
@@ -449,7 +474,11 @@ void kfree(void* ptr)
 		push_free(chunk);
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     #if KHEAP_KERNEL_DEBUG == 1
     kernel_serial_debug("Kheap freed 0x%8x -> %d\n", ptr, used);

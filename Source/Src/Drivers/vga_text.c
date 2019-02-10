@@ -73,6 +73,11 @@ kernel_graphic_driver_t vga_text_driver = {
     .console_write_keyboard = vga_console_write_keyboard
 };
 
+#if MAX_CPU_COUNT > 1
+/** @brief Critical section spinlock. */
+static  spinlock_t lock = SPINLOCK_INIT_VALUE;
+#endif
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -106,14 +111,22 @@ static OS_RETURN_E vga_print_char(const uint32_t line, const uint32_t column,
     /* Get address to inject */
     screen_mem = vga_get_framebuffer(line, column);
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Inject the character with the current colorscheme */
     *screen_mem = character |
                   ((screen_scheme.background << 8) & 0xF000) |
                   ((screen_scheme.foreground << 8) & 0x0F00);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -267,7 +280,11 @@ void vga_clear_screen(void)
                      ((screen_scheme.foreground << 8) & 0x0F00);
 
     /* Clear all screen cases */
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
     for(i = 0; i < VGA_TEXT_SCREEN_LINE_SIZE; ++i)
     {
         for(j = 0; j < VGA_TEXT_SCREEN_COL_SIZE; ++j)
@@ -276,7 +293,11 @@ void vga_clear_screen(void)
         }
         last_columns[i] = 0;
     }
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 OS_RETURN_E vga_put_cursor_at(const uint32_t line, const uint32_t column)
@@ -291,7 +312,11 @@ OS_RETURN_E vga_put_cursor_at(const uint32_t line, const uint32_t column)
         return OS_ERR_OUT_OF_BOUND;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Set new cursor position */
     screen_cursor.x = column;
@@ -309,7 +334,11 @@ OS_RETURN_E vga_put_cursor_at(const uint32_t line, const uint32_t column)
     cpu_outb((int8_t)((cursor_position & 0xFF00) >> 8),
              VGA_TEXT_SCREEN_DATA_PORT);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -323,13 +352,21 @@ OS_RETURN_E vga_save_cursor(cursor_t* buffer)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Save cursor attributes */
     buffer->x = screen_cursor.x;
     buffer->y = screen_cursor.y;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -361,7 +398,11 @@ void vga_scroll(const SCROLL_DIRECTION_E direction, const uint32_t lines_count)
         to_scroll = lines_count;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Select scroll direction */
     if(direction == SCROLL_DOWN)
@@ -404,17 +445,31 @@ void vga_scroll(const SCROLL_DIRECTION_E direction, const uint32_t lines_count)
         last_printed_cursor.y = 0;
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 void vga_set_color_scheme(const colorscheme_t color_scheme)
 {
     uint32_t word;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
+
     screen_scheme.foreground = color_scheme.foreground;
     screen_scheme.background = color_scheme.background;
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 OS_RETURN_E vga_save_color_scheme(colorscheme_t* buffer)
@@ -426,13 +481,21 @@ OS_RETURN_E vga_save_color_scheme(colorscheme_t* buffer)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Save color scheme into buffer */
     buffer->foreground = screen_scheme.foreground;
     buffer->background = screen_scheme.background;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -451,10 +514,20 @@ void vga_put_char(const char character)
 {
     uint32_t word;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
+
     vga_process_char(character);
     last_printed_cursor = screen_cursor;
+
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 }
 
 void vga_console_write_keyboard(const char* string, const uint32_t size)

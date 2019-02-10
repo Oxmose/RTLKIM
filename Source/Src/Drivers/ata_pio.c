@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file ata_pio.c
- * 
+ *
  * @see ata_pio.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,11 +10,11 @@
  * @version 1.0
  *
  * @brief ATA (Advanced Technology Attachment) driver.
- * 
+ *
  * @details ATA (Advanced Technology Attachment) driver. Supports hard drive IO
  * through the CPU PIO. The driver can read and write data. No utility function
  * are provided.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -42,62 +42,73 @@
     err = ata_pio_identify_device(device);                                     \
     if(err == OS_NO_ERR)                                                       \
     {                                                                          \
-        kernel_info("Found ATA device %s at 0x%x\n", ((device.type == MASTER) ?\
+        kernel_info("Found ATA device %s at 0x%x\n",((device->type == MASTER) ?\
                                                      "MASTER" : "SLAVE"),      \
-                                                     device.port);             \
+                                                     device->port);            \
     }                                                                          \
     else if (err != OS_ERR_ATA_DEVICE_NOT_PRESENT)                             \
     {                                                                          \
         kernel_error("ATA device %s at 0x%x error [%d]\n",                     \
-                                                     ((device.type == MASTER) ?\
+                                                    ((device->type == MASTER) ?\
                                                      "MASTER" : "SLAVE"),      \
-                                                     device.port,              \
+                                                     device->port,             \
                                                      err);                     \
     }                                                                          \
 }
 
+#define INIT_DEVICE(device) {           \
+    device->lock = SPINLOCK_INIT_VALUE; \
+}
+
 OS_RETURN_E ata_pio_init(void)
 {
-    ata_pio_device_t device;
-    OS_RETURN_E  err;
+    ata_pio_device_t  device;
+    ata_pio_device_t* ptr;
+    OS_RETURN_E       err;
+
+    ptr = &device;
+
+    #if MAX_COU_COUNT > 1
+    device.lock = SPINLOCK_INIT_VALUE;
+    #endif
 
     /* Check for all devices */
     #if ATA_PIO_DETECT_PRIMARY_PORT == 1
     device.port = PRIMARY_PORT;
     device.type = MASTER;
-    DETECT_DEVICE(device, err);
+    DETECT_DEVICE(ptr, err);
     device.type = SLAVE;
-    DETECT_DEVICE(device, err);
+    DETECT_DEVICE(ptr, err);
     #endif
 
     #if ATA_PIO_DETECT_SECONDARY_PORT == 1
     device.port = SECONDARY_PORT;
     device.type = MASTER;
-    DETECT_DEVICE(device, err);
+    DETECT_DEVICE(ptr, err);
     device.type = SLAVE;
-    DETECT_DEVICE(device, err);
+    DETECT_DEVICE(ptr, err);
     #endif
 
     #if ATA_PIO_DETECT_THIRD_PORT == 1
     device.port = THIRD_PORT;
     device.type = MASTER;
-    DETECT_DEVICE(device, err);
+    DETECT_DEVICE(ptr, err);
     device.type = SLAVE;
-    DETECT_DEVICE(device, err);
+    DETECT_DEVICE(ptr, err);
     #endif
 
     #if ATA_PIO_DETECT_FOURTH_PORT == 1
     device.port = FOURTH_PORT;
     device.type = MASTER;
-    DETECT_DEVICE(device, err);
+    DETECT_DEVICE(ptr, err);
     device.type = SLAVE;
-    DETECT_DEVICE(device, err);
+    DETECT_DEVICE(ptr, err);
     #endif
 
     return OS_NO_ERR;
 }
 
-OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device)
+OS_RETURN_E ata_pio_identify_device(ata_pio_device_t* device)
 {
     uint8_t  status;
     uint16_t i;
@@ -106,18 +117,18 @@ OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device)
 
     #if ATA_PIO_KERNEL_DEBUG == 1
     kernel_serial_debug("IDENTIFY ATA 0x%08x %s\n",
-                        device.port,
-                        ((device.type == MASTER) ? "MASTER" : "SLAVE"));
+                        device->port,
+                        ((device->type == MASTER) ? "MASTER" : "SLAVE"));
     #endif
 
     /* Select slave or master */
-    cpu_outb(device.type == MASTER ? 0xA0 : 0xB0,
-         device.port + ATA_PIO_DEVICE_PORT_OFFSET);
+    cpu_outb(device->type == MASTER ? 0xA0 : 0xB0,
+         device->port + ATA_PIO_DEVICE_PORT_OFFSET);
 
     /* Check is the device is connected */
-    cpu_outb(0x00, device.port + ATA_PIO_CONTROL_PORT_OFFSET);
+    cpu_outb(0x00, device->port + ATA_PIO_CONTROL_PORT_OFFSET);
 
-    status = cpu_inb(device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+    status = cpu_inb(device->port + ATA_PIO_COMMAND_PORT_OFFSET);
     if(status == 0xFF)
     {
         #if ATA_PIO_KERNEL_DEBUG == 1
@@ -127,21 +138,21 @@ OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device)
     }
 
     /* Select slave or master */
-    cpu_outb(device.type == MASTER ? 0xA0 : 0xB0,
-         device.port + ATA_PIO_DEVICE_PORT_OFFSET);
+    cpu_outb(device->type == MASTER ? 0xA0 : 0xB0,
+         device->port + ATA_PIO_DEVICE_PORT_OFFSET);
 
     /* Write 0 to registers */
-    cpu_outb(0x00, device.port + ATA_PIO_SC_PORT_OFFSET);
-    cpu_outb(0x00, device.port + ATA_PIO_LBALOW_PORT_OFFSET);
-    cpu_outb(0x00, device.port + ATA_PIO_LBAMID_PORT_OFFSET);
-    cpu_outb(0x00, device.port + ATA_PIO_LBAHIG_PORT_OFFSET);
+    cpu_outb(0x00, device->port + ATA_PIO_SC_PORT_OFFSET);
+    cpu_outb(0x00, device->port + ATA_PIO_LBALOW_PORT_OFFSET);
+    cpu_outb(0x00, device->port + ATA_PIO_LBAMID_PORT_OFFSET);
+    cpu_outb(0x00, device->port + ATA_PIO_LBAHIG_PORT_OFFSET);
 
     /* Send the identify command */
-    cpu_outb(ATA_PIO_IDENTIFY_COMMAND, 
-             device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+    cpu_outb(ATA_PIO_IDENTIFY_COMMAND,
+             device->port + ATA_PIO_COMMAND_PORT_OFFSET);
 
     /* Get the IDENTIFY status */
-    status = cpu_inb(device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+    status = cpu_inb(device->port + ATA_PIO_COMMAND_PORT_OFFSET);
     if(status == 0x00)
     {
         #if ATA_PIO_KERNEL_DEBUG == 1
@@ -154,14 +165,14 @@ OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device)
     while(((status & ATA_PIO_FLAG_BUSY) == ATA_PIO_FLAG_BUSY) &&
           ((status & ATA_PIO_FLAG_ERR) != ATA_PIO_FLAG_ERR))
     {
-        status = cpu_inb(device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+        status = cpu_inb(device->port + ATA_PIO_COMMAND_PORT_OFFSET);
     }
 
     if((status & ATA_PIO_FLAG_ERR) == ATA_PIO_FLAG_ERR)
     {
         #if ATA_PIO_KERNEL_DEBUG == 1
-        kernel_serial_debug("ATA device error 0x%08x (%s)\n", device.port,
-                                                  ((device.type == MASTER) ?
+        kernel_serial_debug("ATA device error 0x%08x (%s)\n", device->port,
+                                                  ((device->type == MASTER) ?
                                                   "MASTER" : "SLAVE"));
         #endif
         return OS_ERR_ATA_DEVICE_ERROR;
@@ -173,7 +184,7 @@ OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device)
     {
         uint16_t data;
 
-        data = cpu_inw(device.port + ATA_PIO_DATA_PORT_OFFSET);
+        data = cpu_inw(device->port + ATA_PIO_DATA_PORT_OFFSET);
         ata_pio_str[ata_pio_index++] = (data >> 8) & 0xFF;
         ata_pio_str[ata_pio_index++] = data & 0xFF;
     }
@@ -186,7 +197,7 @@ OS_RETURN_E ata_pio_identify_device(const ata_pio_device_t device)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E ata_pio_read_sector(ata_pio_device_t device, const uint32_t sector,
+OS_RETURN_E ata_pio_read_sector(ata_pio_device_t* device, const uint32_t sector,
                                 void* buffer, const uint32_t size)
 {
     uint32_t i;
@@ -197,7 +208,7 @@ OS_RETURN_E ata_pio_read_sector(ata_pio_device_t device, const uint32_t sector,
 
     #if ATA_PIO_KERNEL_DEBUG == 1
     kernel_serial_debug("ATA read request device 0x%08x %s, sector 0x%08x,\
-size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
+size %d\n", device->port, ((device->type == MASTER) ? "MASTER" : "SLAVE"),
                         sector,
                         size);
     #endif
@@ -214,63 +225,75 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
         return OS_ERR_ATA_SIZE_TO_HUGE;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &device->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Set sector to read */
-    cpu_outb((device.type == MASTER ? 0xE0 : 0xF0) | 
+    cpu_outb((device->type == MASTER ? 0xE0 : 0xF0) |
              ((sector & 0x0F000000) >> 24) ,
-            device.port + ATA_PIO_DEVICE_PORT_OFFSET);
+            device->port + ATA_PIO_DEVICE_PORT_OFFSET);
 
     /* Clear error */
-    cpu_outb(0, device.port + ATA_PIO_ERROR_PORT_OFFSET);
+    cpu_outb(0, device->port + ATA_PIO_ERROR_PORT_OFFSET);
 
     /* Set number of sector to read */
-    cpu_outb(1, device.port + ATA_PIO_SC_PORT_OFFSET);
+    cpu_outb(1, device->port + ATA_PIO_SC_PORT_OFFSET);
 
     /* Set LBA values */
-    cpu_outb(sector & 0x000000FF, device.port + ATA_PIO_LBALOW_PORT_OFFSET);
-    cpu_outb((sector & 0x0000FF00) >> 8, 
-            device.port + ATA_PIO_LBAMID_PORT_OFFSET);
-    cpu_outb((sector & 0x00FF0000) >> 16, 
-            device.port + ATA_PIO_LBAHIG_PORT_OFFSET);
+    cpu_outb(sector & 0x000000FF, device->port + ATA_PIO_LBALOW_PORT_OFFSET);
+    cpu_outb((sector & 0x0000FF00) >> 8,
+            device->port + ATA_PIO_LBAMID_PORT_OFFSET);
+    cpu_outb((sector & 0x00FF0000) >> 16,
+            device->port + ATA_PIO_LBAHIG_PORT_OFFSET);
 
     /* Send Read sector command */
-    cpu_outb(ATA_PIO_READ_SECTOR_COMMAND, 
-            device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+    cpu_outb(ATA_PIO_READ_SECTOR_COMMAND,
+            device->port + ATA_PIO_COMMAND_PORT_OFFSET);
 
     /* Wait until device is ready */
-    status = cpu_inb(device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+    status = cpu_inb(device->port + ATA_PIO_COMMAND_PORT_OFFSET);
     if(status == 0x00)
     {
         #if ATA_PIO_KERNEL_DEBUG == 1
         kernel_serial_debug("ATA device not present\n");
         #endif
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &device->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_ATA_DEVICE_NOT_PRESENT;
     }
     while(((status & ATA_PIO_FLAG_BUSY) == ATA_PIO_FLAG_BUSY)
        && ((status & ATA_PIO_FLAG_ERR) != ATA_PIO_FLAG_ERR))
     {
-        status = cpu_inb(device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+        status = cpu_inb(device->port + ATA_PIO_COMMAND_PORT_OFFSET);
     }
 
     /* Check error status */
     if((status & ATA_PIO_FLAG_ERR) == ATA_PIO_FLAG_ERR)
     {
         #if ATA_PIO_KERNEL_DEBUG == 1
-        kernel_serial_debug("ATA device read error 0x%08x (%s)\n", device.port,
-                                                  ((device.type == MASTER) ?
+        kernel_serial_debug("ATA device read error 0x%08x (%s)\n", device->port,
+                                                  ((device->type == MASTER) ?
                                                   "MASTER" : "SLAVE"));
         #endif
 
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &device->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_ATA_DEVICE_ERROR;
     }
 
        #if ATA_PIO_KERNEL_DEBUG == 1
     kernel_serial_debug("ATA read device 0x%08x %s, sector 0x%08x, size %d\n",
-                        device.port,
-                        ((device.type == MASTER) ? "MASTER" : "SLAVE"),
+                        device->port,
+                        ((device->type == MASTER) ? "MASTER" : "SLAVE"),
                         sector,
                         size);
     #endif
@@ -279,7 +302,7 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
     for(i = 0; i < size; i += 2)
     {
         uint16_t data;
-        data = cpu_inw(device.port + ATA_PIO_DATA_PORT_OFFSET);
+        data = cpu_inw(device->port + ATA_PIO_DATA_PORT_OFFSET);
 
         ((uint8_t*)buffer)[i] = data & 0xFF;
 
@@ -292,15 +315,20 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
     /* Read the rest of the sector to release the memoey for next command */
     for(i = size + (size % 2); i < ATA_PIO_SECTOR_SIZE; i += 2)
     {
-        cpu_inw(device.port + ATA_PIO_DATA_PORT_OFFSET);
+        cpu_inw(device->port + ATA_PIO_DATA_PORT_OFFSET);
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &device->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }
 
-OS_RETURN_E ata_pio_write_sector(ata_pio_device_t device, const uint32_t sector,
+OS_RETURN_E ata_pio_write_sector(ata_pio_device_t* device,
+                                 const uint32_t sector,
                                  const void* buffer, const uint32_t size)
 {
     uint32_t i;
@@ -308,7 +336,7 @@ OS_RETURN_E ata_pio_write_sector(ata_pio_device_t device, const uint32_t sector,
 
     #if ATA_PIO_KERNEL_DEBUG == 1
     kernel_serial_debug("ATA write request device 0x%08x %s, sector 0x%08x,\
-size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
+size %d\n", device->port, ((device->type == MASTER) ? "MASTER" : "SLAVE"),
                         sector,
                         size);
     #endif
@@ -325,35 +353,39 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
         return OS_ERR_ATA_SIZE_TO_HUGE;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &device->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Set sector to write */
-    cpu_outb((device.type == MASTER ? 0xE0 : 0xF0) | 
+    cpu_outb((device->type == MASTER ? 0xE0 : 0xF0) |
              ((sector & 0x0F000000) >> 24) ,
-            device.port + ATA_PIO_DEVICE_PORT_OFFSET);
+            device->port + ATA_PIO_DEVICE_PORT_OFFSET);
 
     /* Clear error */
-    cpu_outb(0, device.port + ATA_PIO_ERROR_PORT_OFFSET);
+    cpu_outb(0, device->port + ATA_PIO_ERROR_PORT_OFFSET);
 
     /* Set number of sector to write */
-    cpu_outb(1, device.port + ATA_PIO_SC_PORT_OFFSET);
+    cpu_outb(1, device->port + ATA_PIO_SC_PORT_OFFSET);
 
     /* Set LBA values */
-    cpu_outb(sector & 0x000000FF, 
-            device.port + ATA_PIO_LBALOW_PORT_OFFSET);
-    cpu_outb((sector & 0x0000FF00) >> 8, 
-            device.port + ATA_PIO_LBAMID_PORT_OFFSET);
-    cpu_outb((sector & 0x00FF0000) >> 16, 
-            device.port + ATA_PIO_LBAHIG_PORT_OFFSET);
+    cpu_outb(sector & 0x000000FF,
+            device->port + ATA_PIO_LBALOW_PORT_OFFSET);
+    cpu_outb((sector & 0x0000FF00) >> 8,
+            device->port + ATA_PIO_LBAMID_PORT_OFFSET);
+    cpu_outb((sector & 0x00FF0000) >> 16,
+            device->port + ATA_PIO_LBAHIG_PORT_OFFSET);
 
     /* Send write sector command */
     cpu_outb(ATA_PIO_WRITE_SECTOR_COMMAND,
-            device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+            device->port + ATA_PIO_COMMAND_PORT_OFFSET);
 
     #if ATA_PIO_KERNEL_DEBUG == 1
     kernel_serial_debug("ATA write device 0x%08x %s, sector 0x%08x, size %d\n",
-                        device.port,
-                        ((device.type == MASTER) ? "MASTER" : "SLAVE"),
+                        device->port,
+                        ((device->type == MASTER) ? "MASTER" : "SLAVE"),
                         sector,
                         size);
     #endif
@@ -367,22 +399,26 @@ size %d\n", device.port, ((device.type == MASTER) ? "MASTER" : "SLAVE"),
         {
             data |= ((uint16_t)((uint8_t*)buffer)[i + 1]) << 8;
         }
-        cpu_outw(data, device.port + ATA_PIO_DATA_PORT_OFFSET);
+        cpu_outw(data, device->port + ATA_PIO_DATA_PORT_OFFSET);
     }
 
     /* Add padding to the sector */
     for(i = size + (size % 2); i < ATA_PIO_SECTOR_SIZE; i += 2)
     {
-        cpu_outw(0x0000, device.port + ATA_PIO_DATA_PORT_OFFSET);
+        cpu_outw(0x0000, device->port + ATA_PIO_DATA_PORT_OFFSET);
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &device->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     /* Flush write */
     return ata_pio_flush(device);
 }
 
-OS_RETURN_E ata_pio_flush(ata_pio_device_t device)
+OS_RETURN_E ata_pio_flush(ata_pio_device_t* device)
 {
     uint8_t     status;
     uint32_t    word;
@@ -391,29 +427,37 @@ OS_RETURN_E ata_pio_flush(ata_pio_device_t device)
 
     #if ATA_PIO_KERNEL_DEBUG == 1
     kernel_serial_debug("ATA flush request device 0x%08x %s\n",
-                        device.port,
-                        ((device.type == MASTER) ? "MASTER" : "SLAVE"));
+                        device->port,
+                        ((device->type == MASTER) ? "MASTER" : "SLAVE"));
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &device->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Set device */
-    cpu_outb((device.type == MASTER ? 0xE0 : 0xF0),
-         device.port + ATA_PIO_DEVICE_PORT_OFFSET);
+    cpu_outb((device->type == MASTER ? 0xE0 : 0xF0),
+         device->port + ATA_PIO_DEVICE_PORT_OFFSET);
 
     /* Send write sector command */
-    cpu_outb(ATA_PIO_FLUSH_SECTOR_COMMAND, 
-            device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+    cpu_outb(ATA_PIO_FLUSH_SECTOR_COMMAND,
+            device->port + ATA_PIO_COMMAND_PORT_OFFSET);
 
     /* Wait until device is ready */
-    status = cpu_inb(device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+    status = cpu_inb(device->port + ATA_PIO_COMMAND_PORT_OFFSET);
 
     if(status == 0x00)
     {
         #if ATA_PIO_KERNEL_DEBUG == 1
         kernel_serial_debug("ATA device not present\n");
         #endif
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &device->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_ATA_DEVICE_NOT_PRESENT;
     }
 
@@ -421,32 +465,44 @@ OS_RETURN_E ata_pio_flush(ata_pio_device_t device)
     if(status == 0)
     {
         #if ATA_PIO_KERNEL_DEBUG == 1
-        kernel_serial_debug("ATA flush write error 0x%08x (%s)\n", device.port,
-                                                  ((device.type == MASTER) ?
+        kernel_serial_debug("ATA flush write error 0x%08x (%s)\n", device->port,
+                                                  ((device->type == MASTER) ?
                                                   "MASTER" : "SLAVE"));
         #endif
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &device->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_ATA_DEVICE_ERROR;
     }
 
     while(((status & ATA_PIO_FLAG_BUSY) == ATA_PIO_FLAG_BUSY)
        && ((status & ATA_PIO_FLAG_ERR) != ATA_PIO_FLAG_ERR))
     {
-        status = cpu_inb(device.port + ATA_PIO_COMMAND_PORT_OFFSET);
+        status = cpu_inb(device->port + ATA_PIO_COMMAND_PORT_OFFSET);
     }
 
     /* Check error status */
     if((status & ATA_PIO_FLAG_ERR) == 1)
     {
         #if ATA_PIO_KERNEL_DEBUG == 1
-        kernel_serial_debug("ATA flush write error 0x%08x (%s)\n", device.port,
-                                                  ((device.type == MASTER) ?
+        kernel_serial_debug("ATA flush write error 0x%08x (%s)\n", device->port,
+                                                  ((device->type == MASTER) ?
                                                   "MASTER" : "SLAVE"));
         #endif
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &device->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_ATA_DEVICE_ERROR;
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &device->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
     return err;
 }

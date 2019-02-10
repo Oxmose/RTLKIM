@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file queue.c
- * 
+ *
  * @see queue.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,14 +10,14 @@
  * @version 3.0
  *
  * @brief Queue communication and synchronization primitive.
- * 
+ *
  * @details Queue used to send multiple messages between threads. The queues
  * will block the threads when either full (on a sending thread) or empty (on a
  * receiving thread). The synchronization method used is the semaphore.
- * 
- * @warning Queues can only be used when the current system is running and 
+ *
+ * @warning Queues can only be used when the current system is running and
  * the scheduler initialized.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -56,6 +56,8 @@ OS_RETURN_E queue_init(queue_t* queue, const uint32_t size)
 
     /* Init the queue */
     memset(queue, 0, sizeof(queue_t));
+
+    INIT_SPINLOCK(&queue->lock);
 
     err = sem_init(&queue->queue_sem_read, 0);
     if(err != OS_NO_ERR)
@@ -114,11 +116,19 @@ OS_RETURN_E queue_destroy(queue_t* queue)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(queue->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &queue->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_QUEUE_NON_INITIALIZED;
     }
 
@@ -131,7 +141,11 @@ OS_RETURN_E queue_destroy(queue_t* queue)
     err = sem_destroy(&queue->queue_sem_read);
     err |= sem_destroy(&queue->queue_sem_write);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }
@@ -157,12 +171,20 @@ void* queue_pend(queue_t* queue, OS_RETURN_E* error)
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Check for queue initialization */
     if(queue->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &queue->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         if(error != NULL)
         {
             *error = OS_ERR_QUEUE_NON_INITIALIZED;
@@ -171,7 +193,11 @@ void* queue_pend(queue_t* queue, OS_RETURN_E* error)
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     /* If the queue is empty block thread */
     err = sem_pend(&queue->queue_sem_read);
@@ -184,11 +210,19 @@ void* queue_pend(queue_t* queue, OS_RETURN_E* error)
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(queue->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &queue->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         if(error != NULL)
         {
             *error = OS_ERR_QUEUE_NON_INITIALIZED;
@@ -204,7 +238,11 @@ void* queue_pend(queue_t* queue, OS_RETURN_E* error)
     err = sem_post(&queue->queue_sem_write);
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &queue->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         if(error != NULL)
         {
             *error = OS_ERR_QUEUE_NON_INITIALIZED;
@@ -212,7 +250,11 @@ void* queue_pend(queue_t* queue, OS_RETURN_E* error)
         return NULL;
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     #if USERQUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Queue 0x%08x ACQUIRED\n", (uint32_t)queue);
@@ -240,15 +282,27 @@ OS_RETURN_E queue_post(queue_t* queue, void* element)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(queue->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &queue->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_QUEUE_NON_INITIALIZED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     err = sem_pend(&queue->queue_sem_write);
     if(err != OS_NO_ERR)
@@ -256,7 +310,11 @@ OS_RETURN_E queue_post(queue_t* queue, void* element)
         return OS_ERR_QUEUE_NON_INITIALIZED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Set value of the queue */
     queue->container[queue->index_top] = element;
@@ -265,7 +323,11 @@ OS_RETURN_E queue_post(queue_t* queue, void* element)
 
     err = sem_post(&queue->queue_sem_read);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     if(err != OS_NO_ERR)
     {
@@ -302,11 +364,19 @@ int32_t queue_size(queue_t* queue, OS_RETURN_E* error)
         return -1;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &queue->lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(queue->init != 1)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &queue->lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
 
         if(error != NULL)
         {
@@ -318,7 +388,11 @@ int32_t queue_size(queue_t* queue, OS_RETURN_E* error)
 
     ret = (queue->size);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &queue->lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     if(error != NULL)
     {

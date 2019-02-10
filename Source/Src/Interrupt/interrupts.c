@@ -52,6 +52,11 @@ static uint32_t int_state;
  */
 static uint32_t spurious_interrupt;
 
+#if MAX_CPU_COUNT > 1
+/** @brief Critical section spinlock. */
+static spinlock_t lock  = SPINLOCK_INIT_VALUE;
+#endif
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -195,11 +200,19 @@ OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t* driver)
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     interrupt_driver = *driver;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Set new interrupt driver.\n");
@@ -229,18 +242,30 @@ OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
         return OS_ERR_NULL_POINTER;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(kernel_interrupt_handlers[interrupt_line].handler != NULL)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_INTERRUPT_ALREADY_REGISTERED;
     }
 
     kernel_interrupt_handlers[interrupt_line].handler = handler;
     kernel_interrupt_handlers[interrupt_line].enabled = 1;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Added INT %d handler at 0x%08x\n",
@@ -260,18 +285,30 @@ OS_RETURN_E kernel_interrupt_remove_int_handler(const uint32_t interrupt_line)
         return OR_ERR_UNAUTHORIZED_INTERRUPT_LINE;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     if(kernel_interrupt_handlers[interrupt_line].handler == NULL)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return OS_ERR_INTERRUPT_NOT_REGISTERED;
     }
 
     kernel_interrupt_handlers[interrupt_line].handler = NULL;
     kernel_interrupt_handlers[interrupt_line].enabled = 0;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Removed INT %d handle\n", interrupt_line);

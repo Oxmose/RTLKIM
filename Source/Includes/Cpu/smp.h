@@ -39,6 +39,13 @@
   * - OS_NO_ERR is returned if no error is encountered.
   * - Other possible return code, returned by internally called functions.
   */
- OS_RETURN_E smp_init(void);
+OS_RETURN_E smp_init(void);
+
+/**
+ * @brief Returns the number of booted CPU.
+ *
+ * @return uint32_t The number of booted CPU.
+ */
+uint32_t smp_get_booted_cpu_count(void);
 
 #endif /* __SMP_H_ */

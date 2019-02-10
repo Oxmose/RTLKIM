@@ -64,6 +64,16 @@ kernel_timer_t lapic_timer_driver = {
     .get_irq        = lapic_timer_get_irq
 };
 
+#if MAX_CPU_COUNT > 1
+/** @brief IPI critical section spinlock. */
+static spinlock_t ipi_lock = SPINLOCK_INIT_VALUE;
+#endif
+
+#if MAX_CPU_COUNT > 1
+/** @brief Timer critical section spinlock. */
+static spinlock_t timer_lock = SPINLOCK_INIT_VALUE;
+#endif
+
 
 /*******************************************************************************
  * FUNCTIONS
@@ -198,7 +208,7 @@ int32_t lapic_get_id(void)
     #if ENABLE_IO_APIC == 0
     return -1;
     #endif
-    if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
+    if(acpi_get_io_apic_available() != 1 || acpi_get_lapic_available() != 1)
     {
         return -1;
     }
@@ -228,14 +238,21 @@ OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id)
         return OS_ERR_NOT_SUPPORTED;
     }
 
-
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &ipi_lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Check LACPI id */
     err = acpi_check_lapic_id(lapic_id);
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &ipi_lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return err;
     }
 
@@ -248,7 +265,11 @@ OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id)
     while ((lapic_read(LAPIC_ICRLO) & ICR_SEND_PENDING) != 0)
     {}
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &ipi_lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }
@@ -275,13 +296,21 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
         return OS_ERR_NOT_SUPPORTED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &ipi_lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Check LACPI id */
     err = acpi_check_lapic_id(lapic_id);
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &ipi_lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return err;
     }
 
@@ -294,7 +323,11 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
     while ((lapic_read(LAPIC_ICRLO) & ICR_SEND_PENDING) != 0)
     {}
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &ipi_lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }
@@ -320,13 +353,21 @@ OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id, const uint32_t vector)
         return OS_ERR_NOT_SUPPORTED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &ipi_lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Check LACPI id */
     err = acpi_check_lapic_id(lapic_id);
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &ipi_lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
 
         return err;
     }
@@ -340,7 +381,11 @@ OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id, const uint32_t vector)
     while ((lapic_read(LAPIC_ICRLO) & ICR_SEND_PENDING) != 0)
     {}
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &ipi_lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return err;
 }
@@ -471,7 +516,11 @@ OS_RETURN_E lapic_ap_timer_init(void)
         return OS_ERR_NOT_SUPPORTED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &timer_lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Init LAPIC TIMER */
     lapic_write(LAPIC_TDCR, LAPIC_DIVIDER_16);
@@ -484,7 +533,11 @@ OS_RETURN_E lapic_ap_timer_init(void)
     lapic_write(LAPIC_TDCR, LAPIC_DIVIDER_16);
     lapic_write(LAPIC_TICR, global_lapic_freq);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &timer_lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -494,11 +547,19 @@ uint32_t lapic_timer_get_frequency(void)
     uint32_t freq;
     uint32_t word;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &timer_lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     freq = init_lapic_timer_frequency / global_lapic_freq;
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &timer_lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return freq;
 }
@@ -523,7 +584,11 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
         return OS_ERR_NOT_SUPPORTED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &timer_lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Compute the new tick count */
     global_lapic_freq = init_lapic_timer_frequency / frequency;
@@ -532,7 +597,11 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     lapic_write(LAPIC_TDCR, LAPIC_DIVIDER_16);
     lapic_write(LAPIC_TICR, global_lapic_freq);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &timer_lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -557,13 +626,21 @@ OS_RETURN_E lapic_timer_enable(void)
         return OS_ERR_NOT_SUPPORTED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &timer_lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Enable interrupt */
     lapic_write(LAPIC_TIMER, LAPIC_TIMER_INTERRUPT_LINE |
                 LAPIC_TIMER_MODE_PERIODIC);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &timer_lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -588,12 +665,20 @@ OS_RETURN_E lapic_timer_disable(void)
         return OS_ERR_NOT_SUPPORTED;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &timer_lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Disable interrupt */
     lapic_write(LAPIC_TIMER, LAPIC_LVT_INT_MASKED);
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &timer_lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -630,13 +715,21 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
         return err;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &timer_lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Remove the current handler */
     err = kernel_interrupt_remove_int_handler(LAPIC_TIMER_INTERRUPT_LINE);
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &timer_lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         lapic_timer_enable();
         return err;
     }
@@ -645,7 +738,11 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
                                                 handler);
     if(err != OS_NO_ERR)
     {
+        #if MAX_CPU_COUNT > 1
+        EXIT_CRITICAL(word, &timer_lock);
+        #else
         EXIT_CRITICAL(word);
+        #endif
         return err;
     }
 
@@ -653,7 +750,11 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
     kernel_serial_debug("New LAPIC handler set (0x%08x)\n", handler);
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &timer_lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return lapic_timer_enable();
 }

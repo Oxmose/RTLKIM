@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file pic.c
- * 
+ *
  * @see pic.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,10 +10,10 @@
  * @version 1.0
  *
  * @brief PIC (programmable interrupt controler) driver.
- * 
- * @details   PIC (programmable interrupt controler) driver. Allows to remmap 
+ *
+ * @details   PIC (programmable interrupt controler) driver. Allows to remmap
  * the PIC IRQ, set the IRQs mask and manage EoI for the X86 PIC.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
@@ -40,6 +40,11 @@ interrupt_driver_t pic_driver = {
     .driver_handle_spurious  = pic_handle_spurious_irq,
     .driver_get_irq_int_line = pic_get_irq_int_line
 };
+
+#if MAX_CPU_COUNT > 1
+/** @brief Critical section spinlock. */
+static spinlock_t lock = SPINLOCK_INIT_VALUE;
+#endif
 
 /*******************************************************************************
  * FUNCTIONS
@@ -69,7 +74,7 @@ OS_RETURN_E pic_init(void)
 
     /* Disable all IRQs */
     cpu_outb(0xFF, PIC_MASTER_DATA_PORT);
-    cpu_outb(0xFF, PIC_SLAVE_DATA_PORT);    
+    cpu_outb(0xFF, PIC_SLAVE_DATA_PORT);
 
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC Initialization end\n");
@@ -92,8 +97,11 @@ OS_RETURN_E pic_set_irq_mask(const uint32_t irq_number, const uint32_t enabled)
         return OS_ERR_NO_SUCH_IRQ_LINE;
     }
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
-
+    #endif
     /* Manage master PIC */
     if(irq_number < 8)
     {
@@ -116,7 +124,7 @@ OS_RETURN_E pic_set_irq_mask(const uint32_t irq_number, const uint32_t enabled)
 
     /* Manage slave PIC. WARNING, cascading will be enabled */
     if(irq_number > 7)
-    {     
+    {
         /* Set new IRQ number */
         uint32_t cascading_number = irq_number - 8;
 
@@ -160,13 +168,17 @@ OS_RETURN_E pic_set_irq_mask(const uint32_t irq_number, const uint32_t enabled)
     }
 
     #if PIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("PIC Mask M: 0x%02x S: 0x%02x\n", 
+    kernel_serial_debug("PIC Mask M: 0x%02x S: 0x%02x\n",
                         cpu_inb(PIC_MASTER_DATA_PORT),
                          cpu_inb(PIC_SLAVE_DATA_PORT));
     kernel_serial_debug("PIC IRQ mask setting end\n");
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -227,14 +239,14 @@ INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t int_number)
         {
             return INTERRUPT_TYPE_REGULAR;
         }
-        else 
+        else
         {
             /* Send EOI on master */
             pic_set_irq_eoi(PIC_CASCADING_IRQ);
             return INTERRUPT_TYPE_SPURIOUS;
         }
     }
-    else 
+    else
     {
         /* This is not a potential spurious irq */
         if(irq_number != PIC_SPURIOUS_IRQ_MASTER)
@@ -249,7 +261,7 @@ INTERRUPT_TYPE_E pic_handle_spurious_irq(const uint32_t int_number)
         {
             return INTERRUPT_TYPE_REGULAR;
         }
-        else 
+        else
         {
             return INTERRUPT_TYPE_SPURIOUS;
         }
@@ -260,17 +272,25 @@ OS_RETURN_E pic_disable(void)
 {
     uint32_t word;
 
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(word, &lock);
+    #else
     ENTER_CRITICAL(word);
+    #endif
 
     /* Disable all IRQs */
     cpu_outb(0xFF, PIC_MASTER_DATA_PORT);
-    cpu_outb(0xFF, PIC_SLAVE_DATA_PORT);    
+    cpu_outb(0xFF, PIC_SLAVE_DATA_PORT);
 
     #if PIC_KERNEL_DEBUG == 1
     kernel_serial_debug("PIC disabled\n");
     #endif
 
+    #if MAX_CPU_COUNT > 1
+    EXIT_CRITICAL(word, &lock);
+    #else
     EXIT_CRITICAL(word);
+    #endif
 
     return OS_NO_ERR;
 }
@@ -281,6 +301,6 @@ int32_t pic_get_irq_int_line(const uint32_t irq_number)
     {
         return -1;
     }
-    
+
     return irq_number + INT_PIC_IRQ_OFFSET;
 }

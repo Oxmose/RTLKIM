@@ -19,6 +19,7 @@ extern cpu_setup_idt
 extern cpu_setup_tss
 extern setup_kheap
 extern graphic_clear_screen
+extern init_cpu_count_phys
 
 extern serial_init
 
@@ -71,6 +72,10 @@ section .text:
     ; Make sure interrupts are disabled and clear flags
     push  dword 0
     popfd
+
+    ; Update booted CPU count
+    mov eax, 1
+    mov [init_cpu_count_phys], eax
 
     ; Blank all uninitialized memory
     mov  edi, (__bss_start - KERNEL_MEM_OFFSET)

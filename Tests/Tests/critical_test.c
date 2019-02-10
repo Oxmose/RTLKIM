@@ -10,6 +10,9 @@
 
 static char value[61] = {0};
 static uint8_t out = 0;
+#if MAX_CPU_COUNT > 1
+static spinlock_t lock = SPINLOCK_INIT_VALUE;
+#endif
 static void* print_th_pre(void*args)
 {
     uint32_t i = 0;
@@ -29,7 +32,11 @@ static void* print_th_pre(void*args)
         default:
             val = '=';
     }
-    ENTER_CRITICAL(word);
+    #if MAX_CPU_COUNT > 1
+ 	ENTER_CRITICAL(word, &lock);
+ 	#else
+ 	ENTER_CRITICAL(word);
+ 	#endif
     for(i = 0; i < 100000000; ++i)
     {
         if(i % 5000000 == 0)
@@ -38,7 +45,11 @@ static void* print_th_pre(void*args)
             kernel_printf("%c",value[out-1]);
         }
     }
-    EXIT_CRITICAL(word);
+    #if MAX_CPU_COUNT > 1
+ 	EXIT_CRITICAL(word, &lock);
+    #else
+    ENTER_CRITICAL(word);
+    #endif
     return NULL;
 }
 
@@ -53,7 +64,7 @@ void critical_test(void)
 
     for(int i = 0; i < 3; ++i)
     {
-        err = sched_create_kernel_thread(&thread[i], 5, "test", 
+        err = sched_create_kernel_thread(&thread[i], 5, "test",
                                   1024, print_th_pre, (void*)i);
         if(err != OS_NO_ERR)
         {
@@ -77,7 +88,7 @@ void critical_test(void)
     {
         kernel_error("Scheduler thread critical tests error\n");
     }
-    else 
+    else
     {
         kernel_printf("[TESTMODE] Scheduler thread critical tests passed\n");
     }
@@ -88,5 +99,5 @@ void critical_test(void)
 void critical_test(void)
 {
 
-} 
+}
 #endif
