@@ -170,113 +170,113 @@ void semaphore_test(void)
     if((err = sem_init(&sem1, 0)) != OS_NO_ERR)
     {
         kernel_error("Failed to init sem1\n");
-        
+
     }
     if(sem_init(&sem2, 0) != OS_NO_ERR)
     {
         kernel_error("Failed to init sem2\n");
-        
+
     }
     if(sem_init(&sem3, 0) != OS_NO_ERR)
     {
         kernel_error("Failed to init sem3\n");
-        
+
     }
     if(sem_init(&sem4, -1) != OS_NO_ERR)
     {
         kernel_error("Failed to init sem4\n");
-        
+
     }
     if(sem_init(&sem_end, 0) != OS_NO_ERR)
     {
         kernel_error("Failed to init sem_end\n");
-        
+
     }
 
     lock_res = 0;
 
-    if(sched_create_kernel_thread(&thread_sem1, 1, "thread1", 1024, sem_thread_1, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem1, 1, "thread1", 1024, 0, sem_thread_1, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
-        
+
     }
-    if(sched_create_kernel_thread(&thread_sem2, 2, "thread1", 1024, sem_thread_2, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem2, 2, "thread1", 1024, 0, sem_thread_2, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
-        
+
     }
-    if(sched_create_kernel_thread(&thread_sem3, 3, "thread1", 1024, sem_thread_3, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem3, 3, "thread1", 1024, 0, sem_thread_3, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
-        
+
     }
-    if(sched_create_kernel_thread(&thread_sem4, 4, "thread1", 1024, sem_thread_4, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem4, 4, "thread1", 1024, 0, sem_thread_4, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
-        
+
     }
-    if(sched_create_kernel_thread(&thread_sem5, 5, "thread1", 1024, sem_thread_5, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread_sem5, 5, "thread1", 1024, 0, sem_thread_5, NULL) != OS_NO_ERR)
     {
         kernel_error(" Error while creating the main thread!\n");
-        
+
     }
 
     if(sem_pend(&sem_end) != OS_NO_ERR)
     {
         kernel_error("Failed to pend sem_end\n");
-        
+
     }
 
     if(sem_destroy(&sem1) != OS_NO_ERR)
     {
         kernel_error("Failed to destroy sem1\n");
-        
+
     }
     if(sem_destroy(&sem2) != OS_NO_ERR)
     {
         kernel_error("Failed to destroy sem2\n");
-        
+
     }
     if(sem_destroy(&sem3) != OS_NO_ERR)
     {
         kernel_error("Failed to destroy sem3\n");
-        
+
     }
     if(sem_destroy(&sem4) != OS_NO_ERR)
     {
         kernel_error("Failed to destroy sem4\n");
-        
+
     }
     if(sem_destroy(&sem_end) != OS_NO_ERR)
     {
         kernel_error("Failed to destroy sem_end\n");
-        
+
     }
 
     if((err = sched_wait_thread(thread_sem1, NULL, NULL)) != OS_NO_ERR)
     {
         kernel_error("Error while waiting thread! [%d]\n", err);
-        
+
     }
     if(sched_wait_thread(thread_sem2, NULL, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while waiting thread! [%d]\n", err);
-        
+
     }
     if(sched_wait_thread(thread_sem3, NULL, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while waiting thread! [%d]\n", err);
-        
+
     }
     if(sched_wait_thread(thread_sem4, NULL, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while waiting thread! [%d]\n", err);
-        
+
     }
      if(sched_wait_thread(thread_sem5, NULL, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while waiting thread! [%d]\n", err);
-        
+
     }
 
     printf("\n");
@@ -285,12 +285,12 @@ void semaphore_test(void)
     {
         kernel_error("Test failed\n");
     }
-    else 
+    else
     {
         kernel_printf("[TESTMODE] Semaphore test passed\n");
     }
 }
-#else 
+#else
 void semaphore_test(void)
 {
 

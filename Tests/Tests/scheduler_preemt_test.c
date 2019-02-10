@@ -51,8 +51,8 @@ void scheduler_preemt_test(void)
 
     for(int i = 0; i < 3; ++i)
     {
-        err = sched_create_kernel_thread(&thread[i], 5, "test", 
-                                  1024, print_th_pre, (void*)i);
+        err = sched_create_kernel_thread(&thread[i], 5, "test",
+                                  1024, 0, print_th_pre, (void*)i);
         if(err != OS_NO_ERR)
         {
             kernel_error("Cannot create threads %d\n", err);
@@ -75,7 +75,7 @@ void scheduler_preemt_test(void)
     {
         kernel_error("Scheduler thread premption tests error\n");
     }
-    else 
+    else
     {
         kernel_printf("[TESTMODE] Scheduler thread premption tests passed\n");
     }
@@ -86,5 +86,5 @@ void scheduler_preemt_test(void)
 void scheduler_preemt_test(void)
 {
 
-} 
+}
 #endif

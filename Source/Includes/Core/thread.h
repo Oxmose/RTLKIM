@@ -232,7 +232,11 @@ struct kernel_thread
     /** @brief Thread's end time. */
     uint32_t end_time;
 
+    /** @brief Thread's CPU affinity. */
+    uint32_t cpu_affinity;
+
     #if MAX_CPU_COUNT > 1
+    /** @brief Thread's concurency lock. */
     spinlock_t lock;
     #endif
 };

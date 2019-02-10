@@ -13,37 +13,38 @@ void ata_pio_driver_test(void)
     ata_pio_device_t dev;
     dev.port = PRIMARY_PORT;
     dev.type = MASTER;
+    INIT_SPINLOCK(&dev.lock);
 
     OS_RETURN_E err;
     uint32_t error = 0;
 
     char buffer[36] = "Read/Write test RTLK ATA-PIO driver\0";
     char recv[36] = {0};
-    if((err = ata_pio_write_sector(dev, 0, (void*)buffer, 35)) != OS_NO_ERR)
+    if((err = ata_pio_write_sector(&dev, 0, (void*)buffer, 35)) != OS_NO_ERR)
     {
         kernel_error("Failed to write 1 [%d]\n", err);
         ++error;
     }
-    else 
+    else
     {
         kernel_debug("[TESTMODE] Wrote: %s\n", buffer);
     }
-    if(ata_pio_write_sector(dev, 1, (void*)buffer, 35) != OS_NO_ERR)
+    if(ata_pio_write_sector(&dev, 1, (void*)buffer, 35) != OS_NO_ERR)
     {
         kernel_error("Failed to write 2\n");
         ++error;
     }
-    else 
+    else
     {
         kernel_debug("[TESTMODE] Wrote: %s\n", buffer);
     }
 
-    if(ata_pio_read_sector(dev, 1, (void*)recv, 35) != OS_NO_ERR)
+    if(ata_pio_read_sector(&dev, 1, (void*)recv, 35) != OS_NO_ERR)
     {
         kernel_error("Failed to read 1\n");
         ++error;
     }
-    else 
+    else
     {
         kernel_debug("[TESTMODE] Read: %s\n", recv);
     }
@@ -56,12 +57,12 @@ void ata_pio_driver_test(void)
     }
 
     memset(recv, 0, 36);
-    if(ata_pio_read_sector(dev, 0, (void*)recv, 35) != OS_NO_ERR)
+    if(ata_pio_read_sector(&dev, 0, (void*)recv, 35) != OS_NO_ERR)
     {
         kernel_error("Failed to read 2\n");
         ++error;
     }
-    else 
+    else
     {
         kernel_debug("[TESTMODE] Read: %s\n", recv);
     }
@@ -75,13 +76,13 @@ void ata_pio_driver_test(void)
 
     if(error == 0)
         kernel_debug("[TESTMODE] ATA tests passed\n");
-    
+
     while(1)
     {
         __asm__ ("hlt");
     }
 }
-#else 
+#else
 void ata_pio_driver_test(void)
 {
 }

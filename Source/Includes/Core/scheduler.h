@@ -239,6 +239,7 @@ OS_RETURN_E sched_set_priority(const uint32_t priority);
  * @param[in] priority The priority of the thread.
  * @param[in] name The name of the thread.
  * @param[in] stack_size The thread's stack size in bytes.
+ * @param[in] cpu_affinity The CPU id on which the thread should execute.
  * @param[in] function The thread routine to be executed.
  * @param[in] args The arguments to be used by the thread.
  *
@@ -255,6 +256,7 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
                                        const uint32_t priority,
                                        const char* name,
                                        const uint32_t stack_size,
+                                       const uint32_t cpu_affinity,
                                        void* (*function)(void*),
                                        void* args);
 

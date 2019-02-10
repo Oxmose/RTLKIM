@@ -16,7 +16,7 @@ static void* print_th(void*args)
     {
         kernel_error("Scheduler thread sleep tests failed\n");
     }
-    else 
+    else
     {
         kernel_printf("[TESTMODE] Scheduler thread sleep tests passed\n");
     }
@@ -32,8 +32,8 @@ void scheduler_sleep_test(void)
 
     kernel_printf("[TESTMODE] Scheduler tests sarts\n");
 
-    err = sched_create_kernel_thread(&thread, 0, "test", 
-                                  1024, print_th, NULL);
+    err = sched_create_kernel_thread(&thread, 0, "test",
+                                  1024, 0, print_th, NULL);
     if(err != OS_NO_ERR)
     {
         kernel_error("Cannot create threads %d\n", err);
@@ -48,5 +48,5 @@ void scheduler_sleep_test(void)
 void scheduler_sleep_test(void)
 {
 
-} 
+}
 #endif

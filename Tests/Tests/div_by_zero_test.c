@@ -21,8 +21,8 @@ void div_by_zero_test(void)
     OS_RETURN_E err;
 
 
-    err = sched_create_kernel_thread(&thread, 5, "test", 
-                                1024, thread_func, (void*)0);
+    err = sched_create_kernel_thread(&thread, 5, "test",
+                                1024, 0, thread_func, (void*)0);
     if(err != OS_NO_ERR)
     {
         kernel_error("Cannot create threads %d\n", err);
@@ -49,5 +49,5 @@ void div_by_zero_test(void)
 void div_by_zero_test(void)
 {
 
-} 
+}
 #endif

@@ -103,7 +103,7 @@ void* thread3_fn(void*args)
             {
                 printf("[TESTMODE] Thread 3 detected mailbox as non init\n");
             }
-            else 
+            else
             {
                 kernel_error("Error while pending the mailbox (3)[%d]\n", err);
             }
@@ -144,7 +144,7 @@ void mailbox_test(void)
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while initializing the mailbox [%d]\n", err);
-        
+
     }
 
     /* Delete */
@@ -152,7 +152,7 @@ void mailbox_test(void)
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while destroying the mailbox [%d]\n", err);
-        
+
     }
 
     /* Create */
@@ -160,48 +160,48 @@ void mailbox_test(void)
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while initializing the mailbox [%d]\n", err);
-        
+
     }
     err = mailbox_init(&mb2);
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while initializing the mailbox [%d]\n", err);
-        
+
     }
 
-    if(sched_create_kernel_thread(&thread1, 1, "thread1", 1024, thread1_fn, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread1, 1, "thread1", 1024, 0, thread1_fn, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while creating the main thread!\n");
-        
+
     }
-    if(sched_create_kernel_thread(&thread2, 1, "thread2", 1024, thread2_fn, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread2, 1, "thread2", 1024, 0, thread2_fn, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while creating the main thread!\n");
-        
+
     }
 
     if((err = sched_wait_thread(thread1, NULL, NULL)) != OS_NO_ERR)
     {
         kernel_error("Error while waiting thread! [%d]\n", err);
-        
+
     }
     if((err = sched_wait_thread(thread2, NULL, NULL)) != OS_NO_ERR)
     {
         kernel_error("Error while waiting thread! [%d]\n", err);
-        
+
     }
     /* Delete */
     err = mailbox_destroy(&mb1);
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while destroying the mailbox [%d]\n", err);
-        
+
     }
     err = mailbox_destroy(&mb2);
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while destroying the mailbox [%d]\n", err);
-        
+
     }
 
     /* Create */
@@ -209,37 +209,37 @@ void mailbox_test(void)
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while initializing the mailbox [%d]\n", err);
-        
+
     }
     err = mailbox_init(&mb2);
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while initializing the mailbox [%d]\n", err);
-        
+
     }
 
     /* Is empty tests */
     if(mailbox_isempty(&mb1, &err) != 1)
     {
         kernel_error("Error, the mauilbox should be empty[%d]\n", err);
-        
+
     }
 
-    if(sched_create_kernel_thread(&thread1, 1, "thread1", 1024, thread1_fn, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread1, 1, "thread1", 1024, 0, thread1_fn, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while creating the main thread!\n");
-        
+
     }
-    if(sched_create_kernel_thread(&thread2, 1, "thread2", 1024, thread3_fn, NULL) != OS_NO_ERR)
+    if(sched_create_kernel_thread(&thread2, 1, "thread2", 1024, 0, thread3_fn, NULL) != OS_NO_ERR)
     {
         kernel_error("Error while creating the main thread!\n");
-        
+
     }
 
     if((err = sched_wait_thread(thread1, NULL, NULL)) != OS_NO_ERR)
     {
         kernel_error("Error while waiting thread! [%d]\n", err);
-        
+
     }
 
     /* Delete while thread is waiting */
@@ -247,19 +247,19 @@ void mailbox_test(void)
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while destroying the mailbox [%d]\n", err);
-        
+
     }
     err = mailbox_destroy(&mb2);
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while destroying the mailbox [%d]\n", err);
-        
+
     }
 
     if((err = sched_wait_thread(thread2, NULL, NULL)) != OS_NO_ERR)
     {
         kernel_error("Error while waiting thread! [%d]\n", err);
-        
+
     }
 
     /* Create */
@@ -267,21 +267,21 @@ void mailbox_test(void)
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while initializing the mailbox [%d]\n", err);
-        
+
     }
 
     err = mailbox_post(&mb1, (void*)3);
     if(err != OS_NO_ERR)
     {
         kernel_error("Error while posting the mailbox (3)[%d]\n", err);
-        
+
     }
 
     /* Is empty tests */
     if(mailbox_isempty(&mb1, &err) != 0)
     {
         kernel_error("Error, the mauilbox should be empty[%d]\n", err);
-        
+
     }
 
     /* Delete */
@@ -297,5 +297,5 @@ void mailbox_test(void)
 void mailbox_test(void)
 {
 
-} 
+}
 #endif

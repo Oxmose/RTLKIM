@@ -32,7 +32,7 @@ void scheduler_load_test(void)
     for(int i = 0; i < 1024; ++i)
     {
         err = sched_create_kernel_thread(&thread[i], (63 - (i % 64)), "test",
-                                  1024, print_th, (void*)i);
+                                  1024, 0, print_th, (void*)i);
         if(err != OS_NO_ERR)
         {
             kernel_error("Cannot create threads %d\n", err);

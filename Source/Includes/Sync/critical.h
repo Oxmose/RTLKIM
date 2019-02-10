@@ -45,14 +45,19 @@ struct spinlock
      * @brief Current lock value.
      *
      */
-    uint32_t value;
+    volatile uint32_t value;
     /**
      * @brief Current owner thread's ID.
      *
      */
-    int32_t  current_tid;
+    volatile int32_t current_tid;
+    /**
+     * @brief Nesting count.
+     *
+     */
+    volatile uint32_t nesting;
 };
-typedef struct spinlock spinlock_t;
+typedef volatile struct spinlock spinlock_t;
 #endif
 
 #if MAX_CPU_COUNT <= 1
@@ -82,6 +87,7 @@ typedef struct spinlock spinlock_t;
             while(cpu_test_and_set(&(lock)->value));  \
         }                                           \
         (lock)->current_tid = cpu_id;                 \
+        (lock)->nesting++;                           \
     }                                               \
 }
 #endif
@@ -104,7 +110,8 @@ typedef struct spinlock spinlock_t;
  * interrupt state.
  */
 #define EXIT_CRITICAL(x, lock) {    \
-    (lock)->value = 0;                \
+    (lock)->nesting--;              \
+    (lock)->value = 0;              \
     kernel_interrupt_restore(x);    \
 }
 #endif
@@ -116,11 +123,12 @@ typedef struct spinlock spinlock_t;
  * @details Initialize the spinlock to the start value.
  */
 #define INIT_SPINLOCK(lock) {  \
-    (lock)->value = 0;           \
-    (lock)->current_tid = -1;    \
+    (lock)->value       = 0;   \
+    (lock)->current_tid = -1;  \
+    (lock)->nesting     = 0;   \
 }
 
-#define SPINLOCK_INIT_VALUE {0, -1}
+#define SPINLOCK_INIT_VALUE {0, -1, 0}
 #endif
 /*******************************************************************************
  * STRUCTURES

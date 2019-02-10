@@ -54,7 +54,7 @@
 #define ENABLE_VESA        0
 
 /** @brief Enables ATA drivers support. */
-#define ENABLE_ATA         0
+#define ENABLE_ATA         1
 
 /** @brief Enables GUI support. */
 #define ENABLE_GUI         1
