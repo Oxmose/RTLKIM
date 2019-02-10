@@ -39,7 +39,7 @@
  * Features settings
  ******************************************************************************/
 /** @brief Maximal number of CPU to be supported by the kernel. */
-#define MAX_CPU_COUNT      2
+#define MAX_CPU_COUNT      4
 
 /** @brief Enables the use of an IO-APIC instead of the PIC if present if the
  * system.
@@ -51,7 +51,7 @@
 #define ENABLE_LAPIC_TIMER 1
 
 /** @brief Enables VESA support for graphic drivers. */
-#define ENABLE_VESA        1
+#define ENABLE_VESA        0
 
 /** @brief Enables ATA drivers support. */
 #define ENABLE_ATA         0
