@@ -51,13 +51,13 @@
 #define ENABLE_LAPIC_TIMER 1
 
 /** @brief Enables VESA support for graphic drivers. */
-#define ENABLE_VESA        0
+#define ENABLE_VESA        1
 
 /** @brief Enables ATA drivers support. */
 #define ENABLE_ATA         0
 
 /** @brief Enables GUI support. */
-#define ENABLE_GUI         0
+#define ENABLE_GUI         1
 
 /** @brief Enables mouse driver support. */
 #define ENABLE_MOUSE       0

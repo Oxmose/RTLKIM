@@ -518,11 +518,11 @@ static void* idle_sys(void* args)
 
         if(MAX_CPU_COUNT > 1 && cpu_id == 1 && idle_sched_count[cpu_id] % 1000 == 0)
         {
-            kernel_printf("+");
+            //kernel_printf("+");
         }
         if(MAX_CPU_COUNT > 2 && cpu_id == 2 && idle_sched_count[cpu_id] % 1000 == 0)
         {
-            kernel_printf("-");
+            //kernel_printf("-");
         }
     }
 
