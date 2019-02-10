@@ -39,7 +39,7 @@
  * Features settings
  ******************************************************************************/
 /** @brief Maximal number of CPU to be supported by the kernel. */
-#define MAX_CPU_COUNT      4
+#define MAX_CPU_COUNT      2
 
 /** @brief Enables the use of an IO-APIC instead of the PIC if present if the
  * system.
@@ -49,11 +49,6 @@
 /** @brief If the system allows it, use the LAPIC timer as main timer source.
  */
 #define ENABLE_LAPIC_TIMER 1
-
-/** @brief Enables SMP support. IO-APIC must be enabled and supported to enable
- * SMP.
- */
-#define ENABLE_SMP         0
 
 /** @brief Enables VESA support for graphic drivers. */
 #define ENABLE_VESA        0

@@ -15,6 +15,7 @@
 ; EXTERN FUNCTIONS
 ;-----------------------------------------
 extern init_cpu_count
+extern init_cpu_count_phys
 extern cpu_gdt_size
 extern cpu_idt_size
 extern ap_cpu_stacks
@@ -83,20 +84,18 @@ section .text
       add eax, -KERNEL_MEM_OFFSET
       mov cr3, eax
 
-      ; Enable paging
-      mov eax, cr0
-      or eax, 0x80000000
+      ; Enable PSE
+      mov eax, cr4
+      or eax, 0x10
+      mov cr4, eax
+
+      ; Enable paging and set correct CR0
+      mov eax, 0x80010011
       mov cr0, eax
 
-      ; Just display the AP boot state on top right corner
-      mov ecx, [dword init_cpu_count]
-      mov eax, 0xB809E
-      add eax, KERNEL_MEM_OFFSET
-      add ecx, 0x4F40
-      mov [eax], ecx
-
       ; Get stack index
-      mov ebx, [dword init_cpu_count]
+      mov ebx, [init_cpu_count]
+      mov ecx, init_cpu_count
       dec ebx
 
       ; Now set the cpu stack
@@ -106,10 +105,10 @@ section .text
       ; Init stack pointer
       mov ebx, ap_cpu_stacks
       add eax, ebx
-      mov  esp, eax
+      mov esp, eax
 
       ; Init base pointer
-      xor ebp, ebp
+      mov ebp, esp
 
       ; Init CPU IDT
       lidt [cpu_idt_size]
@@ -121,7 +120,6 @@ section .text
       mov ecx, [dword init_cpu_count]
       inc ecx
       mov [dword init_cpu_count], ecx
-
 
       mov eax, smp_ap_core_init
       call eax

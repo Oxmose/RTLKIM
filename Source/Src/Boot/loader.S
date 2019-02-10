@@ -112,7 +112,7 @@ section .text:
     mov  esp, kernel_stack + KERNEL_STACK_SIZE
 
     ; Init base pointer
-    xor ebp, ebp
+    mov ebp, esp
 
     ; Init CPU info structure
     mov  edi, cpu_info

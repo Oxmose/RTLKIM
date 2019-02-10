@@ -36,6 +36,7 @@
 #include <Time/time_management.h> /* time_get_current_uptime(),
                                    * time_register_scheduler() */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
+#include <BSP/lapic.h>            /* lapic_get_id() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -59,12 +60,12 @@ static volatile uint32_t thread_count;
 /** @brief First scheduling flag, tells if it's the first time we schedule a
  * thread.
  */
-static volatile uint32_t first_sched;
+static volatile uint32_t first_sched[MAX_CPU_COUNT];
 
 /** @brief Idle thread handle. */
-static kernel_thread_t*     idle_thread;
+static kernel_thread_t*     idle_thread[MAX_CPU_COUNT];
 /** @brief Idle thread queue node. */
-static kernel_queue_node_t* idle_thread_node;
+static kernel_queue_node_t* idle_thread_node[MAX_CPU_COUNT];
 
 /** @brief Init thread handle. */
 static kernel_thread_t*     init_thread;
@@ -72,22 +73,22 @@ static kernel_thread_t*     init_thread;
 static kernel_queue_node_t* init_thread_node;
 
 /** @brief Current active thread handle. */
-static kernel_thread_t*     active_thread;
+static kernel_thread_t*     active_thread[MAX_CPU_COUNT];
 /** @brief Current active thread queue node. */
-static kernel_queue_node_t* active_thread_node;
+static kernel_queue_node_t* active_thread_node[MAX_CPU_COUNT];
 /** @brief Previously active thread handle. */
-static kernel_thread_t*     prev_thread;
+static kernel_thread_t*     prev_thread[MAX_CPU_COUNT];
 /** @brief Previously active thread queue node. */
-static kernel_queue_node_t* prev_thread_node;
+static kernel_queue_node_t* prev_thread_node[MAX_CPU_COUNT];
 
 /** @brief Current system state. */
 static volatile SYSTEM_STATE_E system_state;
 
 /** @brief Count of the number of times the scheduler was called. */
-static volatile uint64_t schedule_count;
+static volatile uint64_t schedule_count[MAX_CPU_COUNT];
 
 /** @brien Count of the number of times the idle thread was scheduled. */
-static volatile uint64_t idle_sched_count;
+static volatile uint64_t idle_sched_count[MAX_CPU_COUNT];
 
 /*******************************************************
  * THREAD TABLES
@@ -95,25 +96,26 @@ static volatile uint64_t idle_sched_count;
  *     - sleeping_threads: thread wakeup time
  *
  * Global thread table used to browse the threads, even those
- * kept in a nutex / semaphore or other structure and that do
+ * kept in a mutex / semaphore or other structure and that do
  * not appear in the three other tables.
  *
  *******************************************************/
 /** @brief Active threads tables. The array is sorted by priority. */
-static kernel_queue_t* active_threads_table[KERNEL_LOWEST_PRIORITY + 1];
+static kernel_queue_t* active_threads_table[MAX_CPU_COUNT]
+                                           [KERNEL_LOWEST_PRIORITY + 1];
 
 /** @brief Sleeping threads table. The threads are sorted by their wakeup time
  * value.
  */
-static kernel_queue_t* sleeping_threads_table;
+static kernel_queue_t* sleeping_threads_table[MAX_CPU_COUNT];
 
-/** @brief Zonbie threads table. */
+/** @brief Zombie threads table. */
 static kernel_queue_t* zombie_threads_table;
 
 /** @brief Global thread table. */
 static kernel_queue_t* global_threads_table;
 
-/** @brief Extern user programm entry point. */
+/** @brief Extern user program entry point. */
 extern int main(int, char**);
 
 /*******************************************************************************
@@ -135,23 +137,30 @@ static void thread_exit(void)
     kernel_thread_t*     joining_thread = NULL;
     kernel_queue_node_t* node;
     uint32_t             word;
+    int32_t              cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
     #if SCHED_KERNEL_DEBUG == 1
-    kernel_serial_debug("Exit thread %d\n", active_thread->tid);
+    kernel_serial_debug("Exit thread %d\n", active_thread[cpu_id]->tid);
     #endif
 
     /* Cannot exit idle thread */
-    if(active_thread == idle_thread)
+    if(active_thread[cpu_id] == idle_thread[cpu_id])
     {
         kernel_error("Cannot exit idle thread[%d]\n",
                      OS_ERR_UNAUTHORIZED_ACTION);
-        kernel_panic(err);
+        kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
     }
 
     /* Set new thread state */
-    active_thread->state =  THREAD_STATE_ZOMBIE;
+    active_thread[cpu_id]->state = THREAD_STATE_ZOMBIE;
 
-    if(active_thread == init_thread)
+    if(active_thread[cpu_id] == init_thread)
     {
         /* Schedule thread, should never return since the state is zombie */
         sched_schedule();
@@ -162,7 +171,7 @@ static void thread_exit(void)
     ENTER_CRITICAL(word);
 
     /* Enqueue thread in zombie list. */
-    err = kernel_queue_push(active_thread_node, zombie_threads_table);
+    err = kernel_queue_push(active_thread_node[cpu_id], zombie_threads_table);
     if(err != OS_NO_ERR)
     {
         EXIT_CRITICAL(word);
@@ -171,14 +180,14 @@ static void thread_exit(void)
     }
 
     /* All the children of the thread are inherited by init */
-    node = kernel_queue_pop(active_thread->children, &err);
+    node = kernel_queue_pop(active_thread[cpu_id]->children, &err);
     while(node != NULL && err == OS_NO_ERR)
     {
         kernel_thread_t* thread = (kernel_thread_t*)node->data;
 
         thread->ptid = init_thread->tid;
 
-        if(thread->joining_thread->data == active_thread)
+        if(thread->joining_thread->data == active_thread[cpu_id])
         {
             thread->joining_thread->data = NULL;
         }
@@ -190,7 +199,7 @@ static void thread_exit(void)
             kernel_error("Could not enqueue thread to init[%d]\n", err);
             kernel_panic(err);
         }
-        node = kernel_queue_pop(active_thread->children, &err);
+        node = kernel_queue_pop(active_thread[cpu_id]->children, &err);
     }
     if(err != OS_NO_ERR)
     {
@@ -200,7 +209,7 @@ static void thread_exit(void)
     }
 
     /* Delete list */
-    err = kernel_queue_delete_queue(&active_thread->children);
+    err = kernel_queue_delete_queue(&active_thread[cpu_id]->children);
     if(err != OS_NO_ERR)
     {
         EXIT_CRITICAL(word);
@@ -209,9 +218,10 @@ static void thread_exit(void)
     }
 
     /* Search for joining thread */
-    if(active_thread->joining_thread != NULL)
+    if(active_thread[cpu_id]->joining_thread != NULL)
     {
-        joining_thread = (kernel_thread_t*)active_thread->joining_thread->data;
+        joining_thread =
+            (kernel_thread_t*)active_thread[cpu_id]->joining_thread->data;
     }
 
     /* Wake up joining thread */
@@ -226,8 +236,8 @@ static void thread_exit(void)
 
             joining_thread->state = THREAD_STATE_READY;
 
-            err = kernel_queue_push(active_thread->joining_thread,
-                                active_threads_table[joining_thread->priority]);
+            err = kernel_queue_push(active_thread[cpu_id]->joining_thread,
+                        active_threads_table[cpu_id][joining_thread->priority]);
             if(err != OS_NO_ERR)
             {
                 EXIT_CRITICAL(word);
@@ -258,11 +268,18 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
     uint32_t             word;
     uint32_t             stack_page_count;
     uint32_t             i;
+    int32_t              cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
     ENTER_CRITICAL(word);
 
     /* Remove node from children table */
-    node = kernel_queue_find(active_thread->children, thread, &err);
+    node = kernel_queue_find(active_thread[cpu_id]->children, thread, &err);
     if(err != OS_NO_ERR && err != OS_ERR_NO_SUCH_ID)
     {
         EXIT_CRITICAL(word);
@@ -273,7 +290,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
 
     if(node != NULL && err == OS_NO_ERR)
     {
-        err = kernel_queue_remove(active_thread->children, node);
+        err = kernel_queue_remove(active_thread[cpu_id]->children, node);
         if(err != OS_NO_ERR)
         {
             EXIT_CRITICAL(word);
@@ -352,7 +369,7 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
 
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("Thread %d joined thread %d\n",
-                         active_thread->tid,
+                         active_thread[cpu_id]->tid,
                          thread->tid);
     #endif
 
@@ -399,18 +416,27 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
  */
 static void thread_wrapper(void)
 {
-    active_thread->start_time = time_get_current_uptime();
+    int32_t cpu_id;
 
-    if(active_thread->function == NULL)
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    active_thread[cpu_id]->start_time = time_get_current_uptime();
+
+    if(active_thread[cpu_id]->function == NULL)
     {
         kernel_error("Thread routine cannot be NULL\n");
         kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
     }
-    active_thread->ret_val = active_thread->function(active_thread->args);
+    active_thread[cpu_id]->ret_val =
+        active_thread[cpu_id]->function(active_thread[cpu_id]->args);
 
-    active_thread->return_state = THREAD_RETURN_STATE_RETURNED;
+    active_thread[cpu_id]->return_state = THREAD_RETURN_STATE_RETURNED;
 
-    active_thread->end_time = time_get_current_uptime();
+    active_thread[cpu_id]->end_time = time_get_current_uptime();
 
     /* Exit thread properly */
     thread_exit();
@@ -460,6 +486,13 @@ static void* main_kickstart(void* args)
 static void* idle_sys(void* args)
 {
     uint32_t word;
+    int32_t  cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("IDLE Started\n");
@@ -471,7 +504,7 @@ static void* idle_sys(void* args)
     while(1)
     {
         ENTER_CRITICAL(word);
-        ++idle_sched_count;
+        ++idle_sched_count[cpu_id];
         EXIT_CRITICAL(word);
         kernel_interrupt_restore(1);
 
@@ -482,6 +515,15 @@ static void* idle_sys(void* args)
             kernel_interrupt_disable();
         }
         cpu_hlt();
+
+        if(MAX_CPU_COUNT > 1 && cpu_id == 1 && idle_sched_count[cpu_id] % 1000 == 0)
+        {
+            kernel_printf("+");
+        }
+        if(MAX_CPU_COUNT > 2 && cpu_id == 2 && idle_sched_count[cpu_id] % 1000 == 0)
+        {
+            kernel_printf("-");
+        }
     }
 
     /* If we return better go away and cry in a corner */
@@ -506,6 +548,13 @@ static void* init_func(void* args)
     uint32_t             sys_thread;
     OS_RETURN_E          err;
     uint32_t             word;
+    int32_t              cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
     (void)args;
 
@@ -573,7 +622,7 @@ static void* init_func(void* args)
     while(thread_count > sys_thread)
     {
 
-        thread_node = kernel_queue_pop(active_thread->children, &err);
+        thread_node = kernel_queue_pop(active_thread[cpu_id]->children, &err);
 
         while(thread_node != NULL && err == OS_NO_ERR)
         {
@@ -600,7 +649,7 @@ static void* init_func(void* args)
                              err);
                 kernel_panic(err);
             }
-            thread_node = kernel_queue_pop(active_thread->children, &err);
+            thread_node = kernel_queue_pop(active_thread[cpu_id]->children, &err);
         }
     }
 
@@ -628,18 +677,26 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     kernel_queue_node_t* second_idle_thread_node;
     char                 idle_name[5] = "Idle\0";
     uint32_t             stack_index;
+    int32_t              cpu_id;
 
+    /* Get CPU ID */
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
-    idle_thread = kmalloc(sizeof(kernel_thread_t));
-    idle_thread_node = kernel_queue_create_node(idle_thread, &err);
+    idle_thread[cpu_id] = kmalloc(sizeof(kernel_thread_t));
+    idle_thread_node[cpu_id] =
+        kernel_queue_create_node(idle_thread[cpu_id], &err);
 
     if(err != OS_NO_ERR ||
-       idle_thread == NULL ||
-       idle_thread_node == NULL)
+       idle_thread[cpu_id] == NULL ||
+       idle_thread_node[cpu_id] == NULL)
     {
-        if(idle_thread != NULL)
+        if(idle_thread[cpu_id] != NULL)
         {
-            kfree(idle_thread);
+            kfree(idle_thread[cpu_id]);
         }
         else
         {
@@ -648,93 +705,94 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
         return err;
     }
 
-    memset(idle_thread, 0, sizeof(kernel_thread_t));
+    memset(idle_thread[cpu_id], 0, sizeof(kernel_thread_t));
 
     /* Init thread settings */
-    idle_thread->tid            = last_given_tid;
-    idle_thread->ptid           = last_given_tid;
-    idle_thread->priority       = IDLE_THREAD_PRIORITY;
-    idle_thread->init_prio      = IDLE_THREAD_PRIORITY;
-    idle_thread->args           = 0;
-    idle_thread->function       = idle_sys;
-    idle_thread->joining_thread = NULL;
-    idle_thread->state          = THREAD_STATE_RUNNING;
-    idle_thread->stack_size     = idle_stack_size;
+    idle_thread[cpu_id]->tid            = last_given_tid;
+    idle_thread[cpu_id]->ptid           = last_given_tid;
+    idle_thread[cpu_id]->priority       = IDLE_THREAD_PRIORITY;
+    idle_thread[cpu_id]->init_prio      = IDLE_THREAD_PRIORITY;
+    idle_thread[cpu_id]->args           = 0;
+    idle_thread[cpu_id]->function       = idle_sys;
+    idle_thread[cpu_id]->joining_thread = NULL;
+    idle_thread[cpu_id]->state          = THREAD_STATE_RUNNING;
+    idle_thread[cpu_id]->stack_size     = idle_stack_size;
 
-    idle_thread->children = kernel_queue_create_queue(&err);
+    idle_thread[cpu_id]->children = kernel_queue_create_queue(&err);
     if(err != OS_NO_ERR)
     {
-        kfree(idle_thread);
+        kfree(idle_thread[cpu_id]);
         return err;
     }
 
     /* Init thread stack */
     stack_index = (idle_stack_size + ALIGN - 1) & (~(ALIGN - 1));
     stack_index /= sizeof(uint32_t);
-    idle_thread->stack = kmalloc(stack_index * sizeof(uint32_t));
-    if(idle_thread->stack == NULL)
+    idle_thread[cpu_id]->stack = kmalloc(stack_index * sizeof(uint32_t));
+    if(idle_thread[cpu_id]->stack == NULL)
     {
-        kfree(idle_thread);
+        kfree(idle_thread[cpu_id]);
         return OS_ERR_MALLOC;
     }
 
     /* Init thread context */
-    idle_thread->eip = (uint32_t) thread_wrapper;
-    idle_thread->esp =
-        (uint32_t)&idle_thread->stack[stack_index - 17];
-    idle_thread->ebp =
-        (uint32_t)&idle_thread->stack[stack_index - 1];
-    idle_thread->tss_esp =
-        (uint32_t)&idle_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
+    idle_thread[cpu_id]->eip = (uint32_t) thread_wrapper;
+    idle_thread[cpu_id]->esp =
+        (uint32_t)&idle_thread[cpu_id]->stack[stack_index - 17];
+    idle_thread[cpu_id]->ebp =
+        (uint32_t)&idle_thread[cpu_id]->stack[stack_index - 1];
+    idle_thread[cpu_id]->tss_esp =
+        (uint32_t)&idle_thread[cpu_id]->kernel_stack + THREAD_KERNEL_STACK_SIZE;
 
     __asm__ __volatile__(
         "mov %%cr3, %%eax\n\t"
         "mov %%eax, %0\n\t"
-    : "=m" (idle_thread->cr3)
+    : "=m" (idle_thread[cpu_id]->cr3)
     : /* no input */
     : "%eax"
     );
-    idle_thread->free_page_table = (uint32_t)kernel_free_pages;
+    idle_thread[cpu_id]->free_page_table = (uint32_t)kernel_free_pages;
 
     /* Init thread stack */
-    idle_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
-    idle_thread->stack[stack_index - 2]  = THREAD_INIT_CS;
-    idle_thread->stack[stack_index - 3]  = idle_thread->eip;
-    idle_thread->stack[stack_index - 4]  = 0; /* UNUSED (error) */
-    idle_thread->stack[stack_index - 5]  = 0; /* UNUSED (int id) */
-    idle_thread->stack[stack_index - 6]  = THREAD_INIT_DS;
-    idle_thread->stack[stack_index - 7]  = THREAD_INIT_ES;
-    idle_thread->stack[stack_index - 8]  = THREAD_INIT_FS;
-    idle_thread->stack[stack_index - 9]  = THREAD_INIT_GS;
-    idle_thread->stack[stack_index - 10] = THREAD_INIT_SS;
-    idle_thread->stack[stack_index - 11] = THREAD_INIT_EAX;
-    idle_thread->stack[stack_index - 12] = THREAD_INIT_EBX;
-    idle_thread->stack[stack_index - 13] = THREAD_INIT_ECX;
-    idle_thread->stack[stack_index - 14] = THREAD_INIT_EDX;
-    idle_thread->stack[stack_index - 15] = THREAD_INIT_ESI;
-    idle_thread->stack[stack_index - 16] = THREAD_INIT_EDI;
-    idle_thread->stack[stack_index - 17] = idle_thread->ebp;
-    idle_thread->stack[stack_index - 18] = idle_thread->esp;
+    idle_thread[cpu_id]->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
+    idle_thread[cpu_id]->stack[stack_index - 2]  = THREAD_INIT_CS;
+    idle_thread[cpu_id]->stack[stack_index - 3]  = idle_thread[cpu_id]->eip;
+    idle_thread[cpu_id]->stack[stack_index - 4]  = 0; /* UNUSED (error) */
+    idle_thread[cpu_id]->stack[stack_index - 5]  = 0; /* UNUSED (int id) */
+    idle_thread[cpu_id]->stack[stack_index - 6]  = THREAD_INIT_DS;
+    idle_thread[cpu_id]->stack[stack_index - 7]  = THREAD_INIT_ES;
+    idle_thread[cpu_id]->stack[stack_index - 8]  = THREAD_INIT_FS;
+    idle_thread[cpu_id]->stack[stack_index - 9]  = THREAD_INIT_GS;
+    idle_thread[cpu_id]->stack[stack_index - 10] = THREAD_INIT_SS;
+    idle_thread[cpu_id]->stack[stack_index - 11] = THREAD_INIT_EAX;
+    idle_thread[cpu_id]->stack[stack_index - 12] = THREAD_INIT_EBX;
+    idle_thread[cpu_id]->stack[stack_index - 13] = THREAD_INIT_ECX;
+    idle_thread[cpu_id]->stack[stack_index - 14] = THREAD_INIT_EDX;
+    idle_thread[cpu_id]->stack[stack_index - 15] = THREAD_INIT_ESI;
+    idle_thread[cpu_id]->stack[stack_index - 16] = THREAD_INIT_EDI;
+    idle_thread[cpu_id]->stack[stack_index - 17] = idle_thread[cpu_id]->ebp;
+    idle_thread[cpu_id]->stack[stack_index - 18] = idle_thread[cpu_id]->esp;
 
-    strncpy(idle_thread->name, idle_name, 5);
+    strncpy(idle_thread[cpu_id]->name, idle_name, 5);
 
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("IDLE thread created\n");
     #endif
 
-    second_idle_thread_node = kernel_queue_create_node(idle_thread, &err);
+    second_idle_thread_node =
+        kernel_queue_create_node(idle_thread[cpu_id], &err);
     if(err != OS_NO_ERR || second_idle_thread_node == NULL)
     {
-        kfree(idle_thread->stack);
-        kfree(idle_thread);
+        kfree(idle_thread[cpu_id]->stack);
+        kfree(idle_thread[cpu_id]);
         return err;
     }
 
     err = kernel_queue_push(second_idle_thread_node, global_threads_table);
     if(err != OS_NO_ERR)
     {
-        kfree(idle_thread->stack);
-        kfree(idle_thread);
+        kfree(idle_thread[cpu_id]->stack);
+        kfree(idle_thread[cpu_id]);
         return err;
     }
 
@@ -742,10 +800,10 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     ++last_given_tid;
 
     /* Initializes the scheduler active thread */
-    active_thread = idle_thread;
-    active_thread_node = idle_thread_node;
-    prev_thread = active_thread;
-    prev_thread_node = active_thread_node;
+    active_thread[cpu_id] = idle_thread[cpu_id];
+    active_thread_node[cpu_id] = idle_thread_node[cpu_id];
+    prev_thread[cpu_id] = active_thread[cpu_id];
+    prev_thread_node[cpu_id] = active_thread_node[cpu_id];
 
     return OS_NO_ERR;
 }
@@ -764,28 +822,35 @@ static void select_thread(void)
     kernel_queue_node_t* sleeping_node;
     uint32_t             i;
     uint64_t             current_time = time_get_current_uptime();
+    int32_t              cpu_id;
 
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
     /* Switch running thread */
-    prev_thread = active_thread;
-    prev_thread_node = active_thread_node;
+    prev_thread[cpu_id] = active_thread[cpu_id];
+    prev_thread_node[cpu_id] = active_thread_node[cpu_id];
 
     /* If the thread was not locked */
-    if(prev_thread->state == THREAD_STATE_RUNNING)
+    if(prev_thread[cpu_id]->state == THREAD_STATE_RUNNING)
     {
-        prev_thread->state = THREAD_STATE_READY;
-        err = kernel_queue_push(prev_thread_node,
-                                active_threads_table[prev_thread->priority]);
+        prev_thread[cpu_id]->state = THREAD_STATE_READY;
+        err = kernel_queue_push(prev_thread_node[cpu_id],
+                active_threads_table[cpu_id][prev_thread[cpu_id]->priority]);
         if(err != OS_NO_ERR)
         {
+            kernel_printf("COUCOU %x %d \n", (uint32_t)prev_thread_node[cpu_id], (uint32_t) active_threads_table[cpu_id][prev_thread[cpu_id]->priority]);
             kernel_error("Could not enqueue old thread[%d]\n", err);
             kernel_panic(err);
         }
     }
-    else if(prev_thread->state == THREAD_STATE_SLEEPING)
+    else if(prev_thread[cpu_id]->state == THREAD_STATE_SLEEPING)
     {
-        err = kernel_queue_push_prio(prev_thread_node,
-                                     sleeping_threads_table,
-                                     prev_thread->wakeup_time);
+        err = kernel_queue_push_prio(prev_thread_node[cpu_id],
+                                     sleeping_threads_table[cpu_id],
+                                     prev_thread[cpu_id]->wakeup_time);
         if(err != OS_NO_ERR)
         {
             kernel_error("Could not enqueue old thread[%d]\n", err);
@@ -798,7 +863,7 @@ static void select_thread(void)
     {
         kernel_thread_t* sleeping;
 
-        sleeping_node = kernel_queue_pop(sleeping_threads_table, &err);
+        sleeping_node = kernel_queue_pop(sleeping_threads_table[cpu_id], &err);
         if(err != OS_NO_ERR)
         {
             kernel_error("Could not dequeue sleeping thread[%d]\n", err);
@@ -819,7 +884,7 @@ static void select_thread(void)
             sleeping->state = THREAD_STATE_READY;
 
             err = kernel_queue_push(sleeping_node,
-                                    active_threads_table[sleeping->priority]);
+                            active_threads_table[cpu_id][sleeping->priority]);
             if(err != OS_NO_ERR)
             {
                 kernel_error("Could not enqueue sleeping thread[%d]\n", err);
@@ -829,7 +894,7 @@ static void select_thread(void)
         else if(sleeping != NULL)
         {
             err = kernel_queue_push_prio(sleeping_node,
-                                         sleeping_threads_table,
+                                         sleeping_threads_table[cpu_id],
                                          sleeping->wakeup_time);
             if(err != OS_NO_ERR)
             {
@@ -843,32 +908,33 @@ static void select_thread(void)
     /* Get the new thread */
     for(i = 0; i < KERNEL_LOWEST_PRIORITY + 1; ++i)
     {
-        active_thread_node = kernel_queue_pop(active_threads_table[i], &err);
+        active_thread_node[cpu_id] =
+            kernel_queue_pop(active_threads_table[cpu_id][i], &err);
         if(err != OS_NO_ERR)
         {
             kernel_error("Could not dequeue next thread[%d]\n", err);
             kernel_panic(err);
         }
-        if(active_thread_node != NULL)
+        if(active_thread_node[cpu_id] != NULL)
         {
             break;
         }
     }
 
-    if(active_thread_node == NULL || err != OS_NO_ERR)
+    if(active_thread_node[cpu_id] == NULL || err != OS_NO_ERR)
     {
         kernel_error("Could not dequeue next thread[%d]\n", err);
         kernel_panic(err);
     }
 
-    active_thread = (kernel_thread_t*)active_thread_node->data;
+    active_thread[cpu_id] = (kernel_thread_t*)active_thread_node[cpu_id]->data;
 
-    if(active_thread == NULL)
+    if(active_thread[cpu_id] == NULL)
     {
         kernel_error("Next thread to schedule should not be NULL\n");
         kernel_panic(err);
     }
-    active_thread->state = THREAD_STATE_RUNNING;
+    active_thread[cpu_id]->state = THREAD_STATE_RUNNING;
 }
 
 /**
@@ -888,36 +954,44 @@ static void select_thread(void)
 static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
                          stack_state_t *stack_state)
 {
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
     (void) int_id;
     (void) stack_state;
 
     /* Save the actual ESP (not the fist time since the first schedule should
      * dissociate the boot sequence (pointed by the current esp) and the IDLE
      * thread.*/
-    if(first_sched == 1)
+    if(first_sched[cpu_id] == 1)
     {
-        active_thread->esp = cpu_state->esp;
+        active_thread[cpu_id]->esp = cpu_state->esp;
     }
     else
     {
-        first_sched = 1;
+        first_sched[cpu_id] = 1;
     }
 
     /* Search for next thread */
     select_thread();
 
-    ++schedule_count;
+    ++schedule_count[cpu_id];
 
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("CPU Sched %d -> %d\n",
-                        prev_thread->tid, active_thread->tid);
+                        prev_thread[cpu_id]->tid, active_thread[cpu_id]->tid);
     #endif
 
      /* Restore thread CR3 */
-    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(active_thread->cr3));
+    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(active_thread[cpu_id]->cr3));
 
     /* Restore thread esp */
-    cpu_state->esp = active_thread->esp;
+    cpu_state->esp = active_thread[cpu_id]->esp;
 }
 
 SYSTEM_STATE_E get_system_state(void)
@@ -929,17 +1003,26 @@ OS_RETURN_E sched_init(void)
 {
     OS_RETURN_E err;
     uint32_t    i;
+    uint32_t    j;
+    int32_t     cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
     /* Init scheduler settings */
     last_given_tid   = 0;
     thread_count     = 0;
-    schedule_count   = 0;
-    idle_sched_count = 0;
+
+    memset((void*)schedule_count, sizeof(uint64_t) * MAX_CPU_COUNT, 0);
+    memset((void*)idle_sched_count, sizeof(uint64_t) * MAX_CPU_COUNT, 0);
 
     init_thread      = NULL;
     init_thread_node = NULL;
 
-    first_sched = 0;
+    memset((void*)first_sched, sizeof(uint32_t) * MAX_CPU_COUNT, 0);
 
     /* Init thread tables */
     global_threads_table = kernel_queue_create_queue(&err);
@@ -949,14 +1032,17 @@ OS_RETURN_E sched_init(void)
         kernel_panic(err);
     }
 
-    for(i = 0; i < KERNEL_LOWEST_PRIORITY + 1; ++i)
+    for(i = 0; i < MAX_CPU_COUNT; ++i)
     {
-        active_threads_table[i] = kernel_queue_create_queue(&err);
-        if(err != OS_NO_ERR)
+        for(j = 0; j < KERNEL_LOWEST_PRIORITY + 1; ++j)
         {
-            kernel_error("Could not create active_threads_table %d [%d]\n",
-                         i, err);
-            kernel_panic(err);
+            active_threads_table[i][j] = kernel_queue_create_queue(&err);
+            if(err != OS_NO_ERR)
+            {
+                kernel_error("Could not create active_threads_table %d [%d]\n",
+                            j, err);
+                kernel_panic(err);
+            }
         }
     }
 
@@ -967,11 +1053,15 @@ OS_RETURN_E sched_init(void)
         kernel_panic(err);
     }
 
-    sleeping_threads_table = kernel_queue_create_queue(&err);
-    if(err != OS_NO_ERR)
+    for(i = 0; i < MAX_CPU_COUNT; ++i)
     {
-        kernel_error("Could not create sleeping_threads_table %d [%d]\n", i, err);
-        kernel_panic(err);
+        sleeping_threads_table[i] = kernel_queue_create_queue(&err);
+        if(err != OS_NO_ERR)
+        {
+            kernel_error("Could not create sleeping_threads_table %d [%d]\n",
+            i, err);
+            kernel_panic(err);
+        }
     }
 
     /* Create idle thread */
@@ -1015,6 +1105,28 @@ OS_RETURN_E sched_init(void)
     return OS_ERR_UNAUTHORIZED_ACTION;
 }
 
+OS_RETURN_E sched_init_ap(void)
+{
+    OS_RETURN_E err;
+
+    /* Wait for the main CPU to schedule */
+    while(first_sched[0] == 0);
+
+    /* Create idle thread */
+    err = create_idle(SCHEDULER_IDLE_STACK_SIZE);
+    if(err != OS_NO_ERR)
+    {
+        kernel_error("Could not create IDLE thread[%d]\n", err);
+        kernel_panic(err);
+    }
+
+    /* Restore interrupt and schedule */
+    kernel_interrupt_restore(1);
+    sched_schedule();
+
+    return OS_ERR_UNAUTHORIZED_ACTION;
+}
+
 void sched_schedule(void)
 {
     /* Raise scheduling interrupt */
@@ -1024,20 +1136,28 @@ void sched_schedule(void)
 
 OS_RETURN_E sched_sleep(const unsigned int time_ms)
 {
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
     /* We cannot sleep in idle */
-    if(active_thread == idle_thread)
+    if(active_thread[cpu_id] == idle_thread[cpu_id])
     {
         return OS_ERR_UNAUTHORIZED_ACTION;
     }
 
-    active_thread->wakeup_time = time_get_current_uptime() + time_ms;
-    active_thread->state       = THREAD_STATE_SLEEPING;
+    active_thread[cpu_id]->wakeup_time =
+        time_get_current_uptime() + time_ms - 1000 / KERNEL_MAIN_TIMER_FREQ;
+    active_thread[cpu_id]->state       = THREAD_STATE_SLEEPING;
 
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("[%d] Thread %d asleep until %d (%dms)\n",
                         (uint32_t)time_get_current_uptime(),
-                        active_thread->tid,
-                        (uint32_t)active_thread->wakeup_time,
+                        active_thread[cpu_id]->tid,
+                        (uint32_t)active_thread[cpu_id]->wakeup_time,
                         time_ms);
     #endif
 
@@ -1053,32 +1173,64 @@ uint32_t sched_get_thread_count(void)
 
 int32_t sched_get_tid(void)
 {
-    if(first_sched == 0)
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    if(first_sched[cpu_id] == 0)
     {
         return 0;
     }
-    return active_thread->tid;
+    return active_thread[cpu_id]->tid;
 }
 
 int32_t sched_get_ptid(void)
 {
-    return active_thread->ptid;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    return active_thread[cpu_id]->ptid;
 }
 
 uint32_t sched_get_priority(void)
 {
-    return active_thread->priority;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    return active_thread[cpu_id]->priority;
 }
 
 OS_RETURN_E sched_set_priority(const uint32_t priority)
 {
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
     /* Check if priority is free */
     if(priority > KERNEL_LOWEST_PRIORITY)
     {
         return OS_ERR_FORBIDEN_PRIORITY;
     }
 
-    active_thread->priority = priority;
+    active_thread[cpu_id]->priority = priority;
 
     return OS_NO_ERR;
 }
@@ -1138,14 +1290,30 @@ OS_RETURN_E get_threads_info(thread_info_t* threads, int32_t* size)
 
 void sched_set_thread_termination_cause(const THREAD_TERMINATE_CAUSE_E term_cause)
 {
-    active_thread->return_cause = term_cause;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    active_thread[cpu_id]->return_cause = term_cause;
 }
 
 void sched_terminate_thread(void)
 {
-    active_thread->return_state = THREAD_RETURN_STATE_KILLED;
+    int32_t cpu_id;
 
-    active_thread->end_time = time_get_current_uptime();
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    active_thread[cpu_id]->return_state = THREAD_RETURN_STATE_KILLED;
+
+    active_thread[cpu_id]->end_time = time_get_current_uptime();
 
     /* Exit thread properly */
     thread_exit();
@@ -1165,6 +1333,13 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
     kernel_queue_node_t* children_new_thread_node;
     uint32_t             stack_index;
     uint32_t             word;
+    int32_t              cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
     if(thread != NULL)
     {
@@ -1200,7 +1375,7 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
 
     /* Init thread settings */
     new_thread->tid            = ++last_given_tid;
-    new_thread->ptid           = active_thread->tid;
+    new_thread->ptid           = active_thread[cpu_id]->tid;
     new_thread->priority       = priority;
     new_thread->init_prio      = priority;
     new_thread->args           = args;
@@ -1239,8 +1414,8 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
         (uint32_t)&new_thread->stack[stack_index - 1];
     new_thread->tss_esp =
         (uint32_t)&new_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
-    new_thread->cr3 = active_thread->cr3;
-    new_thread->free_page_table = active_thread->free_page_table;
+    new_thread->cr3 = active_thread[cpu_id]->cr3;
+    new_thread->free_page_table = active_thread[cpu_id]->free_page_table;
 
     /* Init thread stack */
     new_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
@@ -1288,7 +1463,8 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
         return err;
     }
 
-    err = kernel_queue_push(new_thread_node, active_threads_table[priority]);
+    err = kernel_queue_push(new_thread_node,
+                            active_threads_table[cpu_id][priority]);
     if(err != OS_NO_ERR)
     {
         kernel_queue_delete_queue(&new_thread->children);
@@ -1308,7 +1484,8 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
          kernel_queue_delete_node(&children_new_thread_node);
          kernel_queue_delete_node(&new_thread_node);
          kernel_queue_delete_node(&seconde_new_thread_node);
-         kernel_queue_remove(active_threads_table[priority], new_thread_node);
+         kernel_queue_remove(active_threads_table[cpu_id][priority],
+                             new_thread_node);
          kfree(new_thread->stack);
          kfree(new_thread);
          EXIT_CRITICAL(word);
@@ -1316,14 +1493,16 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
      }
 
 
-    err = kernel_queue_push(children_new_thread_node, active_thread->children);
+    err = kernel_queue_push(children_new_thread_node,
+                            active_thread[cpu_id]->children);
     if(err != OS_NO_ERR)
     {
         kernel_queue_delete_queue(&new_thread->children);
         kernel_queue_delete_node(&children_new_thread_node);
         kernel_queue_delete_node(&new_thread_node);
         kernel_queue_delete_node(&seconde_new_thread_node);
-        kernel_queue_remove(active_threads_table[priority], new_thread_node);
+        kernel_queue_remove(active_threads_table[cpu_id][priority],
+                            new_thread_node);
         kernel_queue_remove(global_threads_table, seconde_new_thread_node);
         kfree(new_thread->stack);
         kfree(new_thread);
@@ -1346,358 +1525,18 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
 
     return OS_NO_ERR;
 }
-#if 0
-OS_RETURN_E sched_create_user_thread(thread_t* thread,
-                                     const uint32_t priority,
-                                     const char* name,
-                                     const uint32_t stack_size,
-                                     void* (*function)(void*),
-                                     void* args)
-{
-    OS_RETURN_E          err;
-    kernel_thread_t*     new_thread;
-    kernel_queue_node_t* new_thread_node;
-    kernel_queue_node_t* seconde_new_thread_node;
-    kernel_queue_node_t* children_new_thread_node;
-    uint32_t             stack_index;
-    uint32_t             word;
-    uint32_t             stack_page_count;
-    uint32_t             i;
-    uint32_t             j;
-    void*                phy_addr;
 
-    if(thread != NULL)
-    {
-        *thread = NULL;
-    }
-
-    /* Check if priority is valid */
-    if(priority > KERNEL_LOWEST_PRIORITY)
-    {
-        return OS_ERR_FORBIDEN_PRIORITY;
-    }
-
-    ENTER_CRITICAL(word);
-
-    new_thread = kmalloc(sizeof(kernel_thread_t));
-    new_thread_node = kernel_queue_create_node(new_thread, &err);
-    if(err != OS_NO_ERR ||
-       new_thread == NULL ||
-       new_thread_node == NULL)
-    {
-        if(new_thread != NULL)
-        {
-            kfree(new_thread);
-        }
-        else
-        {
-            err = OS_ERR_MALLOC;
-        }
-        EXIT_CRITICAL(word);
-        return err;
-    }
-    memset(new_thread, 0, sizeof(kernel_thread_t));
-
-    /* Init thread settings */
-    new_thread->tid            = ++last_given_tid;
-    new_thread->ptid           = active_thread->tid;
-    new_thread->priority       = priority;
-    new_thread->init_prio      = priority;
-    new_thread->args           = args;
-    new_thread->function       = function;
-    new_thread->joining_thread = NULL;
-    new_thread->state          = THREAD_STATE_READY;
-    new_thread->stack_size     = stack_size;
-
-    new_thread->children = kernel_queue_create_queue(&err);
-    if(err != OS_NO_ERR)
-    {
-        kernel_queue_delete_node(&new_thread_node);
-        kfree(new_thread);
-        EXIT_CRITICAL(word);
-        return err;
-    }
-
-    /* Init thread stack and align stack size */
-    stack_index = (stack_size + ALIGN - 1) & (~(ALIGN - 1));
-    stack_index /= sizeof(uint32_t);
-
-    /* Allocated pages and frames for the stack */
-    stack_page_count = stack_size / KERNEL_STACK_SIZE;
-    if(stack_size % KERNEL_STACK_SIZE != 0)
-    {
-        ++stack_page_count;
-    }
-    /* The stack is just before the kernel zone */
-    new_thread->stack = paging_alloc_pages_from(
-        (void*)(KERNEL_MEM_OFFSET - stack_page_count * KERNEL_PAGE_SIZE),
-        stack_page_count + 1,
-        &err);
-    if(new_thread->stack == NULL)
-    {
-        kernel_queue_delete_node(&new_thread_node);
-        kernel_queue_delete_queue(&new_thread->children);
-        kfree(new_thread);
-        EXIT_CRITICAL(word);
-        return err;
-    }
-
-    /* Get the frames for the thread stack, there is not need that is is
-     * contiguous. Map the stack pages and frames, note that the first page is
-     * not mapped sostack overflows generate NULL pointer exception.
-     */
-    /* Try to get a contiguous mapp */
-    phy_addr = kernel_paging_alloc_frames(stack_page_count, &err);
-    if(phy_addr == NULL)
-    {
-        /* If we didnt get the contiguous frame zone, just get them one by one */
-        for(i = 1; i < stack_page_count + 1; ++i)
-        {
-            kernel_mmap((void*)((uint32_t)new_thread->stack * i *
-                        KERNEL_PAGE_SIZE),
-                      KERNEL_PAGE_SIZE,
-                      PG_DIR_FLAG_PAGE_SIZE_4KB |
-                      PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                      PG_DIR_FLAG_PAGE_READ_WRITE,
-                      0);
-            if(err != OS_NO_ERR)
-            {
-                for(j = 1; j < i; ++j)
-                {
-                    /* Releases the frame */
-                    kernel_paging_free_frames(
-                        paging_get_phys_address(
-                            (void*)((uint32_t)new_thread->stack * j *
-                                KERNEL_PAGE_SIZE)), 1);
-
-                    /* Unmapp the frame */
-                    kernel_munmap((void*)((uint32_t)new_thread->stack * j *
-                                    KERNEL_PAGE_SIZE),
-                                   KERNEL_PAGE_SIZE);
-                }
-                /* Free all pages */
-                paging_free_pages((void*)((uint32_t)new_thread->stack),
-                                  stack_page_count + 1);
-                kernel_queue_delete_node(&new_thread_node);
-                kernel_queue_delete_queue(&new_thread->children);
-                kfree(new_thread);
-                EXIT_CRITICAL(word);
-                return err;
-            }
-        }
-    }
-    else
-    {
-        err = kernel_direct_mmap(new_thread->stack + KERNEL_PAGE_SIZE,
-                                 phy_addr,
-                                 stack_page_count * KERNEL_PAGE_SIZE,
-                                 PG_DIR_FLAG_PAGE_SIZE_4KB |
-                                 PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                                 PG_DIR_FLAG_PAGE_READ_WRITE,
-                                 0);
-
-        if(err != OS_NO_ERR)
-        {
-            paging_free_pages(new_thread->stack, stack_page_count + 1);
-            kernel_paging_free_frames(phy_addr, stack_page_count);
-            kernel_queue_delete_node(&new_thread_node);
-            kernel_queue_delete_queue(&new_thread->children);
-            kfree(new_thread);
-            EXIT_CRITICAL(word);
-            return err;
-        }
-    }
-
-
-    /* Init thread context */
-    new_thread->eip = (uint32_t) thread_wrapper;
-    new_thread->esp =
-        (uint32_t)&new_thread->stack[stack_index - 17];
-    new_thread->ebp =
-        (uint32_t)&new_thread->stack[stack_index - 1];
-    new_thread->tss_esp =
-        (uint32_t)&new_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
-    new_thread->cr3 = active_thread->cr3;
-    new_thread->free_page_table = active_thread->free_page_table;
-
-    /* Init thread stack */
-    new_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
-    new_thread->stack[stack_index - 2]  = THREAD_INIT_CS;
-    new_thread->stack[stack_index - 3]  = new_thread->eip;
-    new_thread->stack[stack_index - 4]  = 0; /* UNUSED (error core) */
-    new_thread->stack[stack_index - 5]  = 0; /* UNUSED (int id) */
-    new_thread->stack[stack_index - 6]  = THREAD_INIT_DS;
-    new_thread->stack[stack_index - 7]  = THREAD_INIT_ES;
-    new_thread->stack[stack_index - 8]  = THREAD_INIT_FS;
-    new_thread->stack[stack_index - 9]  = THREAD_INIT_GS;
-    new_thread->stack[stack_index - 10] = THREAD_INIT_SS;
-    new_thread->stack[stack_index - 11] = THREAD_INIT_EAX;
-    new_thread->stack[stack_index - 12] = THREAD_INIT_EBX;
-    new_thread->stack[stack_index - 13] = THREAD_INIT_ECX;
-    new_thread->stack[stack_index - 14] = THREAD_INIT_EDX;
-    new_thread->stack[stack_index - 15] = THREAD_INIT_ESI;
-    new_thread->stack[stack_index - 16] = THREAD_INIT_EDI;
-    new_thread->stack[stack_index - 17] = new_thread->ebp;
-    new_thread->stack[stack_index - 18] = new_thread->esp;
-
-    strncpy(new_thread->name, name, THREAD_MAX_NAME_LENGTH);
-
-    /* Add thread to the system's queues. */
-    seconde_new_thread_node = kernel_queue_create_node(new_thread, &err);
-    if(err != OS_NO_ERR)
-    {
-        kernel_queue_delete_queue(&new_thread->children);
-        kernel_queue_delete_node(&new_thread_node);
-        for(i = 1; i < stack_page_count; ++i)
-        {
-            /* Releases the frame */
-            kernel_paging_free_frames(
-                paging_get_phys_address(
-                    (void*)((uint32_t)new_thread->stack * i *
-                        KERNEL_PAGE_SIZE)), 1);
-
-            /* Unmapp the frame */
-            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
-                            KERNEL_PAGE_SIZE),
-                           KERNEL_PAGE_SIZE);
-        }
-        /* Free all pages */
-        paging_free_pages(new_thread->stack, stack_page_count + 1);
-        kfree(new_thread);
-        EXIT_CRITICAL(word);
-        return err;
-    }
-
-    children_new_thread_node = kernel_queue_create_node(new_thread, &err);
-    if(err != OS_NO_ERR)
-    {
-        kernel_queue_delete_queue(&new_thread->children);
-        kernel_queue_delete_node(&new_thread_node);
-        kernel_queue_delete_node(&seconde_new_thread_node);
-        for(i = 1; i < stack_page_count; ++i)
-        {
-            /* Releases the frame */
-            kernel_paging_free_frames(
-                paging_get_phys_address(
-                    (void*)((uint32_t)new_thread->stack * i *
-                        KERNEL_PAGE_SIZE)), 1);
-
-            /* Unmapp the frame */
-            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
-                            KERNEL_PAGE_SIZE),
-                        KERNEL_PAGE_SIZE);
-        }
-        /* Free all pages */
-        paging_free_pages(new_thread->stack, stack_page_count + 1);
-        kfree(new_thread);
-        EXIT_CRITICAL(word);
-        return err;
-    }
-
-    err = kernel_queue_push(new_thread_node, active_threads_table[priority]);
-    if(err != OS_NO_ERR)
-    {
-        kernel_queue_delete_queue(&new_thread->children);
-        kernel_queue_delete_node(&children_new_thread_node);
-        kernel_queue_delete_node(&new_thread_node);
-        kernel_queue_delete_node(&seconde_new_thread_node);
-        for(i = 1; i < stack_page_count; ++i)
-        {
-            /* Releases the frame */
-            kernel_paging_free_frames(
-                paging_get_phys_address(
-                    (void*)((uint32_t)new_thread->stack * i *
-                        KERNEL_PAGE_SIZE)), 1);
-
-            /* Unmapp the frame */
-            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
-                            KERNEL_PAGE_SIZE),
-                        KERNEL_PAGE_SIZE);
-        }
-        /* Free all pages */
-        paging_free_pages(new_thread->stack, stack_page_count + 1);
-        kfree(new_thread);
-        EXIT_CRITICAL(word);
-        return err;
-    }
-
-     err = kernel_queue_push(seconde_new_thread_node, global_threads_table);
-     if(err != OS_NO_ERR)
-     {
-         kernel_queue_delete_queue(&new_thread->children);
-         kernel_queue_delete_node(&children_new_thread_node);
-         kernel_queue_delete_node(&new_thread_node);
-         kernel_queue_delete_node(&seconde_new_thread_node);
-         kernel_queue_remove(active_threads_table[priority], new_thread_node);
-         for(i = 1; i < stack_page_count; ++i)
-        {
-            /* Releases the frame */
-            kernel_paging_free_frames(
-                paging_get_phys_address(
-                    (void*)((uint32_t)new_thread->stack * i *
-                        KERNEL_PAGE_SIZE)), 1);
-
-            /* Unmapp the frame */
-            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
-                            KERNEL_PAGE_SIZE),
-                        KERNEL_PAGE_SIZE);
-        }
-        /* Free all pages */
-        paging_free_pages(new_thread->stack, stack_page_count + 1);
-         kfree(new_thread);
-         EXIT_CRITICAL(word);
-         return err;
-     }
-
-
-    err = kernel_queue_push(children_new_thread_node, active_thread->children);
-    if(err != OS_NO_ERR)
-    {
-        kernel_queue_delete_queue(&new_thread->children);
-        kernel_queue_delete_node(&children_new_thread_node);
-        kernel_queue_delete_node(&new_thread_node);
-        kernel_queue_delete_node(&seconde_new_thread_node);
-        kernel_queue_remove(active_threads_table[priority], new_thread_node);
-        kernel_queue_remove(global_threads_table, seconde_new_thread_node);
-        for(i = 1; i < stack_page_count; ++i)
-        {
-            /* Releases the frame */
-            kernel_paging_free_frames(
-                paging_get_phys_address(
-                    (void*)((uint32_t)new_thread->stack * i *
-                        KERNEL_PAGE_SIZE)), 1);
-
-            /* Unmapp the frame */
-            kernel_munmap((void*)((uint32_t)new_thread->stack * i *
-                            KERNEL_PAGE_SIZE),
-                        KERNEL_PAGE_SIZE);
-        }
-        /* Free all pages */
-        paging_free_pages(new_thread->stack, stack_page_count + 1);
-        kfree(new_thread);
-        EXIT_CRITICAL(word);
-        return err;
-    }
-
-    ++thread_count;
-
-    EXIT_CRITICAL(word);
-
-    #if SCHED_KERNEL_DEBUG == 1
-    kernel_serial_debug("Created thread %d\n", new_thread->tid);
-    #endif
-
-    if(thread != NULL)
-    {
-        *thread = new_thread;
-    }
-
-    return OS_NO_ERR;
-}
-#endif
 OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val,
                               THREAD_TERMINATE_CAUSE_E* term_cause)
 {
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
     if(thread == NULL)
     {
         return OS_ERR_NULL_POINTER;
@@ -1705,7 +1544,7 @@ OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val,
 
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("Thread %d waiting for thread %d\n",
-                         active_thread->tid,
+                         active_thread[cpu_id]->tid,
                          thread->tid);
     #endif
 
@@ -1728,8 +1567,8 @@ OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val,
     }
 
     /* Wait for the thread to finish */
-    active_thread->state   = THREAD_STATE_JOINING;
-    thread->joining_thread = active_thread_node;
+    active_thread[cpu_id]->state   = THREAD_STATE_JOINING;
+    thread->joining_thread = active_thread_node[cpu_id];
 
     /* Schedule thread */
     sched_schedule();
@@ -1750,22 +1589,29 @@ OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val,
 kernel_queue_node_t* sched_lock_thread(const THREAD_WAIT_TYPE_E block_type)
 {
     kernel_queue_node_t* current_thread_node;
+    int32_t              cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
     /* Cant lock kernel thread */
-    if(active_thread == idle_thread)
+    if(active_thread[cpu_id] == idle_thread[cpu_id])
     {
         return NULL;
     }
 
-    current_thread_node = active_thread_node;
+    current_thread_node = active_thread_node[cpu_id];
 
     /* Lock the thread */
-    active_thread->state      = THREAD_STATE_WAITING;
-    active_thread->block_type = block_type;
+    active_thread[cpu_id]->state      = THREAD_STATE_WAITING;
+    active_thread[cpu_id]->block_type = block_type;
 
     #if SCHED_KERNEL_DEBUG == 1
     kernel_serial_debug("Thread %d locked, reason: %d\n",
-                        active_thread->tid,
+                        active_thread[cpu_id]->tid,
                         block_type);
     #endif
 
@@ -1778,10 +1624,19 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
 {
     OS_RETURN_E      err;
     uint32_t         word;
-    kernel_thread_t* thread = (kernel_thread_t*)node->data;
+    int32_t          cpu_id;
+    kernel_thread_t* thread;
+
+    thread = (kernel_thread_t*)node->data;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
     /* Check thread value */
-    if(thread == NULL || thread == idle_thread)
+    if(thread == NULL || thread == idle_thread[cpu_id])
     {
         return OS_ERR_NO_SUCH_ID;
     }
@@ -1805,7 +1660,8 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
 
     /* Unlock thread state */
     thread->state = THREAD_STATE_READY;
-    err = kernel_queue_push(node, active_threads_table[thread->priority]);
+    err = kernel_queue_push(node,
+                            active_threads_table[cpu_id][thread->priority]);
     if(err != OS_NO_ERR)
     {
         EXIT_CRITICAL(word);
@@ -1831,28 +1687,58 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
 
 uint64_t sched_get_schedule_count(void)
 {
-    return schedule_count;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+    return schedule_count[cpu_id];
 }
 
 uint64_t sched_get_idle_schedule_count(void)
 {
-    return idle_sched_count;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+    return idle_sched_count[cpu_id];
 }
 
 uint32_t sched_get_thread_free_page_table(void)
 {
-    if(first_sched == 1)
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    if(first_sched[cpu_id] == 1)
     {
         return (uint32_t)kernel_free_pages;
     }
-    return active_thread->free_page_table;
+    return active_thread[cpu_id]->free_page_table;
 }
 
 uint32_t sched_get_thread_phys_pgdir(void)
 {
-    if(first_sched == 1)
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    if(first_sched[cpu_id] == 1)
     {
         return (uint32_t)kernel_pgdir - KERNEL_MEM_OFFSET;
     }
-    return active_thread->cr3;
+    return active_thread[cpu_id]->cr3;
 }

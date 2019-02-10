@@ -24,6 +24,7 @@
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Cpu/cpu.h>              /* hlt cpu_cli */
 #include <Core/scheduler.h>       /* sched_get_tid */
+#include <BSP/lapic.h>            /* lapic_get_id() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -51,8 +52,12 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
 
     uint32_t error_code;
     uint32_t instruction;
-    uint32_t current_cpu_id = 0;
+    uint32_t current_cpu_id;
     colorscheme_t panic_scheme;
+
+    cpu_cli();
+
+    current_cpu_id = lapic_get_id();
 
     graphic_fallback();
 

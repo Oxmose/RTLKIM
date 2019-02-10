@@ -132,6 +132,23 @@ SYSTEM_STATE_E sched_get_system_state(void);
 OS_RETURN_E sched_init(void);
 
 /**
+ * @brief Initializes the scheduler service for AP cores.
+ *
+ * @details Initializes the scheduler features and structures. The idle thread
+ * for the AP core is created. Once set, the scheduler starts to schedule the
+ * threads.
+ *
+ * @warning This function will never return if the initialization was successful
+ * and the scheduler started.
+ *
+ * @return The function inly returns in case of error.
+ * - OS_ERR_UNAUTHORIZED_ACTION is returned if the initialization failed.
+ * - Other types of value can be returned depending on the functions called at
+ *   scheduler initialization.
+ */
+OS_RETURN_E sched_init_ap(void);
+
+/**
  * @brief Calls the scheduler dispatch function.
  *
  * @details Calls the scheduler. This will raise an interrupt since we should

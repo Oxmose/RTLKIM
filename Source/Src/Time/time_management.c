@@ -1,6 +1,6 @@
 /***************************************************************************//**
  * @file time_management.c
- * 
+ *
  * @see time_management.h
  *
  * @author Alexy Torres Aurora Dugo
@@ -10,19 +10,21 @@
  * @version 1.0
  *
  * @brief Kernel's time management methods.
- * 
- * @details Kernel's time management method. Allow to define timers and keep 
+ *
+ * @details Kernel's time management method. Allow to define timers and keep
  * track on the system's time.
- * 
- * @warning All the interrupt managers and timer sources drivers must be 
+ *
+ * @warning All the interrupt managers and timer sources drivers must be
  * initialized before using any of these functions.
- * 
+ *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 #include <Lib/stdint.h>           /* Generic int types */
+#include <Lib/string.h>           /* memset() */
 #include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t */
 #include <BSP/rtc.h>              /* rtc_update_time */
+#include <BSP/lapic.h>            /* lapi_get_id() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -34,28 +36,28 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-/** @brief Stores the number of main kernel's timer tick since the 
+/** @brief Stores the number of main kernel's timer tick since the
  * initialization of the time manager.
  */
-static uint64_t sys_tick_count;
+static uint64_t sys_tick_count[MAX_CPU_COUNT];
 
 /** @brief The kernel's main timer interrupt source.
- * 
+ *
  *  @details The kernel's main timer interrupt source. If it's function pointers
  * are NULL, the driver is not initialized.
  */
 static kernel_timer_t sys_main_timer = {NULL};
 
 /** @brief The kernel's RTC timer interrupt source.
- * 
+ *
  *  @details The kernel's RTC timer interrupt source. If it's function pointers
  * are NULL, the driver is not initialized.
  */
 static kernel_timer_t sys_rtc_timer = {NULL};
 
 /** @brief The kernel's auxiliary timer interrupt source.
- * 
- *  @details The kernel's auxiliary timer interrupt source. If it's function 
+ *
+ *  @details The kernel's auxiliary timer interrupt source. If it's function
  * pointers are NULL, the driver is not initialized.
  */
 static kernel_timer_t sys_aux_timer = {NULL};
@@ -78,11 +80,11 @@ OS_RETURN_E time_init(const kernel_timer_t* main_timer,
 
     /* Check the main timer integrity */
     if(main_timer == NULL ||
-       main_timer->get_frequency == NULL || 
-       main_timer->set_frequency == NULL || 
-       main_timer->enable == NULL || 
-       main_timer->disable == NULL || 
-       main_timer->set_handler == NULL || 
+       main_timer->get_frequency == NULL ||
+       main_timer->set_frequency == NULL ||
+       main_timer->enable == NULL ||
+       main_timer->disable == NULL ||
+       main_timer->set_handler == NULL ||
        main_timer->remove_handler == NULL ||
        main_timer->get_irq == NULL)
 
@@ -97,14 +99,14 @@ OS_RETURN_E time_init(const kernel_timer_t* main_timer,
         if(rtc_timer->get_frequency != NULL &&
            rtc_timer->set_frequency != NULL &&
            rtc_timer->enable != NULL &&
-           rtc_timer->disable != NULL && 
-           rtc_timer->set_handler != NULL && 
+           rtc_timer->disable != NULL &&
+           rtc_timer->set_handler != NULL &&
            rtc_timer->remove_handler != NULL &&
            rtc_timer->get_irq != NULL)
         {
             sys_rtc_timer = *rtc_timer;
-        } 
-        else 
+        }
+        else
         {
             return OS_ERR_NULL_POINTER;
         }
@@ -113,25 +115,25 @@ OS_RETURN_E time_init(const kernel_timer_t* main_timer,
     /* Check the aux timer integrity */
     if(aux_timer != NULL)
     {
-        if(aux_timer->get_frequency != NULL || 
-           aux_timer->set_frequency != NULL || 
-           aux_timer->enable != NULL || 
-           aux_timer->disable != NULL || 
-           aux_timer->set_handler != NULL || 
+        if(aux_timer->get_frequency != NULL ||
+           aux_timer->set_frequency != NULL ||
+           aux_timer->enable != NULL ||
+           aux_timer->disable != NULL ||
+           aux_timer->set_handler != NULL ||
            aux_timer->remove_handler != NULL ||
            aux_timer->get_irq != NULL)
         {
 
             sys_aux_timer = *aux_timer;
         }
-        else 
+        else
         {
             return OS_ERR_NULL_POINTER;
         }
     }
 
     /* Init he system's values */
-    sys_tick_count = 0;
+    memset(sys_tick_count, sizeof(uint64_t) * MAX_CPU_COUNT, 0);
 
     /* Sets all the possible timer interrutps */
     err = sys_main_timer.set_frequency(KERNEL_MAIN_TIMER_FREQ);
@@ -206,18 +208,26 @@ OS_RETURN_E time_init(const kernel_timer_t* main_timer,
 void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
                              stack_state_t* stack)
 {
+    int32_t cpu_id;
+
     (void)cpu_state;
     (void)int_id;
     (void)stack;
 
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
     /* Add a tick count */
-    ++sys_tick_count;
+    ++sys_tick_count[cpu_id];
 
     if(schedule_routine != NULL)
     {
         schedule_routine(cpu_state, int_id, stack);
     }
-    else 
+    else
     {
         if(active_wait > 0)
         {
@@ -226,7 +236,7 @@ void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
             {
                 active_wait -= time_slice;
             }
-            else 
+            else
             {
                 active_wait = 0;
             }
@@ -247,7 +257,7 @@ void time_rtc_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
     (void)cpu_state;
     (void)int_id;
     (void)stack;
-    
+
     rtc_update_time();
 
     #if TIME_KERNEL_DEBUG == 1
@@ -268,7 +278,7 @@ void time_aux_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
     #if TIME_KERNEL_DEBUG == 1
     kernel_serial_debug("Time manager AUX handler\n");
     #endif
-    
+
     /* EOI */
     kernel_interrupt_set_irq_eoi(sys_aux_timer.get_irq());
 }
@@ -276,6 +286,13 @@ void time_aux_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
 uint64_t time_get_current_uptime(void)
 {
     uint64_t time_slice;
+    int32_t  cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
 
     if(sys_main_timer.get_frequency == NULL)
     {
@@ -283,12 +300,20 @@ uint64_t time_get_current_uptime(void)
     }
 
     time_slice = 1000 / sys_main_timer.get_frequency();
-    return time_slice * sys_tick_count;
+    return time_slice * sys_tick_count[cpu_id];
 }
 
 uint64_t time_get_tick_count(void)
 {
-    return sys_tick_count;
+    int32_t  cpu_id;
+
+    cpu_id = lapic_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    return sys_tick_count[cpu_id];
 }
 
 void time_wait_no_sched(const uint32_t ms)

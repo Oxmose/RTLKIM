@@ -62,7 +62,7 @@ extern uint8_t* kernel_stack;
 cpu_tss_entry_t cpu_ap_tss[MAX_CPU_COUNT - 1] __attribute__((aligned(4096)));
 
 /** @brief Kernel stacks for APs */
-uint32_t ap_cpu_stacks[MAX_CPU_COUNT - 1][KERNEL_STACK_SIZE];
+uint8_t ap_cpu_stacks[MAX_CPU_COUNT - 1][KERNEL_STACK_SIZE] __attribute__((aligned(4096)));;
 
 /** @brief AP stacks size */
 uint32_t ap_cpu_stack_size = KERNEL_STACK_SIZE;
@@ -836,6 +836,7 @@ void cpu_setup_idt(void)
 
 void cpu_setup_tss(void)
 {
+    uint32_t i;
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Setting CPU TSS\n");
     #endif
@@ -855,6 +856,21 @@ void cpu_setup_tss(void)
     cpu_main_tss.gs = KERNEL_DS;
 
 	cpu_main_tss.iomap_base = sizeof(cpu_tss_entry_t);
+
+    for(i = 0; i < MAX_CPU_COUNT - 1; ++i)
+    {
+        cpu_ap_tss[i].ss0 = KERNEL_DS;
+        cpu_ap_tss[i].esp0 = (uint32_t)(ap_cpu_stacks[i] + ap_cpu_stack_size);
+
+        cpu_ap_tss[i].es = KERNEL_DS;
+        cpu_ap_tss[i].cs = KERNEL_CS;
+        cpu_ap_tss[i].ss = KERNEL_DS;
+        cpu_ap_tss[i].ds = KERNEL_DS;
+        cpu_ap_tss[i].fs = KERNEL_DS;
+        cpu_ap_tss[i].gs = KERNEL_DS;
+
+        cpu_ap_tss[i].iomap_base = sizeof(cpu_tss_entry_t);
+    }
 
     /* Load TSS */
     __asm__ __volatile__("ltr %0" : : "rm" ((uint16_t)(TSS_SEGMENT)));

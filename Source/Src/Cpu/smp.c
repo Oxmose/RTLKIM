@@ -39,8 +39,8 @@ static uint32_t main_core_id;
 static const uint32_t* cpu_ids;
 static const local_apic_t** cpu_lapics;
 
-extern volatile uint8_t init_cpu_count;
-static volatile uint8_t init_seq_end;
+extern volatile uint32_t init_cpu_count;
+static volatile uint32_t init_seq_end;
 
 /* Kernel IDT structure */
 extern uint64_t cpu_idt[IDT_ENTRY_COUNT];
@@ -147,7 +147,7 @@ OS_RETURN_E smp_init(void)
     init_seq_end = 1;
 
     /* Make sure all the AP are initialized, we should never block here */
-    while(init_cpu_count < cpu_count);
+    while(init_cpu_count < (uint32_t)cpu_count);
 
     return OS_NO_ERR;
 }
@@ -157,13 +157,9 @@ void smp_ap_core_init(void)
     OS_RETURN_E err;
     uint32_t cpu_id = lapic_get_id();
 
-
-
     /* Load AP TSS */
     __asm__ __volatile__("ltr %0" : : "rm" ((uint16_t)
                                             (TSS_SEGMENT + cpu_id * 0x08)));
-
-
 
     /* Init local APIC */
     err = lapic_init();
@@ -174,37 +170,25 @@ void smp_ap_core_init(void)
         kernel_panic(err);
     }
 
-#if 0
     /* Init LAPIC TIMER */
-    err = init_lapic_ap_timer();
-    if(err == OS_NO_ERR)
-    {
-        kernel_success("Local APIC TIMER Initialized [CPU %d]\n", cpu_id);
-    }
-    else
+    err = lapic_ap_timer_init();
+    if(err != OS_NO_ERR)
     {
         kernel_error("Local APIC TIMER Initialization error %d [CPU %d]\n",
                      err, cpu_id);
         kernel_panic(err);
     }
 
-    kernel_info("Core %d initialized\n", cpu_id);
-
-    /* Init Scheduler */
-    err = init_ap_scheduler();
-
-    kernel_error("End of kernel reached by AP Core %d [%d]\n", cpu_id, err);
-    kernel_panic(err);
-#endif
+    ++init_cpu_count;
 
     kernel_info("CPU %d booted, idling...\n", cpu_id);
 
-    ++init_cpu_count;
-
     while(init_seq_end == 0);
 
-    while(1)
-    {
-        cpu_hlt();
-    }
+    /* Init Scheduler */
+    err = sched_init_ap();
+
+    kernel_error("End of kernel reached by AP Core %d [%d]\n", cpu_id, err);
+    kernel_panic(err);
+
 }
