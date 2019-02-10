@@ -102,7 +102,9 @@ kernel_queue_t* kernel_queue_create_queue(OS_RETURN_E *error)
     /* Init the structure */
     memset(newqueue, 0, sizeof(kernel_queue_t));
 
+    #if MAX_CPU_COUNT > 1
     INIT_SPINLOCK(&newqueue->lock);
+    #endif
 
     if(error != NULL)
     {

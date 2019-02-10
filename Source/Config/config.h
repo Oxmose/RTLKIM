@@ -39,7 +39,7 @@
  * Features settings
  ******************************************************************************/
 /** @brief Maximal number of CPU to be supported by the kernel. */
-#define MAX_CPU_COUNT      4
+#define MAX_CPU_COUNT      2
 
 /** @brief Enables the use of an IO-APIC instead of the PIC if present if the
  * system.
@@ -89,7 +89,7 @@
 
 /** @brief Defines the kernel's main timer frequency. This will set the maximal
  * scheduling frequency. */
-#define KERNEL_MAIN_TIMER_FREQ 1000
+#define KERNEL_MAIN_TIMER_FREQ 200
 /** @brief Defines the kernel's auxiliary timer frequency. */
 #define KERNEL_AUX_TIMER_FREQ  20
 /** @brief Defines the kernel's rtc timer frequency. */

@@ -69,7 +69,10 @@ OS_RETURN_E mutex_init(mutex_t* mutex, const uint32_t flags,
 
     mutex->state = 1;
     mutex->flags = flags | priority << 8;
+
+    #if MAX_CPU_COUNT > 1
     INIT_SPINLOCK(&mutex->lock);
+    #endif
 
     mutex->waiting_threads = kernel_queue_create_queue(&err);
     if(err != OS_NO_ERR)

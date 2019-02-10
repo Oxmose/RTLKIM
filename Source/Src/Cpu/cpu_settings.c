@@ -836,7 +836,7 @@ void cpu_setup_idt(void)
 
 void cpu_setup_tss(void)
 {
-    uint32_t i;
+    int32_t i;
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Setting CPU TSS\n");
     #endif

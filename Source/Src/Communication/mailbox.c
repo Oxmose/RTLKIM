@@ -56,7 +56,9 @@ OS_RETURN_E mailbox_init(mailbox_t* mailbox)
     /* Init the mailbox */
     memset(mailbox, 0, sizeof(mailbox_t));
 
+    #if MAX_CPU_COUNT > 1
     INIT_SPINLOCK(&mailbox->lock);
+    #endif
 
     err = sem_init(&mailbox->mailbox_sem_read, 0);
     if(err != OS_NO_ERR)

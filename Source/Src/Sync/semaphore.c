@@ -57,7 +57,10 @@ OS_RETURN_E sem_init(semaphore_t* sem, const int32_t init_level)
     memset(sem, 0, sizeof(semaphore_t));
 
     sem->sem_level = init_level;
+
+    #if MAX_CPU_COUNT > 1
     INIT_SPINLOCK(&sem->lock);
+    #endif
 
     sem->waiting_threads = kernel_queue_create_queue(&err);
     if(err != OS_NO_ERR)

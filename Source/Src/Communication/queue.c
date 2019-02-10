@@ -57,7 +57,9 @@ OS_RETURN_E queue_init(queue_t* queue, const uint32_t size)
     /* Init the queue */
     memset(queue, 0, sizeof(queue_t));
 
+    #if MAX_CPU_COUNT > 1
     INIT_SPINLOCK(&queue->lock);
+    #endif
 
     err = sem_init(&queue->queue_sem_read, 0);
     if(err != OS_NO_ERR)
