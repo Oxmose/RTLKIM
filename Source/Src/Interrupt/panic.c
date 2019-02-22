@@ -25,6 +25,7 @@
 #include <Cpu/cpu.h>              /* hlt cpu_cli */
 #include <Core/scheduler.h>       /* sched_get_tid */
 #include <BSP/lapic.h>            /* lapic_get_id() */
+#include <BSP/acpi.h>             /* acpi_get_detected_cpu_count() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -50,14 +51,47 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     uint32_t CR3;
     uint32_t CR4;
 
-    uint32_t error_code;
-    uint32_t instruction;
-    uint32_t current_cpu_id;
+    uint32_t      error_code;
+    uint32_t      instruction;
+    uint32_t      current_cpu_id;
     colorscheme_t panic_scheme;
+    uint32_t      i;
+    uint32_t      cpu_count;
+
+    const uint32_t*      cpu_ids;
+    const local_apic_t** cpu_lapics;
+
+
+
+    /* If we received an NMI and the error code is NMI_PANIC, we just halt the
+     * CPU as the panic screen should have been displayed by the CPU or core
+     * that issued the NMI */
+    if(panic_code == PANIC_NMI_CODE)
+    {
+        while(1)
+        {
+            cpu_cli();
+            cpu_hlt();
+        }
+    }
+
+    current_cpu_id = lapic_get_id();
 
     cpu_cli();
 
-    current_cpu_id = lapic_get_id();
+    /* Kill other CPUs */
+    cpu_ids        = acpi_get_cpu_ids();
+    cpu_lapics     = acpi_get_cpu_lapics();
+    cpu_count      = acpi_get_detected_cpu_count();
+    panic_code     = PANIC_NMI_CODE;
+
+    for(i = 0; i < (uint32_t)cpu_count; ++i)
+    {
+        if(cpu_ids[i] != current_cpu_id)
+        {
+            lapic_send_ipi(cpu_lapics[i]->apic_id, PANIC_INT_LINE);
+        }
+    }
 
     graphic_fallback();
 
