@@ -40,6 +40,9 @@
 /** @brief Stores the current kernel panic error code. */
 static uint32_t panic_code = 0;
 
+/** @brief Stores the NMI panic code */
+static uint32_t nmi_panic_code = 0;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -66,7 +69,7 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     /* If we received an NMI and the error code is NMI_PANIC, we just halt the
      * CPU as the panic screen should have been displayed by the CPU or core
      * that issued the NMI */
-    if(panic_code == PANIC_NMI_CODE)
+    if(nmi_panic_code == PANIC_NMI_CODE)
     {
         while(1)
         {
@@ -83,7 +86,7 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     cpu_ids        = acpi_get_cpu_ids();
     cpu_lapics     = acpi_get_cpu_lapics();
     cpu_count      = acpi_get_detected_cpu_count();
-    panic_code     = PANIC_NMI_CODE;
+    nmi_panic_code = PANIC_NMI_CODE;
 
     for(i = 0; i < (uint32_t)cpu_count; ++i)
     {
