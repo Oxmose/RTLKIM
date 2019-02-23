@@ -1,6 +1,6 @@
 # Real Time Little Kernel
 
-* RTLK is a x86 kernel created for training and educational purposes. The final version is aimed to support multicore (SMP) architectures. RTLK is designed to execute in kernel mode.RTLK is a higher-half kernel located at 0xE0000000. The code of the kernel is not made to be efficient but to be readable and understandable.
+* RTLK is a x86 kernel created for training and educational purposes. RTLK is designed to execute in kernel mode.RTLK is a higher-half kernel located at 0xE0000000. The code of the kernel is not made to be efficient but to be readable and understandable.
 
 * RTLK has a configuration file allowing the kernel to be customized depending on the system it will run on.
 
@@ -18,6 +18,12 @@
 ----------
 
 ## Features
+
+### Multicore support
+
+* SMP support
+* CPU thread affinity
+* No dynamic balance between cores
 
 ### Synchronization
 
