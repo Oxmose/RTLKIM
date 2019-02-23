@@ -50,7 +50,6 @@ AS = nasm
 LD = ld
 OBJCOPY = objcopy
 QEMU = qemu-system-x86_64
-QEMU_I386 = qemu-system-i386
 
 DEBUG_FLAGS = -Og -g
 EXTRA_FLAGS = -O2
@@ -207,7 +206,7 @@ qemu-test-mode:
 
 debug:
 	@echo "\e[1m\e[94m============ Running on Qemu DEBUG MODE ============\e[22m\e[39m"
-	@$(QEMU_I386) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -S
+	@$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -S
 
 ######################### Tests
 test:
