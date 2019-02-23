@@ -94,7 +94,6 @@ OS_RETURN_E smp_init(void)
     /* Init startup code in low mem */
     ap_boot_loader_init();
 
-
     /* Init each sleeping core */
     for(i = 0; i < (uint32_t)cpu_count; ++i)
     {

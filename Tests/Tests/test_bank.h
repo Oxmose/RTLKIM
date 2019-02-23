@@ -46,6 +46,8 @@
 #define MAILBOX_TEST 0
 #define USERQUEUE_TEST 0
 #define PAGING_ALLOC_TEST 0
+#define MUTEX_MC_TEST 0
+#define SPINLOCK_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -78,5 +80,7 @@ void semaphore_test(void);
 void mailbox_test(void);
 void userqueue_test(void);
 void paging_alloc_test(void);
+void mutex_mc_test(void);
+void spinlock_test(void);
 
 #endif /* __TEST_BANK_H_ */

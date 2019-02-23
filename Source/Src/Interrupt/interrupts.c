@@ -44,9 +44,6 @@ custom_handler_t kernel_interrupt_handlers[IDT_ENTRY_COUNT];
 /** @brief The current interrupt driver to be used by the kernel. */
 static interrupt_driver_t interrupt_driver;
 
-/** @brief Keep track of the current interrupt state. */
-static uint32_t int_state;
-
 /** @brief Stores the number of spurious interrupts since the initialization of
  * the kernel.
  */
@@ -361,7 +358,6 @@ void kernel_interrupt_restore(const uint32_t prev_state)
         kernel_serial_debug("--- Enabled HW INT ---\n");
         #endif
 
-        int_state = 1;
         cpu_sti();
     }
 }
@@ -376,7 +372,6 @@ uint32_t kernel_interrupt_disable(void)
     }
 
     cpu_cli();
-    int_state = 0;
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("--- Disabled HW INT ---\n");

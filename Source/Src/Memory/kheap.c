@@ -364,6 +364,7 @@ void* kmalloc(uint32_t size)
         #else
         EXIT_CRITICAL(word);
         #endif
+
         return NULL;
     }
 
@@ -377,6 +378,7 @@ void* kmalloc(uint32_t size)
             #else
             EXIT_CRITICAL(word);
             #endif
+
             return NULL;
         }
     }
@@ -474,13 +476,13 @@ void kfree(void* ptr)
 		push_free(chunk);
     }
 
+    #if KHEAP_KERNEL_DEBUG == 1
+    kernel_serial_debug("Kheap freed 0x%8x -> %d\n", ptr, used);
+    #endif
+
     #if MAX_CPU_COUNT > 1
     EXIT_CRITICAL(word, &lock);
     #else
     EXIT_CRITICAL(word);
-    #endif
-
-    #if KHEAP_KERNEL_DEBUG == 1
-    kernel_serial_debug("Kheap freed 0x%8x -> %d\n", ptr, used);
     #endif
 }

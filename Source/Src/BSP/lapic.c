@@ -71,7 +71,7 @@ static spinlock_t ipi_lock = SPINLOCK_INIT_VALUE;
 
 #if MAX_CPU_COUNT > 1
 /** @brief Timer critical section spinlock. */
-static spinlock_t timer_lock = SPINLOCK_INIT_VALUE;
+static spinlock_t timer_lock[MAX_CPU_COUNT];
 #endif
 
 
@@ -149,6 +149,7 @@ static void lapic_init_pit_handler(cpu_state_t* cpu_state, uint32_t int_id,
 OS_RETURN_E lapic_init(void)
 {
     OS_RETURN_E err;
+    uint32_t    i;
     const void* lapic_phys_addr;
 
     #if LAPIC_KERNEL_DEBUG == 1
@@ -161,6 +162,11 @@ OS_RETURN_E lapic_init(void)
     if(acpi_get_io_apic_available() == 0 || acpi_get_lapic_available() == 0)
     {
         return OS_ERR_NOT_SUPPORTED;
+    }
+
+    for(i = 0; i < MAX_CPU_COUNT; ++i)
+    {
+        INIT_SPINLOCK(&timer_lock[i]);
     }
 
     /* Get Local APIC base address */
@@ -499,6 +505,9 @@ OS_RETURN_E lapic_timer_init(void)
 OS_RETURN_E lapic_ap_timer_init(void)
 {
     uint32_t word;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer AP Initialization\n");
@@ -517,7 +526,7 @@ OS_RETURN_E lapic_ap_timer_init(void)
     }
 
     #if MAX_CPU_COUNT > 1
-    ENTER_CRITICAL(word, &timer_lock);
+    ENTER_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     ENTER_CRITICAL(word);
     #endif
@@ -534,7 +543,7 @@ OS_RETURN_E lapic_ap_timer_init(void)
     lapic_write(LAPIC_TICR, global_lapic_freq);
 
     #if MAX_CPU_COUNT > 1
-    EXIT_CRITICAL(word, &timer_lock);
+    EXIT_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     EXIT_CRITICAL(word);
     #endif
@@ -546,9 +555,13 @@ uint32_t lapic_timer_get_frequency(void)
 {
     uint32_t freq;
     uint32_t word;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
+
 
     #if MAX_CPU_COUNT > 1
-    ENTER_CRITICAL(word, &timer_lock);
+    ENTER_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     ENTER_CRITICAL(word);
     #endif
@@ -556,7 +569,7 @@ uint32_t lapic_timer_get_frequency(void)
     freq = init_lapic_timer_frequency / global_lapic_freq;
 
     #if MAX_CPU_COUNT > 1
-    EXIT_CRITICAL(word, &timer_lock);
+    EXIT_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     EXIT_CRITICAL(word);
     #endif
@@ -567,6 +580,9 @@ uint32_t lapic_timer_get_frequency(void)
 OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
 {
     uint32_t word;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer set frequency %d\n", frequency);
@@ -585,7 +601,7 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     }
 
     #if MAX_CPU_COUNT > 1
-    ENTER_CRITICAL(word, &timer_lock);
+    ENTER_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     ENTER_CRITICAL(word);
     #endif
@@ -598,7 +614,7 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     lapic_write(LAPIC_TICR, global_lapic_freq);
 
     #if MAX_CPU_COUNT > 1
-    EXIT_CRITICAL(word, &timer_lock);
+    EXIT_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     EXIT_CRITICAL(word);
     #endif
@@ -609,6 +625,9 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
 OS_RETURN_E lapic_timer_enable(void)
 {
     uint32_t word;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer enable\n");
@@ -627,7 +646,7 @@ OS_RETURN_E lapic_timer_enable(void)
     }
 
     #if MAX_CPU_COUNT > 1
-    ENTER_CRITICAL(word, &timer_lock);
+    ENTER_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     ENTER_CRITICAL(word);
     #endif
@@ -637,7 +656,7 @@ OS_RETURN_E lapic_timer_enable(void)
                 LAPIC_TIMER_MODE_PERIODIC);
 
     #if MAX_CPU_COUNT > 1
-    EXIT_CRITICAL(word, &timer_lock);
+    EXIT_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     EXIT_CRITICAL(word);
     #endif
@@ -648,6 +667,9 @@ OS_RETURN_E lapic_timer_enable(void)
 OS_RETURN_E lapic_timer_disable(void)
 {
     uint32_t word;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer disable\n");
@@ -666,7 +688,7 @@ OS_RETURN_E lapic_timer_disable(void)
     }
 
     #if MAX_CPU_COUNT > 1
-    ENTER_CRITICAL(word, &timer_lock);
+    ENTER_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     ENTER_CRITICAL(word);
     #endif
@@ -675,7 +697,7 @@ OS_RETURN_E lapic_timer_disable(void)
     lapic_write(LAPIC_TIMER, LAPIC_LVT_INT_MASKED);
 
     #if MAX_CPU_COUNT > 1
-    EXIT_CRITICAL(word, &timer_lock);
+    EXIT_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     EXIT_CRITICAL(word);
     #endif
@@ -691,6 +713,9 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
 {
     OS_RETURN_E err;
     uint32_t    word;
+    int32_t cpu_id;
+
+    cpu_id = lapic_get_id();
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Initialization\n");
@@ -716,7 +741,7 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
     }
 
     #if MAX_CPU_COUNT > 1
-    ENTER_CRITICAL(word, &timer_lock);
+    ENTER_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     ENTER_CRITICAL(word);
     #endif
@@ -726,7 +751,7 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
     if(err != OS_NO_ERR)
     {
         #if MAX_CPU_COUNT > 1
-        EXIT_CRITICAL(word, &timer_lock);
+        EXIT_CRITICAL(word, &timer_lock[cpu_id]);
         #else
         EXIT_CRITICAL(word);
         #endif
@@ -739,7 +764,7 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
     if(err != OS_NO_ERR)
     {
         #if MAX_CPU_COUNT > 1
-        EXIT_CRITICAL(word, &timer_lock);
+        EXIT_CRITICAL(word, &timer_lock[cpu_id]);
         #else
         EXIT_CRITICAL(word);
         #endif
@@ -751,7 +776,7 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
     #endif
 
     #if MAX_CPU_COUNT > 1
-    EXIT_CRITICAL(word, &timer_lock);
+    EXIT_CRITICAL(word, &timer_lock[cpu_id]);
     #else
     EXIT_CRITICAL(word);
     #endif

@@ -685,9 +685,11 @@ static void* init_func(void* args)
     critical_test();
     div_by_zero_test();
     mutex_test();
+    mutex_mc_test();
     semaphore_test();
     mailbox_test();
     userqueue_test();
+    spinlock_test();
     while(1)
     {
         sched_sleep(10000000);
