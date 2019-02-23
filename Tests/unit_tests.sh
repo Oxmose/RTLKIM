@@ -1,20 +1,13 @@
 #!/bin/bash
 
-error=0
-success=0
-total=0
-i=1
-for entry in "./Tests"/*.c
-do
-    total=$((total + 1))
-done
-for entry in "./Tests"/*.c
-do
+function testcase() {
+    entry=$1
+
     filename=$(basename -- "$entry")
     filename="${filename%.*}"
     filename_up=${filename^^}
 
-    echo -e "\e[94m################### Test $i/$total : $filename_up\e[39m"
+    echo -e "\e[94m################### Test $i/$total : $filename_up ($2) \e[39m"
     # Select the test
     sed -i "s/$filename_up 0/$filename_up 1/g" Tests/test_bank.h
     sed -i 's/TEST_MODE_ENABLED 0/TEST_MODE_ENABLED 1/g' ../Source/Config/config.h
@@ -23,7 +16,7 @@ do
         rm -f *.out
         cd ../Source
         make TESTS=TRUE && (make qemu-test-mode > test.out &)
-        sleep 4
+        sleep $2
         killall qemu-system-x86_64
         killall make
         mv test.out ../Tests/test.out
@@ -49,6 +42,30 @@ do
     #Restore non testmode
     sed -i "s/$filename_up 1/$filename_up 0/g" Tests/test_bank.h
     sed -i 's/TEST_MODE_ENABLED 1/TEST_MODE_ENABLED 0/g' ../Source/Config/config.h
+}
+
+error=0
+success=0
+total=0
+i=1
+
+TIMES=(2 2 4 2 2 1 1 2 2 2 2\
+       2 2 2 4 4 4 2 3 2 2 2\
+       2 4 4 4 4 3 2 2 3 2 4\
+       2 2 2 2 2)
+for entry in "./Tests"/*.c
+do
+    total=$((total + 1))
+
+    filename=$(basename -- "$entry")
+    filename="${filename%.*}"
+    filename_up=${filename^^}
+    sed -i "s/$filename_up 1/$filename_up 0/g" Tests/test_bank.h
+done
+
+for entry in "./Tests"/*.c
+do
+    testcase $entry ${TIMES[ $(( i - 1 )) ]}
 
     i=$((i + 1))
 done
