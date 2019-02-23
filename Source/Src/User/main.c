@@ -25,7 +25,7 @@ void* thread_routine(void* args)
 }
 
 /* Used as example, it will be changed in the future. */
-int mc_ex(void)
+int main(void)
 {
     thread_t threads[MAX_CPU_COUNT];
     uint32_t start_time;
