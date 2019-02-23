@@ -1153,13 +1153,13 @@ OS_RETURN_E sched_init(void)
     last_given_tid   = 0;
     thread_count     = 0;
 
-    memset((void*)schedule_count, sizeof(uint64_t) * MAX_CPU_COUNT, 0);
-    memset((void*)idle_sched_count, sizeof(uint64_t) * MAX_CPU_COUNT, 0);
+    memset((void*)schedule_count, 0, sizeof(uint64_t));
+    memset((void*)idle_sched_count, 0, sizeof(uint64_t));
 
     init_thread      = NULL;
     init_thread_node = NULL;
 
-    memset((void*)first_sched, sizeof(uint32_t) * MAX_CPU_COUNT, 0);
+    memset((void*)first_sched, 0, sizeof(uint32_t) * MAX_CPU_COUNT);
 
     #if MAX_CPU_COUNT > 1
     INIT_SPINLOCK(&sched_lock);

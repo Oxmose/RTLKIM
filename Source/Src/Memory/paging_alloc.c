@@ -63,6 +63,11 @@ static OS_RETURN_E add_free(const uint32_t start, const uint32_t size,
     mem_area_t* save;
     mem_area_t* new_node;
 
+    if(list == NULL)
+    {
+        return OS_ERR_NULL_POINTER;
+    }
+
     if(*list == NULL)
     {
         /* Create first node */

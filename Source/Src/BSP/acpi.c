@@ -221,7 +221,7 @@ static OS_RETURN_E acpi_parse_apic(acpi_madt_t* madt_ptr)
 
     acpi_initialized = 1;
 
-    return OS_NO_ERR;
+    return err;
 }
 
 /**

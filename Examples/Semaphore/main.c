@@ -39,7 +39,7 @@ int main(void)
                                   thread_routine, (void*)i);
         if(err != OS_NO_ERR)
         {
-            printf("Error while creating thread %d: %d\n", i, err);
+            printf("Error while creating thread %u: %d\n", i, err);
             return -1;
         }
     }

@@ -133,7 +133,7 @@ OS_RETURN_E time_init(const kernel_timer_t* main_timer,
     }
 
     /* Init he system's values */
-    memset(sys_tick_count, sizeof(uint64_t) * MAX_CPU_COUNT, 0);
+    memset(sys_tick_count, 0, sizeof(uint64_t) * MAX_CPU_COUNT);
 
     /* Sets all the possible timer interrutps */
     err = sys_main_timer.set_frequency(KERNEL_MAIN_TIMER_FREQ);
