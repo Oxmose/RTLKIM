@@ -21,12 +21,13 @@
  ******************************************************************************/
 
 #include <Cpu/cpu.h>              /* mapped_io */
+#include <Cpu/cpu_settings.h>     /* INT_IRQ_OFFSET */
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E, NULL */
 #include <IO/kernel_output.h>     /* kernel_success */
-#include <Interrupt/interrupts.h> /* INT_IRQ_OFFSET */
 #include <BSP/acpi.h>             /* acpi_get_io_apic_address */
 #include <BSP/lapic.h>            /* lapic_set_int_eoi */
+#include <BSP/pic.h>              /* PIC_MAX_IRQ_LINE */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h>        /* kernel_mmap */
 #include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
@@ -225,30 +226,35 @@ OS_RETURN_E io_apic_set_irq_eoi(const uint32_t irq_number)
 INTERRUPT_TYPE_E io_apic_handle_spurious_irq(const uint32_t int_number)
 {
     INTERRUPT_TYPE_E int_type;
+    int32_t          irq_id;
 
     #if IOAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("IOAPIC spurious IRQ %d\n",
                         int_number);
     #endif
 
-    int_type = INTERRUPT_TYPE_REGULAR;
+        int_type = INTERRUPT_TYPE_REGULAR;
 
-    /* If we received a PIC spurious interrupt. */
-    if(int_number >= INT_PIC_IRQ_OFFSET &&
-       int_number >= INT_PIC_IRQ_OFFSET + 0x0F)
+    irq_id = int_number - INT_PIC_IRQ_OFFSET;
+    if(irq_id >= 0 && irq_id <= PIC_MAX_IRQ_LINE)
     {
-        lapic_set_int_eoi(int_number);
-        int_type = INTERRUPT_TYPE_SPURIOUS;
+        /* If we received a PIC spurious interrupt. */
+        if(int_number >= INT_PIC_IRQ_OFFSET &&
+        int_number >= INT_PIC_IRQ_OFFSET + 0x0F)
+        {
+            lapic_set_int_eoi(int_number);
+            int_type = INTERRUPT_TYPE_SPURIOUS;
+        }
+
+        /* Check for LAPIC spurious interrupt. */
+        if(int_number == LAPIC_SPURIOUS_INT_LINE)
+        {
+            lapic_set_int_eoi(int_number);
+            int_type = INTERRUPT_TYPE_SPURIOUS;
+        }
     }
 
-    /* Check for LAPIC spurious interrupt. */
-    if(int_number == LAPIC_SPURIOUS_INT_LINE)
-    {
-        lapic_set_int_eoi(int_number);
-        int_type = INTERRUPT_TYPE_SPURIOUS;
-    }
-
-    return int_type;;
+    return int_type;
 }
 
 int32_t io_apic_get_irq_int_line(const uint32_t irq_number)

@@ -136,6 +136,21 @@ void cpu_restore_context(cpu_state_t* cpu_state,
                          const kernel_thread_t* thread);
 
 /**
+ * @brief Sets the next thread's isntruction.
+ * 
+ * @details Modifies the thread's next instruction pointer to 
+ * execute a different execution flow.
+ * 
+ * @param[in] cpu_state The current CPU state.
+ * @param[out] stack_state The current stack state that will be modified.
+ * @param[in] next_inst The address of the next instruction to be executed by
+ * the thread.
+ */
+void cpu_set_next_thread_instruction(const cpu_state_t* cpu_state,
+                                     stack_state_t* stack_state, 
+                                     const uint32_t next_inst);
+
+/**
  * @brief Raises CPU interrupt.
  * 
  * @details Raises a software CPU interrupt on the desired line.
@@ -149,5 +164,28 @@ void cpu_restore_context(cpu_state_t* cpu_state,
  * calls made by this function.
  */
 OS_RETURN_E cpu_raise_interrupt(const uint32_t interrupt_line);
+
+/**
+ * @brief Returns the CPU current interrupt state.
+ * 
+ * @details Returns the current CPU eflags interrupt enable value.
+ * 
+ * @return The CPU current interrupt state: 1 if enabled, 0 otherwise.
+ */
+uint32_t cpu_get_interrupt_state(void);
+
+/** 
+ * @brief Returns the saved interrupt state.
+ * 
+ * @details Returns the saved interrupt state based on the stack state.
+ * 
+ * @param[in] cpu_state The current CPU state.
+ * @param[in] stack_state The current stack state.
+ * 
+ * @return The current savec interrupt state: 1 if enabled, 0 otherwise.
+ */
+uint32_t cpu_get_saved_interrupt_state(const cpu_state_t* cpu_state,
+                                       const stack_state_t* stack_state);
+
 
 #endif /* __CPU_API_H_ */

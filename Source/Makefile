@@ -12,7 +12,7 @@
 
 ######################### Modules selection
 
-MODULES  = IO Time Memory Core Lib User Sync Communication
+MODULES  = IO Time Memory Core Lib User Sync Communication Interrupt
 INC_ARCH = NONE
 
 ifeq ($(TESTS), TRUE)
@@ -33,8 +33,7 @@ BIN_DIR    = Bin
 
 ifeq ($(arch), i386)
 MODULES  += Arch/i386/API Arch/i386/Boot Arch/i386/BSP \
-	        Arch/i386/Cpu Arch/i386/Drivers Arch/i386/Interrupt \
-			Arch/i386/Memory
+	        Arch/i386/Cpu Arch/i386/Drivers Arch/i386/Memory
 INC_ARCH = -I $(INC_DIR)/Arch/i386/
 endif 
 

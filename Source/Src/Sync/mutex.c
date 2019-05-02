@@ -30,7 +30,7 @@
 #include <Core/kernel_queue.h> /* kernel_queue_t, kernel_queue_node_t */
 #include <Core/scheduler.h>    /* lock_thread, unlock_thread */
 #include <IO/kernel_output.h>  /* kernel_error */
-#include <Interrupt/panic.h>   /* kernel_panic */
+#include <Cpu/panic.h>   /* kernel_panic */
 #include <Sync/critical.h>     /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */

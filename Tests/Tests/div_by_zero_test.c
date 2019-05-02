@@ -1,7 +1,7 @@
 #include <IO/kernel_output.h>
 #include <Core/scheduler.h>
 #include <Interrupt/interrupts.h>
-#include <Interrupt/panic.h>
+#include <Cpu/panic.h>
 #include <Tests/test_bank.h>
 #include <Lib/string.h>
 

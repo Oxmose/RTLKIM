@@ -1,30 +1,30 @@
 /***************************************************************************//**
  * @file exceptions.c
- *
+ * 
  * @see exceptions.h
  *
  * @author Alexy Torres Aurora Dugo
  *
  * @date 27/05/2018
  *
- * @version 1.5
+ * @version 2.0
  *
- * @brief X86 exceptions manager.
- *
- * @warning These functions must be called during or after the exceptions are
+ * @brief Exceptions manager. 
+ * 
+ * @warning These functions must be called during or after the interrupts are 
  * set.
- *
- * @details X86 exception manager. Allows to attach ISR to intel exceptions
- * lines.
- *
+ * 
+ * @details Exception manager. Allows to attach ISR to exceptions lines.
+ * 
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
 
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E */
-#include <Interrupt/panic.h>  /* panic */
-#include <Cpu/cpu_settings.h> /* IDT_ENTRY_COUNT */
+#include <Cpu/panic.h>        /* panic */
+#include <Cpu/cpu_settings.h> /* INT_ENTRY_COUNT */
+#include <API/cpu_api.h>      /* cpu_set_next_thread_instruction */
 #include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Core/scheduler.h>   /* sched_terminate_thread */
 
@@ -39,7 +39,7 @@
  ******************************************************************************/
 
 /** @brief Stores the handlers for each exception, defined in exceptions.h */
-extern custom_handler_t kernel_interrupt_handlers[IDT_ENTRY_COUNT];
+extern custom_handler_t kernel_interrupt_handlers[INT_ENTRY_COUNT];
 
 #if MAX_CPU_COUNT > 1
 /** @brief Critical section spinlock. */
@@ -73,7 +73,9 @@ static void div_by_zero_handler(cpu_state_t* cpu_state, uint32_t int_id,
         panic(cpu_state, int_id, stack_state);
     }
     sched_set_thread_termination_cause(THREAD_TERMINATE_CAUSE_DIV_BY_ZERO);
-    stack_state->eip = (uint32_t)sched_terminate_thread;
+    cpu_set_next_thread_instruction(cpu_state, stack_state, 
+                                    (uint32_t)sched_terminate_thread);
+    
 }
 
 

@@ -29,7 +29,7 @@
 #include <BSP/acpi.h>             /* acpi_init() */
 #include <Interrupt/interrupts.h> /* kernel_interrupt_init() */
 #include <Interrupt/exceptions.h> /* kernel_exception_init() */
-#include <Interrupt/panic.h>      /* kernel_panic() */
+#include <Cpu/panic.h>      /* kernel_panic() */
 #include <Memory/meminfo.h>       /* memory_map_init() */
 #include <Memory/paging.h>        /* paging_init() */
 #include <Drivers/vga_text.h>     /* vga_text_driver */

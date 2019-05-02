@@ -485,13 +485,13 @@ __inline__ static int32_t cpu_cpuid(const uint32_t code,
 }
 
 /** @brief Clears interupt bit which results in disabling interrupts. */
-__inline__ static void cpu_cli(void)
+__inline__ static void cpu_clear_interrupt(void)
 {
     __asm__ __volatile__("cli":::"memory");
 }
 
 /** @brief Sets interrupt bit which results in enabling interupts. */
-__inline__ static void cpu_sti(void)
+__inline__ static void cpu_set_interrupt(void)
 {
     __asm__ __volatile__("sti":::"memory");
 }

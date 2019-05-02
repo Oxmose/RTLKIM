@@ -7,11 +7,11 @@
  *
  * @date 14/12/2017
  *
- * @version 1.5
+ * @version 2
  *
- * @brief X86 interrupt manager.
+ * @brief Interrupt manager.
  * 
- * @details X86 interrupt manager. Allows to attach ISR to interrupt lines and
+ * @details Interrupt manager. Allows to attach ISR to interrupt lines and
  * manage IRQ used by the CPU. We also define the general interrupt handler 
  * here.
  * 
@@ -23,99 +23,17 @@
 
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E */
-#include <Cpu/cpu_settings.h> /* IDT_ENTRY_COUNT */
+#include <Cpu/cpu_settings.h> /* cpu_state_t, stack_state_t */
 
 /*******************************************************************************
  * CONSTANTS
  ******************************************************************************/
 
-/** @brief Offset of the first line of an IRQ interrupt from PIC. */
-#define INT_PIC_IRQ_OFFSET     0x30
-/** @brief Offset of the first line of an IRQ interrupt from IO-APIC. */
-#define INT_IOAPIC_IRQ_OFFSET  0x40
-/** @brief Minimal customizable accepted interrupt line. */
-#define MIN_INTERRUPT_LINE     0x20
-/** @brief Maximal customizable accepted interrupt line. */
-#define MAX_INTERRUPT_LINE     (IDT_ENTRY_COUNT - 1)
-
-/** @brief PIT IRQ number. */
-#define PIT_IRQ_LINE              0
-/** @brief Keyboard IRQ number. */
-#define KBD_IRQ_LINE              1
-/** @brief Serial COM2-4 IRQ number. */
-#define SERIAL_2_4_IRQ_LINE       3
-/** @brief Serial COM1-3 IRQ number. */
-#define SERIAL_1_3_IRQ_LINE       4
-/** @brief RTC IRQ number. */
-#define RTC_IRQ_LINE              8
-/** @brief Mouse IRQ number. */
-#define MOUSE_IRQ_LINE            12
-
-/** @brief LAPIC Timer interrupt line. */
-#define LAPIC_TIMER_INTERRUPT_LINE 0x20
-/** @brief Scheduler software interrupt line. */
-#define SCHEDULER_SW_INT_LINE      0x21
-/** @brief Panic software interrupt line. */
-#define PANIC_INT_LINE             0x2A
+/* None */
 
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/
-
-/** @brief Holds the CPU register values */
-struct cpu_state
-{
-    /** @brief CPU's esp register. */
-    uint32_t esp;
-    /** @brief CPU's ebp register. */
-    uint32_t ebp;
-    /** @brief CPU's edi register. */
-    uint32_t edi;
-    /** @brief CPU's esi register. */
-    uint32_t esi;
-    /** @brief CPU's edx register. */
-    uint32_t edx;
-    /** @brief CPU's ecx register. */
-    uint32_t ecx;
-    /** @brief CPU's ebx register. */
-    uint32_t ebx;
-    /** @brief CPU's eax register. */
-    uint32_t eax;
-    
-    /** @brief CPU's ss register. */
-    uint32_t ss;
-    /** @brief CPU's gs register. */
-    uint32_t gs;
-    /** @brief CPU's fs register. */
-    uint32_t fs;
-    /** @brief CPU's es register. */
-    uint32_t es;
-    /** @brief CPU's ds register. */
-    uint32_t ds;
-} __attribute__((packed));
-
-/** 
- * @brief Defines cpu_state_t type as a shorcut for struct cpu_state.
- */
-typedef struct cpu_state cpu_state_t;
-
-/** @brief Hold the stack state before the interrupt */
-struct stack_state
-{
-    /** @brief Interrupt's error code. */
-    uint32_t error_code;
-    /** @brief EIP of the faulting instruction. */
-    uint32_t eip;
-    /** @brief CS before the interrupt. */
-    uint32_t cs;
-    /** @brief EFLAGDS before the interrupt. */
-    uint32_t eflags;
-} __attribute__((packed));
-
-/** 
- * @brief Defines stack_state_t type as a shorcut for struct stack_state.
- */
-typedef struct stack_state stack_state_t;
 
 /** @brief Custom interrupt handler structure. */
 struct custom_handler

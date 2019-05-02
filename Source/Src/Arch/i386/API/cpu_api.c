@@ -128,6 +128,15 @@ void cpu_restore_context(cpu_state_t* cpu_state,
     cpu_state->esp = thread->cpu_context.esp;
 }
 
+void cpu_set_next_thread_instruction(const cpu_state_t* cpu_state,
+                                     stack_state_t* stack_state, 
+                                     const uint32_t next_inst)
+{
+    (void) cpu_state;
+    /* Set next instruction */
+    stack_state->eip = next_inst;
+}
+
 OS_RETURN_E cpu_raise_interrupt(const uint32_t interrupt_line)
 {
     if(interrupt_line > MAX_INTERRUPT_LINE)
@@ -908,4 +917,16 @@ OS_RETURN_E cpu_raise_interrupt(const uint32_t interrupt_line)
     }
 
     return kernel_interrupt_set_irq_eoi(interrupt_line);
+}
+
+uint32_t cpu_get_interrupt_state(void)
+{
+    return ((cpu_save_flags() & CPU_EFLAGS_IF) != 0);
+}
+
+uint32_t cpu_get_saved_interrupt_state(const cpu_state_t* cpu_state,
+                                       const stack_state_t* stack_state)
+{
+    (void) cpu_state;
+    return stack_state->eflags & CPU_EFLAGS_IF;
 }

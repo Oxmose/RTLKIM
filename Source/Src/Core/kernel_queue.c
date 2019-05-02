@@ -22,7 +22,7 @@
 #include <Lib/stdint.h>      /* Generic int types */
 #include <Lib/string.h>      /* memset */
 #include <Memory/kheap.h>    /* kmalloc, kfree */
-#include <Interrupt/panic.h> /* kernel_panic */
+#include <Cpu/panic.h> /* kernel_panic */
 #include <Sync/critical.h>   /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */

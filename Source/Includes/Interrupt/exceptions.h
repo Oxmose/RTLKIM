@@ -7,15 +7,14 @@
  *
  * @date 27/05/2018
  *
- * @version 1.5
+ * @version 2.0
  *
- * @brief X86 exceptions manager. 
+ * @brief Exceptions manager. 
  * 
  * @warning These functions must be called during or after the interrupts are 
  * set.
  * 
- * @details X86 exception manager. Allows to attach ISR to intel exceptions
- * lines.
+ * @details Exception manager. Allows to attach ISR to exceptions lines.
  * 
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
@@ -25,7 +24,7 @@
 
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E */
-#include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t */
+#include <Cpu/cpu_settings.h> /* cpu_state_t, stack_state_t */
 
 /*******************************************************************************
  * CONSTANTS

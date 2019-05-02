@@ -122,6 +122,9 @@
 /** @brief Number of entries in the kernel's IDT. */
 #define IDT_ENTRY_COUNT 256
 
+/** @brief Defines the kernel's maximal entry count. */
+#define INT_ENTRY_COUNT IDT_ENTRY_COUNT
+
 /***************************
  * IDT Flags
  **************************/
@@ -146,9 +149,97 @@
 /** @brief IDT flag: interrupt type trap gate. */
 #define IDT_TYPE_TRAP_GATE 0x0F
 
+/***************************
+ * INT/IRQ Settings
+ **************************/
+
+/** @brief Offset of the first line of an IRQ interrupt from PIC. */
+#define INT_PIC_IRQ_OFFSET     0x30
+/** @brief Offset of the first line of an IRQ interrupt from IO-APIC. */
+#define INT_IOAPIC_IRQ_OFFSET  0x40
+/** @brief Minimal customizable accepted interrupt line. */
+#define MIN_INTERRUPT_LINE     0x20
+/** @brief Maximal customizable accepted interrupt line. */
+#define MAX_INTERRUPT_LINE     (IDT_ENTRY_COUNT - 1)
+
+/** @brief PIT IRQ number. */
+#define PIT_IRQ_LINE              0
+/** @brief Keyboard IRQ number. */
+#define KBD_IRQ_LINE              1
+/** @brief Serial COM2-4 IRQ number. */
+#define SERIAL_2_4_IRQ_LINE       3
+/** @brief Serial COM1-3 IRQ number. */
+#define SERIAL_1_3_IRQ_LINE       4
+/** @brief RTC IRQ number. */
+#define RTC_IRQ_LINE              8
+/** @brief Mouse IRQ number. */
+#define MOUSE_IRQ_LINE            12
+
+/** @brief LAPIC Timer interrupt line. */
+#define LAPIC_TIMER_INTERRUPT_LINE 0x20
+/** @brief Scheduler software interrupt line. */
+#define SCHEDULER_SW_INT_LINE      0x21
+/** @brief Panic software interrupt line. */
+#define PANIC_INT_LINE             0x2A
+
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/
+
+/** @brief Holds the CPU register values */
+struct cpu_state
+{
+    /** @brief CPU's esp register. */
+    uint32_t esp;
+    /** @brief CPU's ebp register. */
+    uint32_t ebp;
+    /** @brief CPU's edi register. */
+    uint32_t edi;
+    /** @brief CPU's esi register. */
+    uint32_t esi;
+    /** @brief CPU's edx register. */
+    uint32_t edx;
+    /** @brief CPU's ecx register. */
+    uint32_t ecx;
+    /** @brief CPU's ebx register. */
+    uint32_t ebx;
+    /** @brief CPU's eax register. */
+    uint32_t eax;
+    
+    /** @brief CPU's ss register. */
+    uint32_t ss;
+    /** @brief CPU's gs register. */
+    uint32_t gs;
+    /** @brief CPU's fs register. */
+    uint32_t fs;
+    /** @brief CPU's es register. */
+    uint32_t es;
+    /** @brief CPU's ds register. */
+    uint32_t ds;
+} __attribute__((packed));
+
+/** 
+ * @brief Defines cpu_state_t type as a shorcut for struct cpu_state.
+ */
+typedef struct cpu_state cpu_state_t;
+
+/** @brief Hold the stack state before the interrupt */
+struct stack_state
+{
+    /** @brief Interrupt's error code. */
+    uint32_t error_code;
+    /** @brief EIP of the faulting instruction. */
+    uint32_t eip;
+    /** @brief CS before the interrupt. */
+    uint32_t cs;
+    /** @brief EFLAGDS before the interrupt. */
+    uint32_t eflags;
+} __attribute__((packed));
+
+/** 
+ * @brief Defines stack_state_t type as a shorcut for struct stack_state.
+ */
+typedef struct stack_state stack_state_t;
 
 /**  
  * @brief CPU TSS abstraction structure. This is the representation the kernel 

@@ -23,7 +23,7 @@
 #include <Cpu/cpu.h>
 #include <BSP/io_apic.h>
 #include <Tests/test_bank.h>
-#include <Interrupt/panic.h>
+#include <Cpu/panic.h>
 
 #if IO_APIC_DRIVER_TEST == 1
 void io_apic_driver_test(void)

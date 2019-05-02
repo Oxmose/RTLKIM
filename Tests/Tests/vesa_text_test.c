@@ -1,5 +1,5 @@
 #include <Interrupt/interrupts.h>
-#include <Interrupt/panic.h>
+#include <Cpu/panic.h>
 #include <IO/kernel_output.h>
 #include <Cpu/cpu.h>
 #include <Drivers/vesa.h>

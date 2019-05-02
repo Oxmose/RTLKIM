@@ -3,7 +3,7 @@
 #include <Lib/stdint.h>
 #include <IO/kernel_output.h>
 #include <Tests/test_bank.h>
-#include <Interrupt/panic.h>
+#include <Cpu/panic.h>
 
 
 #if PANIC_TEST  == 1

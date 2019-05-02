@@ -21,11 +21,11 @@
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Lib/string.h>       /* memset */
-#include <BSP/pic.h>      /* pic_set_irq_eoi, pic_set_irq_mask */
-#include <Cpu/cpu_settings.h> /* IDT_ENTRY_COUNT */
-#include <Cpu/cpu.h>          /* sti cpu_cli */
+#include <BSP/pic.h>          /* pic_set_irq_eoi, pic_set_irq_mask */
+#include <Cpu/cpu_settings.h> /* INT_ENTRY_COUNT */
+#include <Cpu/cpu.h>          /* sti cpu_clear_interrupt */
+#include <Cpu/panic.h>        /* panic() */
 #include <IO/kernel_output.h> /* kernel_success */
-#include <Interrupt/panic.h>  /* panic () */
 #include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */
@@ -39,7 +39,7 @@
  ******************************************************************************/
 
 /** @brief Stores the handlers for each interrupt. */
-custom_handler_t kernel_interrupt_handlers[IDT_ENTRY_COUNT];
+custom_handler_t kernel_interrupt_handlers[INT_ENTRY_COUNT];
 
 /** @brief The current interrupt driver to be used by the kernel. */
 static interrupt_driver_t interrupt_driver;
@@ -88,14 +88,13 @@ static void spurious_handler(void)
  * eip, error code and the eflags register value.
  */
 void kernel_interrupt_handler(cpu_state_t cpu_state,
-                            uint32_t int_id,
-                            stack_state_t stack_state)
+                              uint32_t int_id,
+                              stack_state_t stack_state)
 {
-    int32_t irq_id;
     void(*handler)(cpu_state_t*, uint32_t, stack_state_t*);
 
     /* If interrupts are disabled */
-    if((stack_state.eflags & CPU_EFLAGS_IF) == 0 &&
+    if(cpu_get_saved_interrupt_state(&cpu_state, &stack_state) == 0 &&
        int_id != PANIC_INT_LINE &&
        int_id != SCHEDULER_SW_INT_LINE &&
        int_id >= MIN_INTERRUPT_LINE)
@@ -119,24 +118,20 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
         #endif
 
     /* Check for spurious interrupt */
-    irq_id = int_id - INT_PIC_IRQ_OFFSET;
-    if(irq_id >= 0 && irq_id <= PIC_MAX_IRQ_LINE)
+    if(interrupt_driver.driver_handle_spurious(int_id) ==
+        INTERRUPT_TYPE_SPURIOUS)
     {
-        if(interrupt_driver.driver_handle_spurious(int_id) ==
-           INTERRUPT_TYPE_SPURIOUS)
-        {
-            spurious_handler();
-            return;
-        }
-
-        #if INTERRUPT_KERNEL_DEBUG == 1
-        kernel_serial_debug("Non spurious %d\n",
-                            int_id);
-        #endif
+        spurious_handler();
+        return;
     }
 
+    #if INTERRUPT_KERNEL_DEBUG == 1
+    kernel_serial_debug("Non spurious %d\n",
+                        int_id);
+    #endif
+
     /* Select custom handlers */
-    if(int_id < IDT_ENTRY_COUNT &&
+    if(int_id < INT_ENTRY_COUNT &&
        kernel_interrupt_handlers[int_id].enabled == 1 &&
        kernel_interrupt_handlers[int_id].handler != NULL)
     {
@@ -164,7 +159,7 @@ OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)
 
     /* Blank custom interrupt handlers */
     memset(kernel_interrupt_handlers, 0,
-           sizeof(custom_handler_t) * IDT_ENTRY_COUNT);
+           sizeof(custom_handler_t) * INT_ENTRY_COUNT);
 
     /* Attach the special PANIC interrupt for when we don't know what to do */
     kernel_interrupt_handlers[PANIC_INT_LINE].enabled = 1;
@@ -358,7 +353,7 @@ void kernel_interrupt_restore(const uint32_t prev_state)
         kernel_serial_debug("--- Enabled HW INT ---\n");
         #endif
 
-        cpu_sti();
+        cpu_set_interrupt();
     }
 }
 
@@ -371,7 +366,7 @@ uint32_t kernel_interrupt_disable(void)
         return 0;
     }
 
-    cpu_cli();
+    cpu_clear_interrupt();
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("--- Disabled HW INT ---\n");
@@ -382,7 +377,7 @@ uint32_t kernel_interrupt_disable(void)
 
 uint32_t kernel_interrupt_get_state(void)
 {
-    return ((cpu_save_flags() & CPU_EFLAGS_IF) != 0);
+    return cpu_get_interrupt_state();
 }
 
 

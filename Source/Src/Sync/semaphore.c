@@ -29,7 +29,7 @@
 #include <Sync/critical.h>        /* ENTER_CRITICAL EXIT_CRITICIAL */
 #include <IO/kernel_output.h>     /* kernel_error */
 #include <Interrupt/interrupts.h> /* kernel_interrupt_get_state */
-#include <Interrupt/panic.h>      /* kernel_panic */
+#include <Cpu/panic.h>      /* kernel_panic */
 
 /* RTLK configuration file */
 #include <config.h>

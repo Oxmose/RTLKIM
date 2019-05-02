@@ -25,7 +25,7 @@
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/string.h>       /* memset */
 #include <IO/kernel_output.h> /* kernel_error */
-#include <Interrupt/panic.h>  /* kernel_panic */
+#include <Cpu/panic.h>  /* kernel_panic */
 #include <Memory/kheap.h>     /* kmalloc kfree */
 #include <Sync/semaphore.h>   /* semaphore_t */
 #include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */

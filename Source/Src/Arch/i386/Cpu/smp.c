@@ -18,7 +18,7 @@
 #include <BSP/lapic.h>             /* get_lapic_id */
 #include <BSP/pit.h>               /* pit_disable() */
 #include <Interrupt/interrupts.h>  /* interrupts structures (cpu_state_t...) */
-#include <Interrupt/panic.h>       /* kernel_panic */
+#include <Cpu/panic.h>       /* kernel_panic */
 #include <IO/kernel_output.h>      /* kernel_info */
 #include <Core/scheduler.h>        /* init_ap_scheduler */
 #include <Cpu/cpu.h>               /* hlt */

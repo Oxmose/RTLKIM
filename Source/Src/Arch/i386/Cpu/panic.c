@@ -22,7 +22,7 @@
 #include <IO/graphic.h>           /* color_scheme_t */
 #include <IO/kernel_output.h>     /* kernel_printf */
 #include <Lib/stdint.h>           /* Generic int types */
-#include <Cpu/cpu.h>              /* hlt cpu_cli */
+#include <Cpu/cpu.h>              /* hlt cpu_clear_interrupt */
 #include <Core/scheduler.h>       /* sched_get_tid */
 #include <BSP/lapic.h>            /* lapic_get_id() */
 #include <BSP/acpi.h>             /* acpi_get_detected_cpu_count() */
@@ -32,7 +32,7 @@
 #include <config.h>
 
 /* Header file */
-#include <Interrupt/panic.h>
+#include <Cpu/panic.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES
@@ -74,14 +74,14 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     {
         while(1)
         {
-            cpu_cli();
+            cpu_clear_interrupt();
             cpu_hlt();
         }
     }
 
     current_cpu_id = lapic_get_id();
 
-    cpu_cli();
+    cpu_clear_interrupt();
 
     /* Kill other CPUs */
     cpu_ids        = acpi_get_cpu_ids();
@@ -281,7 +281,7 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     /* We will never return from interrupt */
     while(1)
     {
-        cpu_cli();
+        cpu_clear_interrupt();
         cpu_hlt();
     }
 }

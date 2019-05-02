@@ -20,7 +20,7 @@
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Boot/multiboot.h>   /* MULTIBOOT_MEMORY_AVAILABLE */
 #include <IO/kernel_output.h> /* kernel_info */
-#include <Interrupt/panic.h>  /* kernel_panic.h */
+#include <Cpu/panic.h>  /* kernel_panic.h */
 
 /* RTLK configuration file */
 #include <config.h>

@@ -1,7 +1,7 @@
 #include <Tests/test_bank.h>
 #include <Core/kernel_queue.h>
 #include <IO/kernel_output.h>
-#include <Interrupt/panic.h>
+#include <Cpu/panic.h>
 #include <Lib/stddef.h>
 
 #if KERNEL_QUEUE_TEST == 1
