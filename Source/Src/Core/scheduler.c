@@ -26,7 +26,7 @@
 #include <Memory/paging_alloc.h>  /* kernel_paging_alloc */
 #include <Memory/paging.h>        /* KERNEL_PAGE_SIZE */
 #include <Cpu/cpu.h>              /* cpu_hlt */
-#include <Cpu/cpu_settings.h>     /* cpu_settings_set_tss_int_esp() */
+#include <API/cpu_api.h>          /* cpu_get_id */
 #include <Interrupt/panic.h>      /* kernel_panic */
 #include <Interrupt/interrupts.h> /* register_interrupt_handler,
                                    * set_IRQ_EOI, update_tick */
@@ -36,7 +36,6 @@
 #include <Time/time_management.h> /* time_get_current_uptime(),
                                    * time_register_scheduler() */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
-#include <BSP/lapic.h>            /* lapic_get_id() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -51,6 +50,8 @@
  /*******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************/
+/** @brief Main CPU ID. */
+static int32_t main_cpu = 0;
 
 /** @brief The last TID given by the kernel. */
 static volatile uint32_t last_given_tid;
@@ -151,7 +152,7 @@ static void thread_exit(void)
     uint32_t lock;
     #endif
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -321,12 +322,16 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
 {
     kernel_queue_node_t* node;
     OS_RETURN_E          err;
-    uint32_t             word;
+    uint32_t             word;    
     uint32_t             stack_page_count;
     uint32_t             i;
     int32_t              cpu_id;
 
-    cpu_id = lapic_get_id();
+    #if MAX_CPU_COUNT > 1
+    uint32_t secword;
+    #endif
+
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -508,7 +513,14 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
         paging_free_pages(thread->stack, stack_page_count + 1);
     }
     kfree(thread);
+
+    #if MAX_CPU_COUNT > 1
+    ENTER_CRITICAL(secword, &sched_lock);
     --thread_count;
+    EXIT_CRITICAL(secword, &sched_lock);
+    #else 
+    --thread_count;
+    #endif
 
     #if MAX_CPU_COUNT > 1
     EXIT_CRITICAL(word, &cpu_locks[cpu_id]);
@@ -529,7 +541,7 @@ static void thread_wrapper(void)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -598,7 +610,7 @@ static void* idle_sys(void* args)
 {
     int32_t  cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -617,11 +629,15 @@ static void* idle_sys(void* args)
 
         kernel_interrupt_restore(1);
 
-        if(system_state == SYSTEM_STATE_HALTED)
+        if(cpu_id == main_cpu && system_state == SYSTEM_STATE_HALTED)
         {
-            kernel_printf("\n");
-            kernel_info(" -- System HALTED -- ");
+            if(cpu_id == MAX_CPU_COUNT - 1)
+            {
+                kernel_printf("\n");
+                kernel_info(" -- System HALTED -- ");
+            }
             kernel_interrupt_disable();
+            main_cpu++;
         }
         cpu_hlt();
     }
@@ -630,7 +646,8 @@ static void* idle_sys(void* args)
     return NULL;
 }
 
-/* INIT thread routine. In addition to the IDLE thread, the INIT thread is the
+/** 
+ * @details INIT thread routine. In addition to the IDLE thread, the INIT thread is the
  * last thread to run. The thread will gather all orphan thread and wait for
  * their death before halting the system. The INIT thread routine is also
  * responsible for calling the main function.
@@ -650,7 +667,7 @@ static void* init_func(void* args)
     uint32_t             word;
     int32_t              cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -721,7 +738,7 @@ static void* init_func(void* args)
     #endif
 
     /* System thread are idle threads and INIT */
-    sys_thread = 2;
+    sys_thread = 1 + MAX_CPU_COUNT;
 
     #if MAX_CPU_COUNT > 1
     ENTER_CRITICAL(word, &cpu_locks[cpu_id]);
@@ -795,8 +812,6 @@ static void* init_func(void* args)
     /* If here, the system is halted */
     system_state = SYSTEM_STATE_HALTED;
 
-
-
     return NULL;
 }
 
@@ -811,9 +826,10 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     char                 idle_name[5] = "Idle\0";
     uint32_t             stack_index;
     int32_t              cpu_id;
+    uint32_t             current_cr3;
 
     /* Get CPU ID */
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -871,45 +887,20 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     {
         kfree(idle_thread[cpu_id]);
         return OS_ERR_MALLOC;
-    }
+    }    
 
     /* Init thread context */
-    idle_thread[cpu_id]->eip = (uint32_t) thread_wrapper;
-    idle_thread[cpu_id]->esp =
-        (uint32_t)&idle_thread[cpu_id]->stack[stack_index - 17];
-    idle_thread[cpu_id]->ebp =
-        (uint32_t)&idle_thread[cpu_id]->stack[stack_index - 1];
-    idle_thread[cpu_id]->tss_esp =
-        (uint32_t)&idle_thread[cpu_id]->kernel_stack + THREAD_KERNEL_STACK_SIZE;
-
     __asm__ __volatile__(
         "mov %%cr3, %%eax\n\t"
         "mov %%eax, %0\n\t"
-    : "=m" (idle_thread[cpu_id]->cr3)
-    : /* no input */
-    : "%eax"
+        : "=m" (current_cr3)
+        : /* no input */
+        : "%eax"
     );
-    idle_thread[cpu_id]->free_page_table = (uint32_t)kernel_free_pages;
 
-    /* Init thread stack */
-    idle_thread[cpu_id]->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
-    idle_thread[cpu_id]->stack[stack_index - 2]  = THREAD_INIT_CS;
-    idle_thread[cpu_id]->stack[stack_index - 3]  = idle_thread[cpu_id]->eip;
-    idle_thread[cpu_id]->stack[stack_index - 4]  = 0; /* UNUSED (error) */
-    idle_thread[cpu_id]->stack[stack_index - 5]  = 0; /* UNUSED (int id) */
-    idle_thread[cpu_id]->stack[stack_index - 6]  = THREAD_INIT_DS;
-    idle_thread[cpu_id]->stack[stack_index - 7]  = THREAD_INIT_ES;
-    idle_thread[cpu_id]->stack[stack_index - 8]  = THREAD_INIT_FS;
-    idle_thread[cpu_id]->stack[stack_index - 9]  = THREAD_INIT_GS;
-    idle_thread[cpu_id]->stack[stack_index - 10] = THREAD_INIT_SS;
-    idle_thread[cpu_id]->stack[stack_index - 11] = THREAD_INIT_EAX;
-    idle_thread[cpu_id]->stack[stack_index - 12] = THREAD_INIT_EBX;
-    idle_thread[cpu_id]->stack[stack_index - 13] = THREAD_INIT_ECX;
-    idle_thread[cpu_id]->stack[stack_index - 14] = THREAD_INIT_EDX;
-    idle_thread[cpu_id]->stack[stack_index - 15] = THREAD_INIT_ESI;
-    idle_thread[cpu_id]->stack[stack_index - 16] = THREAD_INIT_EDI;
-    idle_thread[cpu_id]->stack[stack_index - 17] = idle_thread[cpu_id]->ebp;
-    idle_thread[cpu_id]->stack[stack_index - 18] = idle_thread[cpu_id]->esp;
+    cpu_init_thread_context(thread_wrapper, stack_index, 
+                            (uint32_t)kernel_free_pages, 
+                            current_cr3, idle_thread[cpu_id]);
 
     strncpy(idle_thread[cpu_id]->name, idle_name, 5);
 
@@ -962,7 +953,7 @@ static void select_thread(void)
     uint64_t             current_time = time_get_current_uptime();
     int32_t              cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1093,7 +1084,7 @@ static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1107,7 +1098,7 @@ static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
      * thread.*/
     if(first_sched[cpu_id] == 1)
     {
-        active_thread[cpu_id]->esp = cpu_state->esp;
+        active_thread[cpu_id]->cpu_context.esp = cpu_state->esp;
     }
     else
     {
@@ -1125,10 +1116,10 @@ static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
     #endif
 
      /* Restore thread CR3 */
-    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(active_thread[cpu_id]->cr3));
+    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(active_thread[cpu_id]->cpu_context.cr3));
 
     /* Restore thread esp */
-    cpu_state->esp = active_thread[cpu_id]->esp;
+    cpu_state->esp = active_thread[cpu_id]->cpu_context.esp;
 }
 
 SYSTEM_STATE_E get_system_state(void)
@@ -1143,7 +1134,7 @@ OS_RETURN_E sched_init(void)
     uint32_t    j;
     int32_t     cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1285,7 +1276,7 @@ OS_RETURN_E sched_sleep(const unsigned int time_ms)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1322,7 +1313,7 @@ int32_t sched_get_tid(void)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1339,7 +1330,7 @@ int32_t sched_get_ptid(void)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1352,7 +1343,7 @@ uint32_t sched_get_priority(void)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1365,7 +1356,7 @@ OS_RETURN_E sched_set_priority(const uint32_t priority)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1434,7 +1425,7 @@ void sched_set_thread_termination_cause(const THREAD_TERMINATE_CAUSE_E cause)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1447,7 +1438,7 @@ void sched_terminate_thread(void)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1487,7 +1478,7 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
         return OS_ERR_UNAUTHORIZED_ACTION;
     }
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1585,21 +1576,24 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
         return OS_ERR_MALLOC;
     }
 
+    cpu_init_thread_context(thread_wrapper, stack_index, 
+                            active_thread[cpu_id]->free_page_table,
+                            active_thread[cpu_id]->cpu_context.cr3,
+                            new_thread);
+
     /* Init thread context */
-    new_thread->eip = (uint32_t) thread_wrapper;
-    new_thread->esp =
+    new_thread->cpu_context.eip = (uint32_t) thread_wrapper;
+    new_thread->cpu_context.esp =
         (uint32_t)&new_thread->stack[stack_index - 17];
-    new_thread->ebp =
+    new_thread->cpu_context.ebp =
         (uint32_t)&new_thread->stack[stack_index - 1];
-    new_thread->tss_esp =
-        (uint32_t)&new_thread->kernel_stack + THREAD_KERNEL_STACK_SIZE;
-    new_thread->cr3 = active_thread[cpu_id]->cr3;
+    new_thread->cpu_context.cr3 = active_thread[cpu_id]->cpu_context.cr3;
     new_thread->free_page_table = active_thread[cpu_id]->free_page_table;
 
     /* Init thread stack */
     new_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
     new_thread->stack[stack_index - 2]  = THREAD_INIT_CS;
-    new_thread->stack[stack_index - 3]  = new_thread->eip;
+    new_thread->stack[stack_index - 3]  = new_thread->cpu_context.eip;
     new_thread->stack[stack_index - 4]  = 0; /* UNUSED (error core) */
     new_thread->stack[stack_index - 5]  = 0; /* UNUSED (int id) */
     new_thread->stack[stack_index - 6]  = THREAD_INIT_DS;
@@ -1613,8 +1607,8 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
     new_thread->stack[stack_index - 14] = THREAD_INIT_EDX;
     new_thread->stack[stack_index - 15] = THREAD_INIT_ESI;
     new_thread->stack[stack_index - 16] = THREAD_INIT_EDI;
-    new_thread->stack[stack_index - 17] = new_thread->ebp;
-    new_thread->stack[stack_index - 18] = new_thread->esp;
+    new_thread->stack[stack_index - 17] = new_thread->cpu_context.ebp;
+    new_thread->stack[stack_index - 18] = new_thread->cpu_context.esp;
 
     strncpy(new_thread->name, name, THREAD_MAX_NAME_LENGTH);
 
@@ -1749,7 +1743,7 @@ OS_RETURN_E sched_wait_thread(thread_t thread, void** ret_val,
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1809,7 +1803,7 @@ kernel_queue_node_t* sched_lock_thread(const THREAD_WAIT_TYPE_E block_type)
     kernel_queue_node_t* current_thread_node;
     int32_t              cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1847,7 +1841,7 @@ OS_RETURN_E sched_unlock_thread(kernel_queue_node_t* node,
 
     thread = (kernel_thread_t*)node->data;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1921,7 +1915,7 @@ uint64_t sched_get_schedule_count(void)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1933,7 +1927,7 @@ uint64_t sched_get_idle_schedule_count(void)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1945,7 +1939,7 @@ uint32_t sched_get_thread_free_page_table(void)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1962,7 +1956,7 @@ uint32_t sched_get_thread_phys_pgdir(void)
 {
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -1972,5 +1966,5 @@ uint32_t sched_get_thread_phys_pgdir(void)
     {
         return (uint32_t)kernel_pgdir - KERNEL_MEM_OFFSET;
     }
-    return active_thread[cpu_id]->cr3;
+    return active_thread[cpu_id]->cpu_context.cr3;
 }

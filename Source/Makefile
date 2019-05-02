@@ -53,7 +53,7 @@ LINKER_FILE = Config/linker.ld
 AS = nasm
 LD = ld
 OBJCOPY = objcopy
-QEMU = qemu-system-x86_64
+QEMU = qemu-system-i386
 
 DEBUG_FLAGS = -Og -g
 EXTRA_FLAGS = -O2

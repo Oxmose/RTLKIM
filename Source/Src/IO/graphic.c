@@ -32,7 +32,7 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-/** @brief Stores the currently selected driver. Default is VGA text driver */
+/** @brief Stores the currently selected driver. Default is serial text driver */
 static kernel_graphic_driver_t graphic_driver = {
     .clear_screen = serial_clear_screen,
     .put_cursor_at = serial_put_cursor_at,

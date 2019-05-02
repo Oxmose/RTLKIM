@@ -149,7 +149,11 @@ static void lapic_init_pit_handler(cpu_state_t* cpu_state, uint32_t int_id,
 OS_RETURN_E lapic_init(void)
 {
     OS_RETURN_E err;
+
+    #if MAX_CPU_COUNT > 1
     uint32_t    i;
+    #endif
+
     const void* lapic_phys_addr;
 
     #if LAPIC_KERNEL_DEBUG == 1
@@ -164,10 +168,12 @@ OS_RETURN_E lapic_init(void)
         return OS_ERR_NOT_SUPPORTED;
     }
 
+    #if MAX_CPU_COUNT > 1
     for(i = 0; i < MAX_CPU_COUNT; ++i)
     {
         INIT_SPINLOCK(&timer_lock[i]);
     }
+    #endif
 
     /* Get Local APIC base address */
     lapic_phys_addr = acpi_get_lapic_addr();
@@ -505,9 +511,12 @@ OS_RETURN_E lapic_timer_init(void)
 OS_RETURN_E lapic_ap_timer_init(void)
 {
     uint32_t word;
+
+    #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
     cpu_id = lapic_get_id();
+    #endif
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer AP Initialization\n");
@@ -555,10 +564,12 @@ uint32_t lapic_timer_get_frequency(void)
 {
     uint32_t freq;
     uint32_t word;
+
+    #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
     cpu_id = lapic_get_id();
-
+    #endif
 
     #if MAX_CPU_COUNT > 1
     ENTER_CRITICAL(word, &timer_lock[cpu_id]);
@@ -580,9 +591,12 @@ uint32_t lapic_timer_get_frequency(void)
 OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
 {
     uint32_t word;
+
+    #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
     cpu_id = lapic_get_id();
+    #endif 
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer set frequency %d\n", frequency);
@@ -625,9 +639,12 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
 OS_RETURN_E lapic_timer_enable(void)
 {
     uint32_t word;
+
+    #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
     cpu_id = lapic_get_id();
+    #endif
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer enable\n");
@@ -667,9 +684,12 @@ OS_RETURN_E lapic_timer_enable(void)
 OS_RETURN_E lapic_timer_disable(void)
 {
     uint32_t word;
+
+    #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
     cpu_id = lapic_get_id();
+    #endif
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Timer disable\n");
@@ -713,9 +733,12 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
 {
     OS_RETURN_E err;
     uint32_t    word;
+
+    #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
     cpu_id = lapic_get_id();
+    #endif
 
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Initialization\n");

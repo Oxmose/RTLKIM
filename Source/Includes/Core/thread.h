@@ -193,27 +193,13 @@ struct kernel_thread
     /** @brief Thread's return value. */
     void* ret_val;
 
-    /** @brief Thread's specific ESP registers. */
-    uint32_t esp;
-    /** @brief Thread's specific EBP registers. */
-    uint32_t ebp;
-    /** @brief Thread's specific EIP registers. */
-    uint32_t eip;
-
-    /** @brief TSS Interrupt stack pointer. */
-    uint32_t tss_esp;
-
-    /** @brief Thread's kernel stack, used for interrupts. */
-    uint8_t kernel_stack[THREAD_KERNEL_STACK_SIZE];
+    virtual_cpu_context_t cpu_context;
 
     /** @brief Thread's stack. */
     uint32_t* stack;
 
     /** @brief Thread's stack size. */
     uint32_t stack_size;
-
-    /** @brief Thread's CR3 page directory pointer. */
-    uint32_t cr3;
 
     /** @brief Thread's free page table address. */
     uint32_t free_page_table;
