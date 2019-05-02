@@ -15,7 +15,7 @@ function testcase() {
         # Execute the test
         rm -f *.out
         cd ../Source
-        make TESTS=TRUE && (make qemu-test-mode > test.out &)
+        make arch=i386 TESTS=TRUE && (make qemu-test-mode > test.out &)
         sleep $2
         killall qemu-system-x86_64
         killall make

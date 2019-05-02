@@ -27,7 +27,6 @@ void* thread_routine(void* args)
 /* Used as example, it will be changed in the future. */
 int main(void)
 {
-    #if 0
     thread_t threads[MAX_CPU_COUNT];
     uint32_t start_time;
 
@@ -64,7 +63,6 @@ int main(void)
     }
 
     printf("Multi core took: %u\n", (uint32_t)time_get_current_uptime() -  start_time);
-#endif
-    printf("COUCOU From main \n");
+
     return 0;
 }

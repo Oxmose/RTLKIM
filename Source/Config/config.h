@@ -119,7 +119,7 @@
  * Timers settings
  ******************************************************************************/
 /** @brief Defines the current year (usefull for the RTC). */
-#define CURRENT_YEAR 2018
+#define CURRENT_YEAR 2019
 
 /** @brief Defines the kernel's main timer frequency. This will set the maximal
  * scheduling frequency. */

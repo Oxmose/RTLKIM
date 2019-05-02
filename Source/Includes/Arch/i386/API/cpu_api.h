@@ -19,7 +19,8 @@
 #ifndef __CPU_API_H_
 #define __CPU_API_H_
 
-#include <Lib/stdint.h>          /* Generic int types */
+#include <Lib/stdint.h>           /* Generic int types */
+#include <Interrupt/interrupts.h> /* cpu_state, stack_state */
 
 /*******************************************************************************
  * CONSTANTS
@@ -82,5 +83,71 @@ void cpu_init_thread_context(void (*entry_point)(void),
                              const uint32_t free_table_page,
                              const uint32_t page_table_address,
                              kernel_thread_t* thread);
+
+/** 
+ * @brief Returns the current page directory physical address.
+ * 
+ * @details Return the current value stored in CR3. No error can be returned.
+ * 
+ * @return The current CR3 value.
+ */
+uint32_t cpu_get_current_pgdir(void);
+
+/**
+ * @brief Saves the current thread CPU context.
+ * 
+ * @details Saves the current CPU context for the thread.
+ * Registers (and other data) should be saved here.
+ * 
+ * @param[in] first_sche Should be 0 if the CPU has never been scheduled
+ * before. Otherwise this value should be 1.
+ * @param[in] cpu_state The current CPU state.
+ * @param[in] stack_stack The current thread's stack state.
+ * @param[out] thread The thread structure to save the data to.
+ */
+void cpu_save_context(const uint32_t first_sched,
+                      const cpu_state_t* cpu_state, 
+                      const stack_state_t* stack_state, 
+                      kernel_thread_t* thread);
+
+/**
+ * @brief Update the CPU's page directory.
+ *
+ * @details Update the current CPU CR3 with the new page directory
+ * physical address.
+ * 
+ * @param[in] new_pgdir The physical address of the new page directory.
+ */
+void cpu_update_pgdir(const uint32_t new_pgdir);
+
+/**
+ * @brief Restores the thread's CPU context.
+ * 
+ * @details Restores the thread's CPU context from the thread storage 
+ * structure. Registers are updated and the execution flow might be
+ * updated.
+ * 
+ * @param[out] cpu_state The current CPU state that will be modified.
+ * @param[in] stack_state The current stack state.
+ * @param[in] thread The thread structure to read the data from.
+ */
+void cpu_restore_context(cpu_state_t* cpu_state, 
+                         const stack_state_t* stack_state, 
+                         const kernel_thread_t* thread);
+
+/**
+ * @brief Raises CPU interrupt.
+ * 
+ * @details Raises a software CPU interrupt on the desired line.
+ * 
+ * @param[in] interrupt_line The line on which the interrupt should be raised.
+ * 
+ * @return OS_NO_ERR shoudl be return in case of success.
+ * - OS_ERR_UNAUTHORIZED_ACTION Is returned if the interrupt line is not
+ * correct.
+ * - Other errors value may be returned depending on the underlying function
+ * calls made by this function.
+ */
+OS_RETURN_E cpu_raise_interrupt(const uint32_t interrupt_line);
 
 #endif /* __CPU_API_H_ */

@@ -637,7 +637,7 @@ static void* idle_sys(void* args)
                 kernel_info(" -- System HALTED -- ");
             }
             kernel_interrupt_disable();
-            main_cpu++;
+            ++main_cpu;
         }
         cpu_hlt();
     }
@@ -826,7 +826,6 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     char                 idle_name[5] = "Idle\0";
     uint32_t             stack_index;
     int32_t              cpu_id;
-    uint32_t             current_cr3;
 
     /* Get CPU ID */
     cpu_id = cpu_get_id();
@@ -887,20 +886,11 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     {
         kfree(idle_thread[cpu_id]);
         return OS_ERR_MALLOC;
-    }    
-
-    /* Init thread context */
-    __asm__ __volatile__(
-        "mov %%cr3, %%eax\n\t"
-        "mov %%eax, %0\n\t"
-        : "=m" (current_cr3)
-        : /* no input */
-        : "%eax"
-    );
+    }
 
     cpu_init_thread_context(thread_wrapper, stack_index, 
                             (uint32_t)kernel_free_pages, 
-                            current_cr3, idle_thread[cpu_id]);
+                            cpu_get_current_pgdir(), idle_thread[cpu_id]);
 
     strncpy(idle_thread[cpu_id]->name, idle_name, 5);
 
@@ -1079,8 +1069,8 @@ static void select_thread(void)
  * @param[in] int_id The interrupt id when calling this function.
  * @param[in] stack_state The pre interrupt stack state.
  */
-static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
-                         stack_state_t *stack_state)
+static void schedule_int(cpu_state_t* cpu_state, uint32_t int_id,
+                         stack_state_t* stack_state)
 {
     int32_t cpu_id;
 
@@ -1091,19 +1081,8 @@ static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
     }
 
     (void) int_id;
-    (void) stack_state;
 
-    /* Save the actual ESP (not the fist time since the first schedule should
-     * dissociate the boot sequence (pointed by the current esp) and the IDLE
-     * thread.*/
-    if(first_sched[cpu_id] == 1)
-    {
-        active_thread[cpu_id]->cpu_context.esp = cpu_state->esp;
-    }
-    else
-    {
-        first_sched[cpu_id] = 1;
-    }
+    cpu_save_context(first_sched[cpu_id], cpu_state, stack_state, active_thread[cpu_id]);
 
     /* Search for next thread */
     select_thread();
@@ -1115,11 +1094,11 @@ static void schedule_int(cpu_state_t *cpu_state, uint32_t int_id,
                         prev_thread[cpu_id]->tid, active_thread[cpu_id]->tid);
     #endif
 
-     /* Restore thread CR3 */
-    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(active_thread[cpu_id]->cpu_context.cr3));
+     /* Restore thread context */
+    cpu_update_pgdir(active_thread[cpu_id]->cpu_context.cr3);
+    cpu_restore_context(cpu_state, stack_state, active_thread[cpu_id]);
 
-    /* Restore thread esp */
-    cpu_state->esp = active_thread[cpu_id]->cpu_context.esp;
+    first_sched[cpu_id] = 1;
 }
 
 SYSTEM_STATE_E get_system_state(void)
@@ -1268,8 +1247,7 @@ OS_RETURN_E sched_init_ap(void)
 void sched_schedule(void)
 {
     /* Raise scheduling interrupt */
-    __asm__ __volatile__("int %0" :: "i" (SCHEDULER_SW_INT_LINE));
-    kernel_interrupt_set_irq_eoi(SCHEDULER_SW_INT_LINE);
+    cpu_raise_interrupt(SCHEDULER_SW_INT_LINE);
 }
 
 OS_RETURN_E sched_sleep(const unsigned int time_ms)
@@ -1576,39 +1554,11 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
         return OS_ERR_MALLOC;
     }
 
+    /* Init thread's context */
     cpu_init_thread_context(thread_wrapper, stack_index, 
                             active_thread[cpu_id]->free_page_table,
                             active_thread[cpu_id]->cpu_context.cr3,
                             new_thread);
-
-    /* Init thread context */
-    new_thread->cpu_context.eip = (uint32_t) thread_wrapper;
-    new_thread->cpu_context.esp =
-        (uint32_t)&new_thread->stack[stack_index - 17];
-    new_thread->cpu_context.ebp =
-        (uint32_t)&new_thread->stack[stack_index - 1];
-    new_thread->cpu_context.cr3 = active_thread[cpu_id]->cpu_context.cr3;
-    new_thread->free_page_table = active_thread[cpu_id]->free_page_table;
-
-    /* Init thread stack */
-    new_thread->stack[stack_index - 1]  = THREAD_INIT_EFLAGS;
-    new_thread->stack[stack_index - 2]  = THREAD_INIT_CS;
-    new_thread->stack[stack_index - 3]  = new_thread->cpu_context.eip;
-    new_thread->stack[stack_index - 4]  = 0; /* UNUSED (error core) */
-    new_thread->stack[stack_index - 5]  = 0; /* UNUSED (int id) */
-    new_thread->stack[stack_index - 6]  = THREAD_INIT_DS;
-    new_thread->stack[stack_index - 7]  = THREAD_INIT_ES;
-    new_thread->stack[stack_index - 8]  = THREAD_INIT_FS;
-    new_thread->stack[stack_index - 9]  = THREAD_INIT_GS;
-    new_thread->stack[stack_index - 10] = THREAD_INIT_SS;
-    new_thread->stack[stack_index - 11] = THREAD_INIT_EAX;
-    new_thread->stack[stack_index - 12] = THREAD_INIT_EBX;
-    new_thread->stack[stack_index - 13] = THREAD_INIT_ECX;
-    new_thread->stack[stack_index - 14] = THREAD_INIT_EDX;
-    new_thread->stack[stack_index - 15] = THREAD_INIT_ESI;
-    new_thread->stack[stack_index - 16] = THREAD_INIT_EDI;
-    new_thread->stack[stack_index - 17] = new_thread->cpu_context.ebp;
-    new_thread->stack[stack_index - 18] = new_thread->cpu_context.esp;
 
     strncpy(new_thread->name, name, THREAD_MAX_NAME_LENGTH);
 
@@ -1966,5 +1916,5 @@ uint32_t sched_get_thread_phys_pgdir(void)
     {
         return (uint32_t)kernel_pgdir - KERNEL_MEM_OFFSET;
     }
-    return active_thread[cpu_id]->cpu_context.cr3;
+    return cpu_get_current_pgdir();
 }
