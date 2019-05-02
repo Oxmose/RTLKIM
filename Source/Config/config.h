@@ -36,10 +36,36 @@
 #define KERNEL_MEM_OFFSET 0xE0000000
 
 /*******************************************************************************
+ * Architecture settings
+ ******************************************************************************/
+
+/** @brief Use i386 architecture. */
+#define ARCH_I386  1
+/** @brief Use i386 basic BSP. */
+#define BSP_I386 1
+
+/** @brief RTLK current architecture. */
+#define RTLK_ARCH ARCH_I386
+/** @brief RTLK current BSP. */
+#define RTLK_BSP  BSP_I386
+
+/*******************************************************************************
  * Features settings
  ******************************************************************************/
 /** @brief Maximal number of CPU to be supported by the kernel. */
-#define MAX_CPU_COUNT      4
+#define MAX_CPU_COUNT  4
+
+/** @brief Display with serial driver. */
+#define DISPLAY_SERIAL 0
+/** @brief Display with VGA driver. */
+#define DISPLAY_VGA    1
+/** @brief Display with VESA driver. */
+#define DISPLAY_VESA   2
+
+/*******************************************************************************
+ * I386 Arch Settings
+ ******************************************************************************/
+#if RTLK_ARCH == ARCH_I386
 
 /** @brief Enables the use of an IO-APIC instead of the PIC if present if the
  * system.
@@ -50,8 +76,12 @@
  */
 #define ENABLE_LAPIC_TIMER 1
 
-/** @brief Enables VESA support for graphic drivers. */
-#define ENABLE_VESA        0
+#endif /* RTLK_ARCH == ARCH_I386 */
+
+#if RTLK_BSP == BSP_I386 /****************************************************/
+
+/** @brief Enables support for graphic drivers. */
+#define DISPLAY_TYPE       DISPLAY_VGA
 
 /** @brief Enables ATA drivers support. */
 #define ENABLE_ATA         1
@@ -62,12 +92,6 @@
 /** @brief Enables mouse driver support. */
 #define ENABLE_MOUSE       0
 
-/** @brief Defines which serial port is used for debug purposes. */
-#define SERIAL_DEBUG_PORT  COM1
-
-/*******************************************************************************
- * Screen settings
- ******************************************************************************/
 /** @brief When VESA drivers are enabled, defines the maximal supported height
  * resolution.
  */
@@ -80,6 +104,16 @@
  * depth.
  */
 #define MAX_SUPPORTED_BPP    32
+
+#endif /* RTLK_BSP == BSP_I386 */ /*******************************************/
+
+
+/*******************************************************************************
+ * Global Arch Settings
+ ******************************************************************************/
+/** @brief Defines which serial port is used for debug purposes. */
+#define SERIAL_DEBUG_PORT  COM1
+
 
 /*******************************************************************************
  * Timers settings

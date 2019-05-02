@@ -24,7 +24,7 @@
 #include <Lib/string.h>           /* memset() */
 #include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t */
 #include <BSP/rtc.h>              /* rtc_update_time */
-#include <BSP/lapic.h>            /* lapi_get_id() */
+#include <API/cpu_api.h>          /* cpu_get_id() */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -214,7 +214,7 @@ void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
     (void)int_id;
     (void)stack;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -288,7 +288,7 @@ uint64_t time_get_current_uptime(void)
     uint64_t time_slice;
     int32_t  cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;
@@ -307,7 +307,7 @@ uint64_t time_get_tick_count(void)
 {
     int32_t  cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     if(cpu_id == -1)
     {
         cpu_id = 0;

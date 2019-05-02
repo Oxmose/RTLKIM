@@ -24,6 +24,7 @@
 #include <Memory/paging_alloc.h> /* paging_alloc_init */
 #include <Boot/multiboot.h>      /* MULTIBOOT_MEMORY_AVAILABLE */
 #include <Core/scheduler.h>      /* sched_get_thread_pgdir */
+#include <Memory/arch_paging.h>  /* Paging information */
 
 /* RTLK configuration file */
 #include <config.h>

@@ -22,7 +22,7 @@
 
 #include <Cpu/cpu.h>              /* cpu_test_and_set() */
 #include <Cpu/smp.h>              /* smp_get_booted_cpu_count() */
-#include <BSP/lapic.h>            /* lapic_get_id() */
+#include <API/cpu_api.h>          /* cpu_get_id() */
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Interrupt/interrupts.h> /* kernel_interrupt_disable(),
                                    * kernel_interrupt_restore() */
@@ -91,7 +91,7 @@ typedef volatile struct spinlock spinlock_t;
     x = kernel_interrupt_disable();                       \
     if(smp_get_booted_cpu_count() > 1)                    \
     {                                                     \
-        int32_t cpu_id = lapic_get_id();                  \
+        int32_t cpu_id = cpu_get_id();                  \
         if(cpu_id != -1 && (lock)->current_tid != cpu_id) \
         {                                                 \
             pause_spinlock(&(lock)->value);               \

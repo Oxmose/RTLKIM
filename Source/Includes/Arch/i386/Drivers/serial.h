@@ -26,6 +26,7 @@
 
 #include <Lib/stdint.h> /* Generic int types */
 #include <Lib/stddef.h> /* OS_RETURN_E */
+#include <IO/graphic.h> /* Graphic API */
 
 /*******************************************************************************
  * CONSTANTS
@@ -266,5 +267,83 @@ uint8_t serial_received(const uint32_t port);
  * @return The byte that has been read on the serial port.
  */
 uint8_t serial_read(const uint32_t port);
+
+/**
+ * @brief Clears the screen.
+ * 
+ * @details On 80x25 serial screen, this function will print 80 line feeds
+ * and thus, clear the screen.
+ */
+void serial_clear_screen(void);
+
+/** 
+ * @brief Unused, for compatibility purpose.
+ * 
+ * @param line Unused.
+ * @param column Unused
+ * 
+ * @return Always return OS_ERR_NOT_SUPPORTED.
+ */
+OS_RETURN_E serial_put_cursor_at(const uint32_t line, const uint32_t column);
+
+/** 
+ * @brief Unused, for compatibility purpose.
+ * 
+ * @param buffer Unused.
+ * 
+ * @return Always return OS_ERR_NOT_SUPPORTED.
+ */
+OS_RETURN_E serial_save_cursor(cursor_t* buffer);
+
+/** 
+ * @brief Unused, for compatibility purpose.
+ * 
+ * @param buffer Unused.
+ * 
+ * @return Always return OS_ERR_NOT_SUPPORTED.
+ */
+OS_RETURN_E serial_restore_cursor(const cursor_t buffer);
+
+/**
+ * @brief Scrolls the screen downn.
+ * 
+ * @details Scrolls the screen by printing lines feed to the serial.
+ * This function can only be called with parameter direction to 
+ * SCROLL_DOWN. Otherwise, this function has no effect.
+ * 
+ * @param direction Should always be SCROLL_DOWN.
+ * 
+ * @param lines_count The amount of lines to scroll down.
+ */
+void serial_scroll(const SCROLL_DIRECTION_E direction,
+                   const uint32_t lines_count);
+
+/** 
+ * @brief Unused, for compatibility purpose.
+ * 
+ * @param color_scheme Unused.
+ */
+void serial_set_color_scheme(const colorscheme_t color_scheme);
+
+/** 
+ * @brief Unused, for compatibility purpose.
+ * 
+ * @param buffer Unused.
+ * 
+ * @return Always return OS_ERR_NOT_SUPPORTED.
+ */
+OS_RETURN_E serial_save_color_scheme(colorscheme_t* buffer);
+
+/**
+ * @brief Write the string given as patameter on the debug port.
+ * 
+ * @details The function will output the data given as parameter on the debug
+ * port. This call is blocking until the data has been sent to the serial port
+ * controler.
+ *
+ * @param[in] string The string to write to the serial port.
+ * @param[in] len The length of the string to print.
+ */
+void serial_console_write_keyboard(const char* str, const uint32_t len);
 
 #endif /* __SERIAL_H_ */

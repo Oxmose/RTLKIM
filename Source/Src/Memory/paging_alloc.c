@@ -17,13 +17,14 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Lib/stddef.h>     /* OS_RETURN_E */
-#include <Lib/stdint.h>     /* Generic int types */
-#include <Memory/meminfo.h> /* mem_range_t */
-#include <Memory/kheap.h>   /* kmalloc */
-#include <Memory/paging.h>  /* KERNEL_PAGE_SIZE */
-#include <Sync/critical.h>  /* ENTER_CRITICAL */
-#include <Core/scheduler.h> /* sched_get_thread_free_page_table */
+#include <Lib/stddef.h>         /* OS_RETURN_E */
+#include <Lib/stdint.h>         /* Generic int types */
+#include <Memory/meminfo.h>     /* mem_range_t */
+#include <Memory/kheap.h>       /* kmalloc */
+#include <Memory/paging.h>      /* KERNEL_PAGE_SIZE */
+#include <Sync/critical.h>      /* ENTER_CRITICAL */
+#include <Core/scheduler.h>     /* sched_get_thread_free_page_table */
+#include <Memory/arch_paging.h> /* Paging information */
 
 /* RTLK configuration file */
 #include <config.h>

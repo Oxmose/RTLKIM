@@ -26,7 +26,8 @@
 #include <Core/scheduler.h>       /* sched_get_tid */
 #include <BSP/lapic.h>            /* lapic_get_id() */
 #include <BSP/acpi.h>             /* acpi_get_detected_cpu_count() */
-
+#include <BSP/bios_call.h>        /* bios_call() */
+#include <Drivers/vga_text.h>     /* vga_text_driver */
 /* RTLK configuration file */
 #include <config.h>
 
@@ -96,7 +97,13 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
         }
     }
 
-    graphic_fallback();
+    /* Do the switch */
+    bios_int_regs_t regs;
+
+    regs.ax = BIOS_CALL_SET_VGA_TEXT_MODE;
+    bios_call(BIOS_INTERRUPT_VGA, &regs);
+
+    graphic_set_selected_driver(&vga_text_driver);
 
     panic_scheme.background = BG_DARKGREY;
     panic_scheme.foreground = FG_WHITE;

@@ -32,6 +32,7 @@
 #include <Interrupt/panic.h>      /* kernel_panic() */
 #include <Memory/meminfo.h>       /* memory_map_init() */
 #include <Memory/paging.h>        /* paging_init() */
+#include <Drivers/vga_text.h>     /* vga_text_driver */
 #include <Drivers/vesa.h>         /* init_vesa(), vesa_text_vga_to_vesa() */
 #include <Drivers/keyboard.h>     /* keyboard_init() */
 #include <Drivers/ata_pio.h>      /* ata_pio_init() */
@@ -84,6 +85,11 @@ void kernel_kickstart(void)
 {
     OS_RETURN_E err;
 
+    /* Init VGA display if needed */
+    #if DISPLAY_TYPE == DISPLAY_VGA
+    graphic_set_selected_driver(&vga_text_driver);
+    #endif 
+
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Kickstarting the kernel\n");
     #endif
@@ -125,7 +131,7 @@ void kernel_kickstart(void)
     #endif
 
     /* Init VESA */
-    #if (ENABLE_VESA == 1 && TEST_MODE_ENABLED == 0) || \
+    #if (DISPLAY_TYPE == DISPLAY_VESA && TEST_MODE_ENABLED == 0) || \
          (TEST_MODE_ENABLED == 1 && VESA_TEXT_TEST == 1)
     err = vesa_init();
     if(err == OS_NO_ERR)

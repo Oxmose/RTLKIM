@@ -435,15 +435,4 @@ void graphic_put_char(const char character);
  */
 void graphic_console_write_keyboard(const char* str, const uint32_t len);
 
-/** 
- * @brief Activates fallback display method.
- * 
- * @details Activates fallback display method, using VGA 80x25 mode with the VGA
- * text driver.
- * 
- * @warning This function will not deallocate resource used by the previously
- * selected driver.
- */
-void graphic_fallback(void);
-
 #endif /* __GRAPHIC_H_ */

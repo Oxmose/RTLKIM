@@ -25,7 +25,7 @@
 #include <Lib/stdint.h>    /* Generic int types */
 #include <Lib/string.h>    /* strlen */
 #include <Cpu/cpu.h>       /* outb, inb */
-
+#include <IO/graphic.h>    /* kernel_graphic_driver_t */
 /* RTLK configuration file */
 #include <config.h>
 
@@ -38,6 +38,22 @@
 
 /** @brief Stores the serial initialization state. */
 static uint8_t serial_init_done = 0;
+
+/**
+ * @brief Serial text driver instance.
+ */
+kernel_graphic_driver_t serial_text_driver = {
+    .clear_screen = serial_clear_screen,
+    .put_cursor_at = serial_put_cursor_at,
+    .save_cursor = serial_save_cursor,
+    .restore_cursor = serial_restore_cursor,
+    .scroll = serial_scroll,
+    .set_color_scheme = serial_set_color_scheme,
+    .save_color_scheme = serial_save_color_scheme,
+    .put_string = serial_put_string,
+    .put_char = serial_put_char,
+    .console_write_keyboard = serial_console_write_keyboard
+};
 
 /*******************************************************************************
  * FUNCTIONS
@@ -206,6 +222,74 @@ void serial_write(const uint32_t port, const uint8_t data)
 
     while((SERIAL_LINE_STATUS_PORT(port) & 0x20) == 0)
     {}
+}
+
+
+void serial_clear_screen(void)
+{
+    uint8_t i;
+    /* On 80x25 screen, just print 80 line feed. */
+    for(i = 0; i < 80; ++i)
+    {
+        serial_write(SERIAL_DEBUG_PORT, '\n');
+    }
+}
+
+OS_RETURN_E serial_put_cursor_at(const uint32_t line, const uint32_t column)
+{
+    (void)line;
+    (void)column;
+    /* Nothing to do here */
+    return OS_ERR_NOT_SUPPORTED;
+}
+
+OS_RETURN_E serial_save_cursor(cursor_t* buffer)
+{
+    (void)buffer;
+    /* Nothing to do here */
+    return OS_ERR_NOT_SUPPORTED;
+}
+
+OS_RETURN_E serial_restore_cursor(const cursor_t buffer)
+{
+    (void)buffer;
+    /* Nothing to do here */
+    return OS_ERR_NOT_SUPPORTED;
+}
+
+void serial_scroll(const SCROLL_DIRECTION_E direction,
+                   const uint32_t lines_count)
+{
+    uint32_t i;
+    if(direction == SCROLL_DOWN)
+    {
+        /* Just print lines_count line feed. */
+        for(i = 0; i < lines_count; ++i)
+        {
+            serial_write(SERIAL_DEBUG_PORT, '\n');
+        }
+    }    
+}
+
+void serial_set_color_scheme(const colorscheme_t color_scheme)
+{
+    (void)color_scheme;
+}
+
+OS_RETURN_E serial_save_color_scheme(colorscheme_t* buffer)
+{
+    (void)buffer;
+
+    return OS_ERR_NOT_SUPPORTED;
+}
+
+void serial_console_write_keyboard(const char* str, const uint32_t len)
+{
+    uint32_t i;
+    for(i = 0; i < len; ++i)
+    {
+        serial_write(SERIAL_DEBUG_PORT, str[i]);
+    }
 }
 
 uint8_t serial_read(const uint32_t port)

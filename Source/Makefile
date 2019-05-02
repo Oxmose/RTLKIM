@@ -12,11 +12,8 @@
 
 ######################### Modules selection
 
-MODULES = Boot Cpu IO Interrupt     \
-        	Drivers BSP             \
-			Time Memory Core        \
-			Lib User                \
-			Sync Communication
+MODULES  = IO Time Memory Core Lib User Sync Communication
+INC_ARCH = NONE
 
 ifeq ($(TESTS), TRUE)
 MODULES += ../../Tests/Tests
@@ -33,6 +30,13 @@ INC_DIR    = Includes
 CONFIG_DIR = Config
 TESTS_DIR  = ../Tests
 BIN_DIR    = Bin
+
+ifeq ($(arch), i386)
+MODULES  += Arch/i386/API Arch/i386/Boot Arch/i386/BSP \
+	        Arch/i386/Cpu Arch/i386/Drivers Arch/i386/Interrupt \
+			Arch/i386/Memory
+INC_ARCH = -I $(INC_DIR)/Arch/i386/
+endif 
 
 SRC_DIRS = $(MODULES:%=$(SRC_DIR)/%)
 OBJ_DIRS = $(MODULES:%=$(BUILD_DIR)/%)
@@ -148,6 +152,15 @@ QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 64M \
 all: init kernel.bin
 
 init:
+
+ifeq ($(arch), i386)
+	@echo "\e[1m\e[34mI386 architecture selected\e[22m\e[39m"
+else
+	@echo "\e[1m\e[31mERROR You must select an architecture!\e[22m\e[39m"
+	@echo "Example: make arch=[i386, armv7]\n"
+	@exit 1
+endif 
+
 	@mkdir -p $(OBJ_DIRS)
 	@mkdir -p $(BIN_DIR)
 
@@ -172,10 +185,10 @@ ifeq ($(DEBUG), TRUE)
 endif
 ifeq ($(TESTS), TRUE)
 	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
-	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR) -I $(TESTS_DIR)
+	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) $(INC_ARCH) -I $(CONFIG_DIR) -I $(TESTS_DIR)
 else
 	@echo  "\e[32m$< \e[22m\e[39m-> \e[1m\e[94m$@\e[22m\e[39m"
-	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) -I $(CONFIG_DIR)
+	$(CC) $(CFLAGS) $< -o $@ -I $(INC_DIR) $(INC_ARCH) -I $(CONFIG_DIR)
 endif
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.S
