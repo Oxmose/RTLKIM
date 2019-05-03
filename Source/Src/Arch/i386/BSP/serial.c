@@ -228,8 +228,8 @@ void serial_write(const uint32_t port, const uint8_t data)
 void serial_clear_screen(void)
 {
     uint8_t i;
-    /* On 80x25 screen, just print 80 line feed. */
-    for(i = 0; i < 80; ++i)
+    /* On 80x25 screen, just print 25 line feed. */
+    for(i = 0; i < 25; ++i)
     {
         serial_write(SERIAL_DEBUG_PORT, '\n');
     }

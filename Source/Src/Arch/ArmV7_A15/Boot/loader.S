@@ -47,6 +47,17 @@ blank_mem_loop:
     cmp  r1, r2
     blt  blank_mem_loop
 
+@ Kernel initialization
+init:
+    @ Clear screen
+    bl graphic_clear_screen
+
+    @ Init serial for debug
+    bl serial_init
+
+    @ Setup the kernel heap
+    @bl setup_kheap
+
     @ Kickstart the kernel 
     bl kernel_kickstart
 
