@@ -26,7 +26,7 @@
 #include <Fonts/uni_vga.h>    /* __font_bitmap__ */
 #include <Cpu/cpu.h>          /* inb  */
 #include <Drivers/vga_text.h> /* vga_get_framebuffer */
-#include <Drivers/serial.h>   /* serial_write */
+#include <BSP/serial.h>   /* serial_write */
 #include <IO/graphic.h>       /* structures */
 #include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h>    /* kernel_mmap */

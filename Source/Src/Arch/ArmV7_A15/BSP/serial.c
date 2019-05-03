@@ -5,39 +5,32 @@
  *
  * @author Alexy Torres Aurora Dugo
  *
- * @date 25/12/2017
+ * @date 03/05/2019
  *
  * @version 1.0
  *
- * @brief Serial communication driver.
+ * @brief PL011 UART communication driver.
  *
  * @details Serial communication driver. Initializes the serial ports as in and
  * output. The serial can be used to output data or communicate with other
- * prepherals that support this communication method. Only COM1 to COM4 are
- * supported by this driver.
+ * prepherals that support this communication method.
  *
  * @copyright Alexy Torres Aurora Dugo
- *
- * @warning Only COM1 and COM2 are initialized for input.
  ******************************************************************************/
 
 #include <Lib/stddef.h>    /* OS_RETURN_E */
 #include <Lib/stdint.h>    /* Generic int types */
 #include <Lib/string.h>    /* strlen */
-#include <Cpu/cpu.h>       /* outb, inb */
-#include <IO/graphic.h>    /* kernel_graphic_driver_t */
+
 /* RTLK configuration file */
 #include <config.h>
 
 /* Header file */
-#include <Drivers/serial.h>
+#include <BSP/serial.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES
  ******************************************************************************/
-
-/** @brief Stores the serial initialization state. */
-static uint8_t serial_init_done = 0;
 
 /**
  * @brief Serial text driver instance.
@@ -71,9 +64,11 @@ kernel_graphic_driver_t serial_text_driver = {
  */
 static OS_RETURN_E set_line(const uint8_t attr, const uint32_t com)
 {
-    cpu_outb(attr, SERIAL_LINE_COMMAND_PORT(com));
+    /*TODO*/
+    (void)attr;
+    (void)com;
 
-    return OS_NO_ERR;
+    return OS_ERR_NOT_SUPPORTED;
 }
 
 /**
@@ -88,9 +83,11 @@ static OS_RETURN_E set_line(const uint8_t attr, const uint32_t com)
  */
 static OS_RETURN_E set_buffer(const uint8_t attr, const uint32_t com)
 {
-    cpu_outb(attr, SERIAL_FIFO_COMMAND_PORT(com));
+    /*TODO*/
+    (void)attr;
+    (void)com;
 
-    return OS_NO_ERR;
+    return OS_ERR_NOT_SUPPORTED;
 }
 
 /**
@@ -105,123 +102,38 @@ static OS_RETURN_E set_buffer(const uint8_t attr, const uint32_t com)
  */
 static OS_RETURN_E set_baudrate(SERIAL_BAUDRATE_E rate, const uint32_t com)
 {
-    cpu_outb(SERIAL_DLAB_ENABLED, SERIAL_LINE_COMMAND_PORT(com));
-    cpu_outb((rate >> 8) & 0x00FF, SERIAL_DATA_PORT(com));
-    cpu_outb(rate & 0x00FF, SERIAL_DATA_PORT_2(com));
-
-    return OS_NO_ERR;
+    /*TODO*/
+    (void)rate;
+    (void)com;
+    
+    return OS_ERR_NOT_SUPPORTED;
 }
 
 OS_RETURN_E serial_init(void)
 {
-    OS_RETURN_E err;
-    uint8_t i;
-
-    #if SERIAL_KERNEL_DEBUG == 1
-    kernel_serial_debug("Serial Initialization start\n");
-    #endif
-
-    /* Init all comm ports */
-    for(i = 0; i < 4; ++i)
-    {
-        uint8_t attr;
-        uint32_t com;
-
-        if(i == 0)
-        {
-            com = SERIAL_COM1_BASE;
-        }
-        else if(i == 1)
-        {
-            com = SERIAL_COM2_BASE;
-        }
-        else if(i == 2)
-        {
-            com = SERIAL_COM3_BASE;
-        }
-        else if(i == 3)
-        {
-            com = SERIAL_COM4_BASE;
-        }
-        else
-        {
-            com = SERIAL_COM1_BASE;
-        }
-
-        attr = SERIAL_DATA_LENGTH_8 | SERIAL_STOP_BIT_1;
-
-        /* Enable interrupt on recv for COM1 and COM2 */
-        if(com == SERIAL_COM1_BASE || com == SERIAL_COM2_BASE)
-        {
-            cpu_outb(0x01, SERIAL_DATA_PORT_2(com));
-        }
-        else
-        {
-            cpu_outb(0x00, SERIAL_DATA_PORT_2(com));
-        }
-
-        /* Init baud rate */
-        err = set_baudrate(BAUDRATE_115200, com);
-        if(err != OS_NO_ERR)
-        {
-            return err;
-        }
-
-        /* Configure the line */
-        err = set_line(attr, com);
-        if(err != OS_NO_ERR)
-        {
-            return err;
-        }
-
-        err = set_buffer(0xC0 | SERIAL_ENABLE_FIFO | SERIAL_CLEAR_RECV_FIFO |
-                         SERIAL_CLEAR_SEND_FIFO | SERIAL_FIFO_DEPTH_14,
-                         com);
-        if(err != OS_NO_ERR)
-        {
-            return err;
-        }
-
-        /* Enable interrupt */
-        cpu_outb(0x0B, SERIAL_MODEM_COMMAND_PORT(com));
-    }
-
-    serial_init_done = 1;
-
-    #if SERIAL_KERNEL_DEBUG == 1
-    kernel_serial_debug("Serial Initialization end\n");
-    #endif
-
-    return err;
+    /*TODO*/
+    set_buffer(0, 0);
+    set_baudrate(BAUDRATE_115200, 0);
+    set_line(0, 0);
+    return OS_ERR_NOT_SUPPORTED;
 }
 
 void serial_write(const uint32_t port, const uint8_t data)
 {
-    if(serial_init_done == 0)
-    {
-        return;
-    }
     if(port != COM1 && port != COM2 && port != COM3 && port != COM4)
     {
         return;
     }
 
-    /* Wait for empty transmit */
-    while((SERIAL_LINE_STATUS_PORT(port) & 0x20) == 0)
-    {}
-
     if(data == '\n')
     {
         serial_write(port, '\r');
-        cpu_outb('\n', port);
+        *(volatile uint32_t*)(port) = '\n';
     }
     else
     {
-        cpu_outb(data, port);
+        *(volatile uint32_t*)(port) = data;
     }
-
-    while((SERIAL_LINE_STATUS_PORT(port) & 0x20) == 0)
-    {}
 }
 
 
@@ -294,13 +206,9 @@ void serial_console_write_keyboard(const char* str, const uint32_t len)
 
 uint8_t serial_read(const uint32_t port)
 {
-    /* Wait for data to be received */
-    while (serial_received(port) == 0);
-
-    /* Read available data on port */
-    uint8_t val = cpu_inb(SERIAL_DATA_PORT(port));
-
-    return val;
+    /*TODO*/
+    (void)port;
+    return 0;
 }
 
 void serial_put_string(const char* string)
@@ -315,10 +223,4 @@ void serial_put_string(const char* string)
 void serial_put_char(const char character)
 {
     serial_write(SERIAL_DEBUG_PORT, character);
-}
-
-uint8_t serial_received(const uint32_t port)
-{
-    /* Read on LINE status port */
-    return cpu_inb(SERIAL_LINE_STATUS_PORT(port)) & 0x01;
 }

@@ -12,7 +12,7 @@
 
 ######################### Modules selection
 
-MODULES  = Arch/ArmV7_A15/Boot
+MODULES  = Arch/ArmV7_A15/Boot Arch/ArmV7_A15/BSP Lib IO
 
 ifeq ($(TESTS), TRUE)
 MODULES += ../../Tests/Tests

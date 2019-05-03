@@ -22,7 +22,7 @@
 #include <Lib/stddef.h>     /* OS_RETURN_E, NULL */
 #include <Lib/string.h>     /* memmove */
 #include <Cpu/cpu.h>        /* outb */
-#include <Drivers/serial.h> /* serial_write */
+#include <BSP/serial.h> /* serial_write */
 #include <Sync/critical.h>  /* ENTER_CRITICAL, EXIT_CRITICAL */
 
 /* RTLK configuration file */

@@ -18,6 +18,8 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
+#include <BSP/serial.h>
+
 /* RTLK configuration file */
 #include <config.h>
 
@@ -46,18 +48,6 @@
  */
 void kernel_kickstart(void)
 {
-    volatile unsigned int* uart = (volatile unsigned int*)0x1c090000;
-    *uart = 'H';
-    *uart = 'e';
-    *uart = 'l';
-    *uart = 'l';
-    *uart = 'o';
-    *uart = ' ';
-    *uart = 'W';
-    *uart = 'o';
-    *uart = 'r';
-    *uart = 'l';
-    *uart = 'd';
-    *uart = '!';
+    kernel_printf("\n==== Kickstarting RTLK ====\n");
     while(1);
 }

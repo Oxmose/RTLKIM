@@ -20,7 +20,7 @@
 
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E */
-#include <Drivers/serial.h>   /* Serial drivers */
+#include <BSP/serial.h>   /* Serial drivers */
 
 /* RTLK configuration file */
 #include <config.h>

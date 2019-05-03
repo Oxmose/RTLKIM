@@ -21,7 +21,7 @@
 
 #include <Lib/string.h>       /* memset, strlen */
 #include <Lib/stdlib.h>       /* uitoa, itoa */
-#include <Drivers/serial.h>   /* Serial driver */
+#include <BSP/serial.h>   /* Serial driver */
 #include <IO/graphic.h>       /* graphic_save_color_scheme, set_color_sheme,
                                * graphic_put_char, graphic_put_string */
 
