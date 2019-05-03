@@ -90,6 +90,7 @@ void vesa_text_test(void)
         }
     }
 
+    vesa_put_string("\n");
 
     while(1)
     {
