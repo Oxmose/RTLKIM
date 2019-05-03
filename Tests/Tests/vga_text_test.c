@@ -28,6 +28,7 @@ void vga_text_test(void)
         vga_set_color_scheme(color);
         vga_put_char('A');
     }
+    vga_put_char('\n');
 
 
     while(1)
