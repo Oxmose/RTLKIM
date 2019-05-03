@@ -99,7 +99,6 @@ void kernel_kickstart(void)
     gdt_ok_test();
     output_test();
     kheap_test();
-    vga_text_test();
     #endif
 
     kernel_printf("\n==== Kickstarting RTLK ====\n");
@@ -136,15 +135,11 @@ void kernel_kickstart(void)
     if(err == OS_NO_ERR)
     {
         kernel_success("VESA Initialized\n");
-        #if TEST_MODE_ENABLED == 1
-        vesa_text_test();
-        #else
         err = vesa_text_vga_to_vesa();
         if(err != OS_NO_ERR)
         {
             kernel_error("VESA switch error [%d]\n", err);
         }
-        #endif
     }
     else
     {
