@@ -232,7 +232,7 @@ struct stack_state
     uint32_t eip;
     /** @brief CS before the interrupt. */
     uint32_t cs;
-    /** @brief EFLAGDS before the interrupt. */
+    /** @brief EFLAGS before the interrupt. */
     uint32_t eflags;
 } __attribute__((packed));
 

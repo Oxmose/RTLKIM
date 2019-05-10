@@ -18,7 +18,8 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <BSP/serial.h>
+#include <IO/kernel_output.h>
+#include <Cpu/panic.h>
 
 /* RTLK configuration file */
 #include <config.h>
@@ -31,11 +32,22 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-/* None. */
-
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
+
+void test(cpu_state_t *cpu_state, uint32_t int_id, stack_state_t* stack_state)
+{
+    for(uint32_t i = 0; i < 13; ++i)
+    {
+        kernel_printf("\n==== SWI 0x%x! ====\n", cpu_state->registers[i]);
+    }
+    kernel_printf("\n==== SWI 0x%x! ====\n", cpu_state->sp);
+    kernel_printf("\n==== SWI 0x%x! ====\n", cpu_state->lr);
+    kernel_printf("\n==== SWI 0x%x! ====\n", cpu_state->pc);
+    kernel_printf("\n==== SWI INT %d! ====\n", int_id);
+    kernel_printf("\n==== SWI CSPR %d! ====\n", stack_state->cspr);
+}
 
 /**
  * @brief Main boot sequence, C kernel entry point.
@@ -49,5 +61,8 @@
 void kernel_kickstart(void)
 {
     kernel_printf("\n==== Kickstarting RTLK ====\n");
+
+    kernel_panic(1);
+
     while(1);
 }

@@ -21,7 +21,6 @@
 #include <Lib/stdint.h>       /* Generic int types */
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Lib/string.h>       /* memset */
-#include <BSP/pic.h>          /* pic_set_irq_eoi, pic_set_irq_mask */
 #include <Cpu/cpu_settings.h> /* INT_ENTRY_COUNT */
 #include <Cpu/cpu.h>          /* sti cpu_clear_interrupt */
 #include <Cpu/panic.h>        /* panic() */
@@ -87,14 +86,14 @@ static void spurious_handler(void)
  * @param[in, out] stack_state The stack state before the interrupt that contain cs,
  * eip, error code and the eflags register value.
  */
-void kernel_interrupt_handler(cpu_state_t cpu_state,
+void kernel_interrupt_handler(cpu_state_t* cpu_state,
                               uint32_t int_id,
-                              stack_state_t stack_state)
+                              stack_state_t* stack_state)
 {
     void(*handler)(cpu_state_t*, uint32_t, stack_state_t*);
 
     /* If interrupts are disabled */
-    if(cpu_get_saved_interrupt_state(&cpu_state, &stack_state) == 0 &&
+    if(cpu_get_saved_interrupt_state(cpu_state, stack_state) == 0 &&
        int_id != PANIC_INT_LINE &&
        int_id != SCHEDULER_SW_INT_LINE &&
        int_id >= MIN_INTERRUPT_LINE)
@@ -109,7 +108,7 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
 
     if(int_id == PANIC_INT_LINE)
     {
-        panic(&cpu_state, int_id, &stack_state);
+        panic(cpu_state, int_id, stack_state);
     }
 
     #if INTERRUPT_KERNEL_DEBUG == 1
@@ -143,7 +142,7 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
     }
 
     /* Execute the handler */
-    handler(&cpu_state, int_id, &stack_state);
+    handler(cpu_state, int_id, stack_state);
 }
 
 OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)

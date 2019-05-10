@@ -29,7 +29,7 @@ SRC_DIR    = Src
 BUILD_DIR  = Build
 INC_DIR    = Includes
 INC_ARCH   = $(INC_DIR)/Arch/i386/
-CONFIG_DIR = Config
+CONFIG_DIR = Config/i386
 TESTS_DIR  = ../Tests
 BIN_DIR    = Bin
 
@@ -42,7 +42,7 @@ C_OBJS = $(C_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 A_OBJS = $(A_SRCS:$(SRC_DIR)/%.S=$(BUILD_DIR)/%.o)
 
 # Linker script's name
-LINKER_FILE = Config/linker_i386.ld
+LINKER_FILE = $(CONFIG_DIR)/linker.ld
 
 ######################### Toolchain options
 AS = nasm

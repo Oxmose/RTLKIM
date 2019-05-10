@@ -65,7 +65,6 @@
 /*******************************************************************************
  * I386 Arch Settings
  ******************************************************************************/
-#if RTLK_ARCH == ARCH_I386
 
 /** @brief Enables the use of an IO-APIC instead of the PIC if present if the
  * system.
@@ -75,10 +74,6 @@
 /** @brief If the system allows it, use the LAPIC timer as main timer source.
  */
 #define ENABLE_LAPIC_TIMER 1
-
-#endif /* RTLK_ARCH == ARCH_I386 */
-
-#if RTLK_BSP == BSP_I386 /****************************************************/
 
 /** @brief Enables support for graphic drivers. */
 #define DISPLAY_TYPE       DISPLAY_VGA
@@ -104,9 +99,6 @@
  * depth.
  */
 #define MAX_SUPPORTED_BPP    32
-
-#endif /* RTLK_BSP == BSP_I386 */ /*******************************************/
-
 
 /*******************************************************************************
  * Global Arch Settings

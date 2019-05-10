@@ -12,7 +12,9 @@
 
 ######################### Modules selection
 
-MODULES  = Arch/ArmV7_A15/Boot Arch/ArmV7_A15/BSP Lib IO
+MODULES  = Arch/ArmV7_A15/Boot Arch/ArmV7_A15/BSP Arch/ArmV7_A15/API \
+		   Arch/ArmV7_A15/Cpu \
+		   Lib IO Interrupt #Memory
 
 ifeq ($(TESTS), TRUE)
 MODULES += ../../Tests/Tests
@@ -27,7 +29,7 @@ SRC_DIR    = Src
 BUILD_DIR  = Build
 INC_DIR    = Includes
 INC_ARCH   = $(INC_DIR)/Arch/ArmV7_A15/
-CONFIG_DIR = Config
+CONFIG_DIR = Config/ArmV7_A15
 TESTS_DIR  = ../Tests
 BIN_DIR    = Bin
 
@@ -40,13 +42,13 @@ C_OBJS = $(C_SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 A_OBJS = $(A_SRCS:$(SRC_DIR)/%.S=$(BUILD_DIR)/%.o)
 
 # Linker script's name
-LINKER_FILE = Config/linker_armv7a15.ld
+LINKER_FILE = $(CONFIG_DIR)/linker.ld
 
 ######################### Toolchain options
-AS = arm-none-eabi-as
-LD = arm-none-eabi-ld
-CC = arm-none-eabi-gcc
-OBJCOPY = arm-none-eabi-objcopy
+AS = arm-eabi-as
+LD = arm-eabi-ld
+CC = arm-eabi-gcc
+OBJCOPY = arm-eabi-objcopy
 QEMU = qemu-system-arm
 
 DEBUG_FLAGS = -Og -g
@@ -65,7 +67,7 @@ endif
 ASFLAGS = -march=armv7-a -mcpu=cortex-a15
 LDFLAGS = -e loader -T $(LINKER_FILE)
 QEMUOPTS = -rtc base=localtime -m 64M -gdb tcp::1234\
-		   -M vexpress-a15 -cpu cortex-a15 -kernel
+		   -M vexpress-a15 -cpu cortex-a15 -smp 4 -kernel
 
 ######################### Compile options
 .PHONY: all
