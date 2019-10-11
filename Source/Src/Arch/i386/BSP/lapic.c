@@ -237,10 +237,6 @@ OS_RETURN_E lapic_send_ipi_init(const uint32_t lapic_id)
     kernel_serial_debug("LAPIC Send INIT IPI\n");
     #endif
 
-    #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
-    #endif
-
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -296,9 +292,6 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
     kernel_serial_debug("LAPIC Send STARTUP IPI\n");
     #endif
 
-    #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
-    #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -353,9 +346,6 @@ OS_RETURN_E lapic_send_ipi(const uint32_t lapic_id, const uint32_t vector)
     kernel_serial_debug("LAPIC Send IPI\n");
     #endif
 
-    #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
-    #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -427,9 +417,6 @@ OS_RETURN_E lapic_timer_init(void)
     kernel_serial_debug("LAPIC Timer Initialization\n");
     #endif
 
-    #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
-    #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -522,9 +509,6 @@ OS_RETURN_E lapic_ap_timer_init(void)
     kernel_serial_debug("LAPIC Timer AP Initialization\n");
     #endif
 
-    #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
-    #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -602,9 +586,6 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     kernel_serial_debug("LAPIC Timer set frequency %d\n", frequency);
     #endif
 
-    #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
-    #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -650,9 +631,6 @@ OS_RETURN_E lapic_timer_enable(void)
     kernel_serial_debug("LAPIC Timer enable\n");
     #endif
 
-    #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
-    #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -695,9 +673,6 @@ OS_RETURN_E lapic_timer_disable(void)
     kernel_serial_debug("LAPIC Timer disable\n");
     #endif
 
-    #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
-    #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
     return OS_ERR_NOT_SUPPORTED;
@@ -741,7 +716,7 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
     #endif
 
     #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
+    kernel_serial_debug("LAPIC timer set handler\n");
     #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
@@ -810,7 +785,7 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
 OS_RETURN_E lapic_timer_remove_handler(void)
 {
     #if LAPIC_KERNEL_DEBUG == 1
-    kernel_serial_debug("LAPIC Initialization\n");
+    kernel_serial_debug("LAPIC Remove Handler\n");
     #endif
     /* Check IO-APIC support */
     #if ENABLE_IO_APIC == 0
