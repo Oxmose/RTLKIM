@@ -10,7 +10,7 @@ function testcase() {
     echo -e "\e[94m################### Test $i/$total : $filename_up ($2) \e[39m"
     # Select the test
     sed -i "s/$filename_up 0/$filename_up 1/g" Tests/test_bank.h
-    sed -i 's/TEST_MODE_ENABLED 0/TEST_MODE_ENABLED 1/g' ../Source/Config/config.h
+    sed -i 's/TEST_MODE_ENABLED 0/TEST_MODE_ENABLED 1/g' ../Source/Config/i386/config.h
     {
         # Execute the test
         rm -f *.out
@@ -41,7 +41,7 @@ function testcase() {
     rm Tests/*.o
     #Restore non testmode
     sed -i "s/$filename_up 1/$filename_up 0/g" Tests/test_bank.h
-    sed -i 's/TEST_MODE_ENABLED 1/TEST_MODE_ENABLED 0/g' ../Source/Config/config.h
+    sed -i 's/TEST_MODE_ENABLED 1/TEST_MODE_ENABLED 0/g' ../Source/Config/i386/config.h
 }
 
 error=0

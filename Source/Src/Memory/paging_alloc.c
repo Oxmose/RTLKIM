@@ -40,10 +40,10 @@ static mem_area_t* kernel_free_frames;
 mem_area_t* kernel_free_pages;
 
 /** @brief Memory map structure's size. */
-static uint32_t    memory_map_size;
+extern uint32_t    memory_map_size;
 
 /** @brief Memory map storage as an array of range. */
-static mem_range_t memory_map_data[];
+extern mem_range_t memory_map_data[];
 
 /** @brief Kernel end address. */
 extern uint8_t     _kernel_end;

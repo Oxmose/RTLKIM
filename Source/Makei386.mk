@@ -50,7 +50,7 @@ LD = ld
 OBJCOPY = objcopy
 QEMU = qemu-system-x86_64
 
-DEBUG_FLAGS = -Og -g
+DEBUG_FLAGS = -O0 -g
 EXTRA_FLAGS = -O2
 
 CFLAGS = -m32 -std=c11 -nostdinc -fno-builtin -nostdlib -fno-stack-protector \
