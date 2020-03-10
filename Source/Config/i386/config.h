@@ -53,7 +53,7 @@
  * Features settings
  ******************************************************************************/
 /** @brief Maximal number of CPU to be supported by the kernel. */
-#define MAX_CPU_COUNT  4
+#define MAX_CPU_COUNT  8
 
 /** @brief Display with serial driver. */
 #define DISPLAY_SERIAL 0
@@ -79,10 +79,10 @@
 #define DISPLAY_TYPE       DISPLAY_VESA
 
 /** @brief Enables ATA drivers support. */
-#define ENABLE_ATA         0
+#define ENABLE_ATA         1
 
 /** @brief Enables GUI support. */
-#define ENABLE_GUI         1
+#define ENABLE_GUI         0
 
 /** @brief Enables mouse driver support. */
 #define ENABLE_MOUSE       0
@@ -111,7 +111,7 @@
  * Timers settings
  ******************************************************************************/
 /** @brief Defines the current year (usefull for the RTC). */
-#define CURRENT_YEAR 2019
+#define CURRENT_YEAR 2020
 
 /** @brief Defines the kernel's main timer frequency. This will set the maximal
  * scheduling frequency. */
@@ -212,6 +212,6 @@
 #define PAGING_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
-#define TEST_MODE_ENABLED 0
+#define TEST_MODE_ENABLED 1
 
 #endif /* __CONFIG_H_ */
