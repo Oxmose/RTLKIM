@@ -97,6 +97,11 @@ OS_RETURN_E memory_map_init(void)
     static_used_memory = (uint32_t)&_end - (uint32_t)&_start;
     while(mmap < mmap_end)
     {
+        /* Everything over the 4G limit is not registered */
+        if(i != 0 && (uint32_t)mmap->addr == 0)
+        {
+            break;
+        }
         total_memory += (uint32_t)mmap->len;
 
         memory_map_data[i].base  = (uint32_t)mmap->addr;

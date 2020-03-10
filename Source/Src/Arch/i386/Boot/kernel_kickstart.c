@@ -301,6 +301,7 @@ void kernel_kickstart(void)
     #endif
 
     /* Init ATA PIO driver */
+    #if ENABLE_ATA
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing ATA PIO driver\n");
     #endif
@@ -310,6 +311,7 @@ void kernel_kickstart(void)
              err, 0);
     #if TEST_MODE_ENABLED
     ata_pio_driver_test();
+    #endif
     #endif
 
     /* Init Scheduler */
