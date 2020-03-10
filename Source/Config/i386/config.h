@@ -53,7 +53,7 @@
  * Features settings
  ******************************************************************************/
 /** @brief Maximal number of CPU to be supported by the kernel. */
-#define MAX_CPU_COUNT  8
+#define MAX_CPU_COUNT  4
 
 /** @brief Display with serial driver. */
 #define DISPLAY_SERIAL 0
@@ -212,6 +212,6 @@
 #define PAGING_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
-#define TEST_MODE_ENABLED 1
+#define TEST_MODE_ENABLED 0
 
 #endif /* __CONFIG_H_ */
