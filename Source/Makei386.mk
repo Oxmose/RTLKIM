@@ -65,7 +65,7 @@ endif
 
 ASFLAGS = -g -f elf -w+gnu-elf-extensions
 LDFLAGS = -e loader -T $(LINKER_FILE) -melf_i386 -no-pie
-QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 64M \
+QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 8G \
            -gdb tcp::1234 -smp 4 \
 		   -drive format=raw,file=../Peripherals/hdd_primary_master.img -kernel
 
@@ -147,4 +147,3 @@ bootable: all
 	@$(RM) -f ../Image/bootable.iso
 	grub-mkrescue -o ../Image/bootable.iso ../Image
 	@$(RM) -f ../Image/boot/$(KERNEL)
-	VBoxManage startvm "RTLK"

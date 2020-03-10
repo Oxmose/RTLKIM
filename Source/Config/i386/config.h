@@ -76,10 +76,10 @@
 #define ENABLE_LAPIC_TIMER 1
 
 /** @brief Enables support for graphic drivers. */
-#define DISPLAY_TYPE       DISPLAY_VGA
+#define DISPLAY_TYPE       DISPLAY_VESA
 
 /** @brief Enables ATA drivers support. */
-#define ENABLE_ATA         1
+#define ENABLE_ATA         0
 
 /** @brief Enables GUI support. */
 #define ENABLE_GUI         1
@@ -90,11 +90,11 @@
 /** @brief When VESA drivers are enabled, defines the maximal supported height
  * resolution.
  */
-#define MAX_SUPPORTED_HEIGHT 900
+#define MAX_SUPPORTED_HEIGHT 768
 /** @brief When VESA drivers are enabled, defines the maximal supported width
  * resolution.
  */
-#define MAX_SUPPORTED_WIDTH  1100
+#define MAX_SUPPORTED_WIDTH  1024
 /** @brief When VESA drivers are enabled, defines the maximal supported color
  * depth.
  */
