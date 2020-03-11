@@ -323,7 +323,6 @@ OS_RETURN_E lapic_send_ipi_startup(const uint32_t lapic_id,
     lapic_write(LAPIC_ICRHI, lapic_id << ICR_DESTINATION_SHIFT);
     lapic_write(LAPIC_ICRLO, (vector & 0xFF) | ICR_STARTUP | ICR_PHYSICAL |
                 ICR_ASSERT | ICR_EDGE | ICR_NO_SHORTHAND);
-
     /* Wait for pending sends */
     while ((lapic_read(LAPIC_ICRLO) & ICR_SEND_PENDING) != 0)
     {}

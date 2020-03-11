@@ -80,7 +80,7 @@ OS_RETURN_E smp_init(void)
     cpu_lapics = acpi_get_cpu_lapics();
 
     /* Map needed memory */
-    err = kernel_direct_mmap((void*)0x4000, (void*)0x4000, 0x1,
+    err = kernel_direct_mmap((void*)0x8000, (void*)0x8000, 0x1,
                              PG_DIR_FLAG_PAGE_SIZE_4KB |
                              PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                              PG_DIR_FLAG_PAGE_READ_WRITE,
@@ -110,11 +110,11 @@ OS_RETURN_E smp_init(void)
         }
 
         kernel_interrupt_restore(1);
-        time_wait_no_sched(10);
+        time_wait_no_sched(20);
         kernel_interrupt_disable();
 
         /* Send startup */
-        err = lapic_send_ipi_startup(cpu_lapics[i]->apic_id, 0x4);
+        err = lapic_send_ipi_startup(cpu_lapics[i]->apic_id, 0x8);
         if(err != OS_NO_ERR)
         {
             kernel_error("Cannot send STARTUP IPI [%d]\n", err);
@@ -128,7 +128,7 @@ OS_RETURN_E smp_init(void)
         if(current_cpu_init == init_cpu_count)
         {
             /* Send startup */
-            err = lapic_send_ipi_startup(cpu_lapics[i]->apic_id, 0x4);
+            err = lapic_send_ipi_startup(cpu_lapics[i]->apic_id, 0x8);
             if(err != OS_NO_ERR)
             {
                 kernel_error("Cannot send STARTUP IPI [%d]\n", err);
@@ -155,7 +155,7 @@ void smp_ap_core_init(void)
 
     /* Load AP TSS */
     __asm__ __volatile__("ltr %0" : : "rm" ((uint16_t)
-                                            (TSS_SEGMENT + cpu_id * 0x08)));
+                                            (TSS_SEGMENT + cpu_id * 0x00)));
 
     /* Init local APIC */
     err = lapic_init();

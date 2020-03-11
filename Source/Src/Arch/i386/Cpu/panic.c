@@ -98,14 +98,14 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     }
 
     /* Do the switch */
-    bios_int_regs_t regs;
+    //bios_int_regs_t regs;
 
-    regs.ax = BIOS_CALL_SET_VGA_TEXT_MODE;
-    bios_call(BIOS_INTERRUPT_VGA, &regs);
+    //regs.ax = BIOS_CALL_SET_VGA_TEXT_MODE;
+    //bios_call(BIOS_INTERRUPT_VGA, &regs);
 
     graphic_set_selected_driver(&vga_text_driver);
 
-    panic_scheme.background = BG_DARKGREY;
+    panic_scheme.background = BG_BLUE;
     panic_scheme.foreground = FG_WHITE;
     panic_scheme.vga_color  = 1;
 
@@ -117,7 +117,6 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
         kernel_printf("\n[TESTMODE] PANIC\n");
     }
 
-    kernel_printf("\n");
 
     kernel_printf("#=============================    KERNEL PANIC    =========="
                     "==================#\n");
@@ -271,10 +270,6 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
                     (instruction >> 16) & 0xFF,
                     (instruction >> 24) & 0xFF,
                     stack_state->eip);
-    kernel_printf("|                                                           "
-                    "                  |\n");
-    kernel_printf("|                         LET'S HOPE IT WON'T EXPLODE       "
-                    "                  |\n");
     kernel_printf("#==========================================================="
                     "==================#");
 
