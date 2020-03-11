@@ -33,7 +33,7 @@
 
 /** @brief IO-APIC's minimal IRQ number. */
 #define IO_APIC_MIN_IRQ_LINE 0
-/** @brief IO-APIC's minimal IRQ number. */
+/** @brief IO-APIC's maximal IRQ number. */
 #define IO_APIC_MAX_IRQ_LINE 23
 
 /** @brief IO-APIC register selection. */

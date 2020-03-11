@@ -172,7 +172,7 @@ OS_RETURN_E io_apic_set_irq_mask(const uint32_t irq_number,
     uint32_t actual_irq = 0;
     uint32_t word;
 
-    if(irq_number >= max_redirect_count || irq_number > IO_APIC_MAX_IRQ_LINE)
+    if(irq_number >= max_redirect_count)
     {
         return OS_ERR_NO_SUCH_IRQ_LINE;
     }

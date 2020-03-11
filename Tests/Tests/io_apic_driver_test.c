@@ -31,7 +31,7 @@ void io_apic_driver_test(void)
     OS_RETURN_E err;
 
     /* TEST MASK > MAX */
-    if((err = io_apic_set_irq_mask(IO_APIC_MAX_IRQ_LINE + 1, 0)) !=
+    if((err = io_apic_set_irq_mask(255, 0)) !=
        OS_ERR_NO_SUCH_IRQ_LINE)
     {
         kernel_error("TEST_IOAPIC 0\n");

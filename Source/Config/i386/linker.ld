@@ -83,12 +83,12 @@ SECTIONS
     vbe_mode_info_base = 0x3000 + kernel_offset; /* SIZE = 2048bits, ends at 0x3800 */
 
     /* Init AP relocated code */
-    init_ap_code = 0x4000 + kernel_offset; /* SIZE = 2048bits, ends at 0x4800 */
+    init_ap_code = 0x8000 + kernel_offset; /* SIZE = 2048bits, ends at 0x4800 */
 
     /* GDT must also be in real mode accessible memory */
-    cpu_gdt      = 0x8000 + kernel_offset; /* SIZE = 16384bits, ends at 0xC000 */
-    cpu_gdt_size = 0xC000 + kernel_offset; /* 16 bits */
-    cpu_gdt_base = 0xC002 + kernel_offset; /* 32 bits */
+    cpu_gdt      = 0x3000 + kernel_offset; /* SIZE = 16384bits, ends at 0xC000 */
+    cpu_gdt_size = 0x7000 + kernel_offset; /* 16 bits */
+    cpu_gdt_base = 0x7002 + kernel_offset; /* 32 bits */
 
     /* CPU IDT */
     cpu_idt      = 0x0D000 + kernel_offset; /* SIZE = 16384bits, ends at 0x11000 */
