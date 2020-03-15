@@ -4,6 +4,7 @@
 #include <Sync/mutex.h>
 #include <Sync/semaphore.h>
 #include <Memory/kheap.h>
+#include <Drivers/vesa.h>
 
 #define TAB_SIZE 10
 #define THREAD_COUNT 10
@@ -74,9 +75,26 @@ int sem_ex(void)
     return 0;
 }
 
+void* vesatest(void*args)
+{
+    (void)args;
+
+    while(1)
+    {
+        vesa_flush_buffer();
+        sched_sleep(30);
+    }
+
+    return NULL;
+}
+
 /* Used as example, it will be changed in the future. */
 int main(void)
 {
+    thread_t vesa;
+    sched_create_kernel_thread(&vesa, 0, "thread VESA", 0x4000,
+                               0, vesatest, NULL);
+
     thread_t threads[MAX_CPU_COUNT];
     uint32_t start_time;
 

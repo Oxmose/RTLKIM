@@ -509,7 +509,7 @@ void vesa_put_char(const char character);
 void vesa_console_write_keyboard(const char* str, const uint32_t len);
 
 /**
- * @brief Fills the screen with the bufer given as parameter.
+ * @brief Fills the screen with the buffer given as parameter.
  *
  * @details  Fill the entire screen with the content of the buffer given as
  * parameter. The buffer should be se size of the video buffer.
@@ -519,6 +519,15 @@ void vesa_console_write_keyboard(const char* str, const uint32_t len);
  * @param[in] pointer The pointer to the buffer to copy to the video memory.
  */
 void vesa_fill_screen(uint32_t* pointer);
+
+
+/**
+ * @brief Flushes the buffer to the graphic card.
+ *
+ * @details  Flushes the buffer to the graphic card. The virtual buffer
+ * will be copied to the hardware buffer.
+ */
+void vesa_flush_buffer(void);
 
 /**
  * @brief Enables or disables transparent background for characters.
