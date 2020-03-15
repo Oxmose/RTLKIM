@@ -87,29 +87,37 @@ static void sse_use_exception_handler(cpu_state_t* cpu_state,
     :::"eax");
 
     cpu_id = cpu_get_id();
+    current_thread = sched_get_self();
 
     /* Check if there is a SSE to save */
-    if(sse_save_region[cpu_id] != NULL)
+    if(sse_save_region[cpu_id] != NULL && 
+       sse_save_region[cpu_id] != current_thread->fxsave_reg)
     {
         /* Align */
         fxregs_addr = (uint8_t*)((((uint32_t)sse_save_region) & 0xFFFFFFF0) +
                             16);
         __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
+        //#if TEST_MODE_ENABLED
+        kernel_serial_debug("[TESTMODE] SSE Context switch SAVE\n");
+        //#endif
     }
 
-    /* Restore the current SSE context */
-    current_thread = sched_get_self();
-    fxregs_addr = (uint8_t*)((((uint32_t)current_thread->fxsave_reg) & 
-                              0xFFFFFFF0) +
-                             16);
-    __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
+    if(sse_save_region[cpu_id] != current_thread->fxsave_reg)
+    {
 
-    /* Update the save region */
-    sse_save_region[cpu_id] = current_thread->fxsave_reg;
+        /* Restore the current SSE context */
+        fxregs_addr = (uint8_t*)((((uint32_t)current_thread->fxsave_reg) & 
+                                0xFFFFFFF0) +
+                                16);
+        __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
 
-    #if TEST_MODE_ENABLED
-    kernel_serial_debug("[TESTMODE] SSE Context switch\n");
-    #endif
+        /* Update the save region */
+        sse_save_region[cpu_id] = current_thread->fxsave_reg;
+
+        //#if TEST_MODE_ENABLED
+        kernel_serial_debug("[TESTMODE] SSE Context switch RESTORE\n");
+        //#endif
+    }
 }
 
 OS_RETURN_E cpu_get_info(cpu_info_t* info)
