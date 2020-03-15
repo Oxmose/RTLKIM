@@ -1304,6 +1304,23 @@ int32_t sched_get_tid(void)
     return active_thread[cpu_id]->tid;
 }
 
+kernel_thread_t* sched_get_self(void)
+{
+    int32_t cpu_id;
+
+    cpu_id = cpu_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    if(first_sched[cpu_id] == 0)
+    {
+        return NULL;
+    }
+    return active_thread[cpu_id];
+}
+
 int32_t sched_get_ptid(void)
 {
     int32_t cpu_id;

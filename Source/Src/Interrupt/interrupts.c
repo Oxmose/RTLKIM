@@ -26,6 +26,7 @@
 #include <Cpu/panic.h>        /* panic() */
 #include <IO/kernel_output.h> /* kernel_success */
 #include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
+#include <Core/scheduler.h>   /* Thread management */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -142,8 +143,12 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
         handler = panic;
     }
 
+    cpu_save_sse(sched_get_self());
+
     /* Execute the handler */
     handler(&cpu_state, int_id, &stack_state);
+
+    cpu_restore_sse(sched_get_self());
 }
 
 OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)

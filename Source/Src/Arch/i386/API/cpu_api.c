@@ -117,8 +117,6 @@ void cpu_save_context(const uint32_t first_sched,
                       const stack_state_t* stack_state, 
                       kernel_thread_t* thread)
 {
-    uint8_t* fxregs_addr;
-
     (void)stack_state;
     /* Save the actual ESP (not the fist time since the first schedule should
      * dissociate the boot sequence (pointed by the current esp) and the IDLE
@@ -127,6 +125,21 @@ void cpu_save_context(const uint32_t first_sched,
     {
         thread->cpu_context.esp = cpu_state->esp;
     }
+}
+
+void cpu_restore_context(cpu_state_t* cpu_state, 
+                         const stack_state_t* stack_state, 
+                         const kernel_thread_t* thread)
+{
+    (void)stack_state;
+
+    /* Update esp */
+    cpu_state->esp = thread->cpu_context.esp;
+}
+
+void cpu_save_sse(const kernel_thread_t* thread)
+{
+    uint8_t* fxregs_addr;
 
     /* Save SSE registers */
     fxregs_addr = (uint8_t*)((((uint32_t)thread->fxsave_reg) & 0xFFFFFFF0) + 
@@ -134,19 +147,12 @@ void cpu_save_context(const uint32_t first_sched,
     __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
 }
 
-void cpu_restore_context(cpu_state_t* cpu_state, 
-                         const stack_state_t* stack_state, 
-                         const kernel_thread_t* thread)
+void cpu_restore_sse(const kernel_thread_t* thread)
 {
     uint8_t* fxregs_addr;
 
-    (void)stack_state;
-
-    /* Update esp */
-    cpu_state->esp = thread->cpu_context.esp;
-
     /* Restore SSE registers */
-    fxregs_addr = (uint8_t*)((((uint32_t)thread->fxsave_reg) & 0xFFFFFFF0) + 
+    fxregs_addr = (uint8_t*)((((uint32_t)thread->fxsave_reg) & 0xFFFFFFF0) +
                             16);
     __asm__ __volatile__("fxrstor %0"::"m"(*fxregs_addr));
 }
