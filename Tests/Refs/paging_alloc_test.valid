@@ -1,6 +1,6 @@
 [TESTMODE] Paging Alloc Tests
 [TESTMODE] Page range 0xe5000000 -> 0x00000000
-[TESTMODE] Frame range 0x05001000 -> 0x3ffe0000
+[TESTMODE] Frame range 0x05001000 -> 0x3ffdf000
 [TESTMODE] Page range 0x00000004 -> 0x00000009
 [TESTMODE] Page range 0x0000000d -> 0x00000021
 [TESTMODE] Page range 0x00000004 -> 0x00000009
@@ -55,9 +55,9 @@
 [TESTMODE]Allocated 0x07fe0000
 [TESTMODE] Frame range 0x03fda000 -> 0x03fdb000
 [TESTMODE] Frame range 0x03fdd000 -> 0x03fde000
-[TESTMODE] Frame range 0x07fe1000 -> 0x3ffe0000
+[TESTMODE] Frame range 0x07fe1000 -> 0x3ffdf000
 [TESTMODE] Frame range 0x03fda000 -> 0x03fde000
-[TESTMODE] Frame range 0x07fe1000 -> 0x3ffe0000
+[TESTMODE] Frame range 0x07fe1000 -> 0x3ffdf000
 [TESTMODE]Allocated 0x03fda000
 [TESTMODE]Allocated 0x03fd1000
 [TESTMODE]Now testing page allocation 
