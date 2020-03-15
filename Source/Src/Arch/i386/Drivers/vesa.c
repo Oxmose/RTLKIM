@@ -127,6 +127,89 @@ static spinlock_t lock = SPINLOCK_INIT_VALUE;
  * FUNCTIONS
  ******************************************************************************/
 
+static void fast_memset(void* dst, const uint8_t value, uint32_t size)
+{
+    uint8_t *q = dst;
+
+    #if defined(__i386__)
+        size_t nl = size >> 2;
+        __asm__ __volatile__ ("cld ; rep ; stosl ; movl %3,%0 ; rep ; stosb"
+                : "+c" (nl), "+D" (q)
+                : "a" ((unsigned char)value * 0x01010101U), "r" (size & 3));
+    #elif defined(__x86_64__)
+        size_t nq = size >> 3;
+        __asm__ __volatile__ ("cld ; rep ; stosq ; movl %3,%%ecx ; rep ; stosb"
+                :"+c" (nq), "+D" (q)
+                : "a" ((unsigned char)value * 0x0101010101010101U),
+                "r" ((unsigned int) size & 7));
+    #else
+        while (n--) {
+            *q++ = c;
+        }
+    #endif
+}
+
+static void fast_memcpy(void* dst, const void* src, const uint32_t size)
+{
+    uint32_t i;
+    uint32_t n;
+
+    /* Check SSE support */
+    if(cpu_is_sse_enabled())
+    {
+        for(i = 0; i < size / 16; ++i)
+        {
+            /* Copy by 16bytes chunks */
+            __asm__ __volatile__(
+                "movups  (%0), %%xmm0\n\t"
+                "movntdq %%xmm0, (%1)\n\t"
+            ::"r"(src), "r"(dst) : "memory");
+            src += 16;
+            dst += 16;
+        }
+
+        /* If some rests */
+        if(size % 0x7)
+        {
+            n = size;
+#if defined(__i386__)
+            size_t nl = n >> 2;
+            __asm__ __volatile__ ("cld ; rep ; movsl ; movl %3,%0 ; rep ; movsb":"+c" (nl),
+                    "+S"(src), "+D"(dst)
+                    :"r"(n & 3));
+#elif defined(__x86_64__)
+            size_t nq = n >> 3;
+            __asm__ __volatile__ ("cld ; rep ; movsq ; movl %3,%%ecx ; rep ; movsb":"+c"
+                    (nq), "+S"(src), "+D"(dst)
+                    :"r"((uint32_t) (n & 7)));
+#else
+            while (n--) {
+                *dst++ = *src++;
+            }
+#endif
+        }
+    }
+    else 
+    {
+        n = size;
+#if defined(__i386__)
+        size_t nl = n >> 2;
+        __asm__ __volatile__ ("cld ; rep ; movsl ; movl %3,%0 ; rep ; movsb":"+c" (nl),
+                "+S"(src), "+D"(dst)
+                :"r"(n & 3));
+#elif defined(__x86_64__)
+        size_t nq = n >> 3;
+        __asm__ __volatile__ ("cld ; rep ; movsq ; movl %3,%%ecx ; rep ; movsb":"+c"
+                (nq), "+S"(src), "+D"(dst)
+                :"r"((uint32_t) (n & 7)));
+#else
+        while (n--) {
+            *dst++ = *src++;
+        }
+#endif
+    }
+}
+
 /**
  * @brief Processes the character in parameters.
  *
@@ -467,7 +550,7 @@ OS_RETURN_E vesa_text_vga_to_vesa(void)
     /* Save VGA content */
     vga_save_cursor(&vga_cursor);
     vga_fb = vga_get_framebuffer(0, 0);
-    memcpy(temp_buffer, vga_fb,
+    fast_memcpy(temp_buffer, vga_fb,
            sizeof(uint16_t) *
            VGA_TEXT_SCREEN_LINE_SIZE * VGA_TEXT_SCREEN_COL_SIZE);
 
@@ -719,7 +802,7 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
 
         return OS_ERR_MALLOC;
     }
-    memset(last_columns, 0, last_columns_size);
+    fast_memset(last_columns, 0, last_columns_size);
 
     /* Set the VESA mode */
     regs.ax = BIOS_CALL_SET_VESA_MODE;
@@ -1023,8 +1106,8 @@ void vesa_clear_screen(void)
     ENTER_CRITICAL(word);
     #endif
 
-    memset(buffer, 0,
-           current_mode->width *
+
+    fast_memset(buffer, 0, current_mode->width *
            current_mode->height *
            (current_mode->bpp / 8));
 
@@ -1192,7 +1275,7 @@ void vesa_scroll(const SCROLL_DIRECTION_E direction,
                 last_columns[i] = last_columns[i + 1];
             }
         }
-        memset(src, 0, line_mem_size);
+        fast_memset(src, 0, line_mem_size);
     }
 
     /* Replace cursor */
@@ -1353,7 +1436,7 @@ void vesa_fill_screen(uint32_t* pointer)
     #endif
 
     buffer = (uint32_t*)virt_buffer_align;
-    memcpy(buffer, pointer,
+    fast_memcpy(buffer, pointer,
            current_mode->width *
            current_mode->height *
            (current_mode->bpp / 8));
@@ -1373,7 +1456,7 @@ void vesa_flush_buffer(void)
     buffer = (uint32_t*)virt_buffer_align;
     hw_buffer = (uint32_t*)current_mode->framebuffer;
 
-    memcpy(hw_buffer, buffer,
+    fast_memcpy(hw_buffer, buffer,
            current_mode->width *
            current_mode->height *
            (current_mode->bpp / 8));
