@@ -62,12 +62,19 @@
 
 OS_RETURN_E ata_pio_init(void)
 {
+    #if (ATA_PIO_DETECT_PRIMARY_PORT || ATA_PIO_DETECT_SECONDARY_PORT || \
+         ATA_PIO_DETECT_THIRD_PORT || ATA_PIO_DETECT_FOURTH_PORT)
     ata_pio_device_t  device;
     ata_pio_device_t* ptr;
+    #endif
     OS_RETURN_E       err;
 
+    err = OS_NO_ERR;
+    #if (ATA_PIO_DETECT_PRIMARY_PORT || ATA_PIO_DETECT_SECONDARY_PORT || \
+         ATA_PIO_DETECT_THIRD_PORT || ATA_PIO_DETECT_FOURTH_PORT)
     ptr = &device;
-
+    #endif 
+    
     #if MAX_COU_COUNT > 1
     device.lock = SPINLOCK_INIT_VALUE;
     #endif
@@ -105,7 +112,12 @@ OS_RETURN_E ata_pio_init(void)
     DETECT_DEVICE(ptr, err);
     #endif
 
-    return OS_NO_ERR;
+    if(err == OS_ERR_ATA_DEVICE_NOT_PRESENT)
+    {
+        err = OS_NO_ERR;
+    }
+
+    return err;
 }
 
 OS_RETURN_E ata_pio_identify_device(ata_pio_device_t* device)

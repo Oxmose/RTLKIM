@@ -191,6 +191,15 @@ uint32_t sched_get_thread_count(void);
 int32_t sched_get_tid(void);
 
 /**
+ * @brief Returns the thread structure of the current executing thread.
+ *
+ * @details Returns the thread structure of the current executing thread.
+ *
+ * @returns The thread structure of the current executing thread.
+ */
+kernel_thread_t* sched_get_self(void);
+
+/**
  * @brief Returns the parent TID of the current executing thread.
  *
  * @details Returns the parent TID of the current executing thread.

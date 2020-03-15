@@ -27,7 +27,7 @@
 #define PIT_DRIVER_TEST 0
 #define RTC_DRIVER_TEST 0
 #define TIME_OK_TEST 0
-#define BIOS_CALL_TEST 0
+#define BIOS_CALL_TEST 1
 #define KHEAP_TEST 0
 #define VGA_TEXT_TEST 0
 #define VESA_TEXT_TEST 0
@@ -51,6 +51,7 @@
 #define PAGING_ALLOC_TEST 0
 #define MUTEX_MC_TEST 0
 #define SPINLOCK_TEST 0
+#define SSE_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -88,5 +89,6 @@ void userqueue_test(void);
 void paging_alloc_test(void);
 void mutex_mc_test(void);
 void spinlock_test(void);
+void sse_test(void);
 
 #endif /* __TEST_BANK_H_ */

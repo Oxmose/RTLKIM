@@ -134,16 +134,17 @@ OS_RETURN_E memory_map_init(void)
     static_free = (uint32_t)&kernel_heap_start - (uint32_t)&_end;
     size        = (uint32_t)&_end - (uint32_t)&_start;
 
-    kernel_info("Kernel memory ranges:\n\t[STATIC: 0x%08x - 0x%08x]\n"
-                 "\t[DYNAMIC: 0x%08x - 0x%08x]\n",
-                (uint32_t)&_start, (uint32_t)&_end,
-                (uint32_t)&kernel_heap_start, (uint32_t)&kernel_heap_end);
-    kernel_info("Kernel static size %uKb | %uMb\n", size / 1024,
-                size / 1024 / 1024);
-    kernel_info("Kernel free static memory %uKb | %uMb\n", static_free / 1024,
-                static_free / 1024 / 1024);
-    kernel_info("Kernel free dynamic memory %uKb | %uMb\n", free_size / 1024,
-                free_size / 1024 / 1024);
+    kernel_info("Kernel memory ranges:\n");
+    kernel_info("    [STATIC:  0x%08x - 0x%08x] \n\t"
+                "   %uKb (%uKb used, %uKb free)\n",
+                (uint32_t)&_start, (uint32_t)&_end, 
+                ((uint32_t)&kernel_heap_start - (uint32_t)&_start) / 1024, 
+                size / 1024,
+                static_free / 1024);
+    kernel_info("    [DYNAMIC: 0x%08x - 0x%08x] \n\t"
+                "   %uKb (%uKb used, %uKb free)\n",
+                (uint32_t)&kernel_heap_start, (uint32_t)&kernel_heap_end, 
+                free_size / 1024, 0, free_size / 1024);
 
     kernel_info("Total memory: %uKb | %uMb\n", total_memory / 1024,
                 total_memory / 1024 / 1024);

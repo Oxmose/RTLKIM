@@ -38,6 +38,9 @@
 /** @brief Divide by zero exception line. */
 #define DIV_BY_ZERO_LINE 0
 
+/** @brief Device not found exception. */
+#define DEVICE_NOT_FOUND_LINE 7
+
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/

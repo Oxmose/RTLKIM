@@ -710,6 +710,7 @@ static void* init_func(void* args)
     mailbox_test();
     userqueue_test();
     spinlock_test();
+    sse_test();
     while(1)
     {
         sched_sleep(10000000);
@@ -1302,6 +1303,23 @@ int32_t sched_get_tid(void)
         return 0;
     }
     return active_thread[cpu_id]->tid;
+}
+
+kernel_thread_t* sched_get_self(void)
+{
+    int32_t cpu_id;
+
+    cpu_id = cpu_get_id();
+    if(cpu_id == -1)
+    {
+        cpu_id = 0;
+    }
+
+    if(first_sched[cpu_id] == 0)
+    {
+        return NULL;
+    }
+    return active_thread[cpu_id];
 }
 
 int32_t sched_get_ptid(void)

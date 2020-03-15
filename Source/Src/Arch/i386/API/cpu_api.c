@@ -126,19 +126,28 @@ void cpu_save_context(const uint32_t first_sched,
         thread->cpu_context.esp = cpu_state->esp;
     }
 }
-void cpu_update_pgdir(const uint32_t new_pgdir)
-{
-    /* Update CR3 */
-    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(new_pgdir));
-}
 
 void cpu_restore_context(cpu_state_t* cpu_state, 
                          const stack_state_t* stack_state, 
                          const kernel_thread_t* thread)
 {
     (void)stack_state;
+
     /* Update esp */
     cpu_state->esp = thread->cpu_context.esp;
+
+    /* On context restore, the CR0.TS bit is set to catch FPU/SSE use */
+    __asm__ __volatile__(
+        "mov %%cr0, %%eax\n\t"
+        "or  $0x00000008, %%eax\n\t"
+        "mov %%eax, %%cr0\n\t"
+    :::"eax");
+}
+
+void cpu_update_pgdir(const uint32_t new_pgdir)
+{
+    /* Update CR3 */
+    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(new_pgdir));
 }
 
 void cpu_set_next_thread_instruction(const cpu_state_t* cpu_state,

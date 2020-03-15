@@ -2,10 +2,13 @@
 #include <Lib/stdio.h>
 #include <BSP/lapic.h>
 #include <Sync/mutex.h>
+#include <Sync/semaphore.h>
 #include <Memory/kheap.h>
 
-#define TAB_SIZE 10000000
+#define TAB_SIZE 10
+#define THREAD_COUNT 10
 
+semaphore_t sem;
 static uint8_t* arrayTab;
 static uint32_t arrayVal[MAX_CPU_COUNT];
 
@@ -22,6 +25,53 @@ void* thread_routine(void* args)
     }
 
     return NULL;
+}
+
+
+void* sem_thread_routine(void* args)
+{
+    while(1)
+    {
+        sem_pend(&sem);
+        printf("%d ", (int)args);
+    }
+
+    return NULL;
+}
+
+int sem_ex(void)
+{
+    printf("\n");
+
+    OS_RETURN_E err;
+
+    thread_t threads[THREAD_COUNT];
+    uint32_t i;
+
+    err = sem_init(&sem, 0);
+    if(err != OS_NO_ERR)
+    {
+        printf("Error while creating semaphore: %d\n", err);
+        return -1;
+    }
+
+    for(i = 0; i < THREAD_COUNT; ++i)
+    {
+        err = sched_create_kernel_thread(&threads[i], i % 10, "sem_ex", 512, 0,
+                                  sem_thread_routine, (void*)i);
+        if(err != OS_NO_ERR)
+        {
+            printf("Error while creating thread %u: %d\n", i, err);
+            return -1;
+        }
+    }
+
+    while(1)
+    {
+        sched_sleep(1000);
+        sem_post(&sem);
+    }
+    return 0;
 }
 
 /* Used as example, it will be changed in the future. */
@@ -68,6 +118,9 @@ int main(void)
     }
 
     printf("Multi core took: %u\n", (uint32_t)time_get_current_uptime() -  start_time);
+
+
+    sem_ex();
 
     return 0;
 }

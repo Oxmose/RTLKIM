@@ -430,6 +430,7 @@ static OS_RETURN_E acpi_parse_fadt(acpi_fadt_t* fadt_ptr)
     else
     {
         kernel_error("Failed to parse FACS [%d]\n", err);
+        return err;
     }
 
     /* Parse DSDT */
@@ -442,6 +443,7 @@ static OS_RETURN_E acpi_parse_fadt(acpi_fadt_t* fadt_ptr)
     else
     {
         kernel_error("Failed to parse DSDT [%d]\n", err);
+        return err;
     }
 
     return OS_NO_ERR;
@@ -811,7 +813,7 @@ static OS_RETURN_E acpi_parse_rsdp(rsdp_descriptor_t* rsdp_desc)
         return OS_ERR_ACPI_UNSUPPORTED;
     }
 
-    return OS_NO_ERR;
+    return err;
 }
 
 OS_RETURN_E acpi_init(void)
@@ -883,12 +885,7 @@ OS_RETURN_E acpi_init(void)
 
         range_begin += sizeof(uint64_t);
     }
-
-    if(err == OS_NO_ERR)
-    {
-        kernel_info("Detected %d CPU.\n", cpu_count);
-    }
-
+    
     return err;
 }
 

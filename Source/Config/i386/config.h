@@ -115,7 +115,7 @@
 
 /** @brief Defines the kernel's main timer frequency. This will set the maximal
  * scheduling frequency. */
-#define KERNEL_MAIN_TIMER_FREQ 200
+#define KERNEL_MAIN_TIMER_FREQ 100
 /** @brief Defines the kernel's auxiliary timer frequency. */
 #define KERNEL_AUX_TIMER_FREQ  20
 /** @brief Defines the kernel's rtc timer frequency. */
