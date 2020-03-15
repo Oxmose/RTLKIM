@@ -82,7 +82,7 @@ void* vesatest(void*args)
     while(1)
     {
         vesa_flush_buffer();
-        sched_sleep(30);
+        sched_sleep(10);
     }
 
     return NULL;
