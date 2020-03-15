@@ -114,6 +114,10 @@ static uint32_t transparent_char = 0;
  */
 static uint8_t save_buff[256] = {0};
 
+/** @brief Virtual framebuffer used for double-buffering */
+static uint8_t* virt_buffer = NULL;
+static uint8_t* virt_buffer_align = NULL;
+
 #if MAX_CPU_COUNT > 1
 /** @brief Critical section spinlock. */
 static spinlock_t lock = SPINLOCK_INIT_VALUE;
@@ -647,6 +651,21 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         ++page_count;
     }
 
+    /* Dealocate old virtual buffer */
+    if(virt_buffer != NULL)
+    {
+        kfree(virt_buffer);
+    }
+
+    /* Allocate the virtual buffer, aligned on 16Bytes*/
+    virt_buffer = kmalloc(buffer_size + 16);
+    if(virt_buffer == NULL)
+    {
+        return OS_ERR_MALLOC;
+    }
+    virt_buffer_align = (uint8_t*)(((uint32_t)virt_buffer & 0xFFFFFFF0) + 16);
+
+
     /* Get a new pages */
     cursor->framebuffer = (uint32_t)kernel_paging_alloc_pages(page_count, &err);
     if(cursor->framebuffer == 0 || err != OS_NO_ERR)
@@ -674,6 +693,8 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         #else
         EXIT_CRITICAL(word);
         #endif
+        kfree(virt_buffer);
+        virt_buffer = NULL;
         return err;
     }
 
@@ -693,6 +714,9 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         #else
         EXIT_CRITICAL(word);
         #endif
+        kfree(virt_buffer);
+        virt_buffer = NULL;
+
         return OS_ERR_MALLOC;
     }
     memset(last_columns, 0, last_columns_size);
@@ -710,11 +734,14 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         #else
         EXIT_CRITICAL(word);
         #endif
+        kfree(last_columns);
+        last_columns = NULL;
+        kfree(virt_buffer);
+        virt_buffer = NULL;
         return OS_ERR_VESA_MODE_NOT_SUPPORTED;
     }
     /* Tell generic driver we loaded a VESA mode, ID mapped */
     graphic_set_selected_driver(&vesa_driver);
-
 
     /* Unmap the old buffer if it exists */
     if(current_mode != NULL)
@@ -744,6 +771,14 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     #if VESA_KERNEL_DEBUG == 1
     kernel_serial_debug("VESA Mode set %d\n", mode.mode_id);
     #endif
+
+    if(err != OS_NO_ERR)
+    {
+        kfree(last_columns);
+        last_columns = NULL;
+        kfree(virt_buffer);
+        virt_buffer = NULL;
+    }
 
     return err;
 }
@@ -782,7 +817,7 @@ OS_RETURN_E vesa_get_pixel(const uint16_t x, const uint16_t y,
     #endif
 
     /* Get framebuffer address */
-    addr = (uint8_t*)(((uint32_t*)current_mode->framebuffer) +
+    addr = (uint8_t*)(((uint32_t*)virt_buffer_align) +
                         (current_mode->width * y) + x);
 
     *blue  = *(addr++);
@@ -823,7 +858,7 @@ __inline__ OS_RETURN_E vesa_draw_pixel(const uint16_t x, const uint16_t y,
     }
 
     /* Get framebuffer address */
-    addr = ((uint32_t*)current_mode->framebuffer) +
+    addr = ((uint32_t*)virt_buffer_align) +
                         (current_mode->width * y) + x;
 
     back = (uint8_t*)addr;
@@ -980,7 +1015,7 @@ void vesa_clear_screen(void)
     uint32_t* buffer;
     uint32_t  word;
 
-    buffer = (uint32_t*)current_mode->framebuffer;
+    buffer = (uint32_t*)virt_buffer_align;
 
     #if MAX_CPU_COUNT > 1
     ENTER_CRITICAL(word, &lock);
@@ -1122,7 +1157,7 @@ void vesa_scroll(const SCROLL_DIRECTION_E direction,
     q = current_mode->height / font_height;
     m = current_mode->height % (q * font_height);
 
-    buffer_addr = (uint32_t*)current_mode->framebuffer;
+    buffer_addr = (uint32_t*)virt_buffer_align;
 
     line_size = font_height * current_mode->width;
     bpp_size = ((current_mode->bpp | 7) >> 3);
@@ -1317,7 +1352,7 @@ void vesa_fill_screen(uint32_t* pointer)
     ENTER_CRITICAL(word);
     #endif
 
-    buffer = (uint32_t*)current_mode->framebuffer;
+    buffer = (uint32_t*)virt_buffer_align;
     memcpy(buffer, pointer,
            current_mode->width *
            current_mode->height *
@@ -1328,6 +1363,20 @@ void vesa_fill_screen(uint32_t* pointer)
     #else
     EXIT_CRITICAL(word);
     #endif
+}
+
+void vesa_flush_buffer(void)
+{
+    uint32_t* buffer;
+    uint32_t* hw_buffer;
+
+    buffer = (uint32_t*)virt_buffer_align;
+    hw_buffer = (uint32_t*)current_mode->framebuffer;
+
+    memcpy(hw_buffer, buffer,
+           current_mode->width *
+           current_mode->height *
+           (current_mode->bpp / 8));
 }
 
 void vesa_set_transparent_char(const uint32_t enabled)

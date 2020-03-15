@@ -27,7 +27,7 @@
 #define PIT_DRIVER_TEST 0
 #define RTC_DRIVER_TEST 0
 #define TIME_OK_TEST 0
-#define BIOS_CALL_TEST 1
+#define BIOS_CALL_TEST 0
 #define KHEAP_TEST 0
 #define VGA_TEXT_TEST 0
 #define VESA_TEXT_TEST 0
