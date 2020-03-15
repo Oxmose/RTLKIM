@@ -35,7 +35,7 @@ void* test_inherit(void*args)
         for(volatile uint32_t i = 0; i < 10000000; ++i);
 
         printf("[TESTMODE]T2 sched_sleep\n");
-        sched_sleep(50);
+        sched_sleep(700);
         printf("[TESTMODE]T2 Wake\n");
 
         for(volatile uint32_t i = 0; i < 100000000; ++i);
