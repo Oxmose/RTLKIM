@@ -112,6 +112,11 @@ OS_RETURN_E ata_pio_init(void)
     DETECT_DEVICE(ptr, err);
     #endif
 
+    if(err == OS_ERR_ATA_DEVICE_NOT_PRESENT)
+    {
+        err = OS_NO_ERR;
+    }
+
     return err;
 }
 

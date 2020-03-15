@@ -885,12 +885,7 @@ OS_RETURN_E acpi_init(void)
 
         range_begin += sizeof(uint64_t);
     }
-
-    if(err == OS_NO_ERR)
-    {
-        kernel_info("Detected %d CPU.\n", cpu_count);
-    }
-
+    
     return err;
 }
 

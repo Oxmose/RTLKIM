@@ -106,8 +106,15 @@ void kernel_kickstart(void)
     kernel_serial_debug("Detecting CPU\n");
     #endif
     err = cpu_detect(1);
-    INIT_MSG("", "Error while detecting CPU: %d. HALTING\n",err, 1);
+    INIT_MSG("CPU Detected\n", "Error while detecting CPU: %d. HALTING\n",err, 1);
 
+    /* Enable SSE support */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Enabling SSE\n");
+    #endif
+    err = cpu_enable_sse();
+    INIT_MSG("SSE support enabled\n", "Cannot enable SSE: %d. HALTING\n",err, 1);
+    
     /* Detect memory */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Detecting memory\n");

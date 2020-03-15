@@ -117,6 +117,8 @@ void cpu_save_context(const uint32_t first_sched,
                       const stack_state_t* stack_state, 
                       kernel_thread_t* thread)
 {
+    uint8_t* fxregs_addr;
+
     (void)stack_state;
     /* Save the actual ESP (not the fist time since the first schedule should
      * dissociate the boot sequence (pointed by the current esp) and the IDLE
@@ -125,20 +127,34 @@ void cpu_save_context(const uint32_t first_sched,
     {
         thread->cpu_context.esp = cpu_state->esp;
     }
-}
-void cpu_update_pgdir(const uint32_t new_pgdir)
-{
-    /* Update CR3 */
-    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(new_pgdir));
+
+    /* Save SSE registers */
+    fxregs_addr = (uint8_t*)((((uint32_t)thread->fxsave_reg) & 0xFFFFFFF0) + 
+                            16);
+    __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
 }
 
 void cpu_restore_context(cpu_state_t* cpu_state, 
                          const stack_state_t* stack_state, 
                          const kernel_thread_t* thread)
 {
+    uint8_t* fxregs_addr;
+
     (void)stack_state;
+
     /* Update esp */
     cpu_state->esp = thread->cpu_context.esp;
+
+    /* Restore SSE registers */
+    fxregs_addr = (uint8_t*)((((uint32_t)thread->fxsave_reg) & 0xFFFFFFF0) + 
+                            16);
+    __asm__ __volatile__("fxrstor %0"::"m"(*fxregs_addr));
+}
+
+void cpu_update_pgdir(const uint32_t new_pgdir)
+{
+    /* Update CR3 */
+    __asm__ __volatile__("mov %%eax, %%cr3": :"a"(new_pgdir));
 }
 
 void cpu_set_next_thread_instruction(const cpu_state_t* cpu_state,

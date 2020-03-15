@@ -156,6 +156,9 @@ typedef enum THREAD_TYPE THREAD_TYPE_E;
 /** @brief This is the representation of the thread for the kernel. */
 struct kernel_thread
 {
+    /** @brief Thread's SSE storage. */
+    uint8_t fxsave_reg[528];
+
     /** @brief Thread's identifier. */
     int32_t tid;
     /** @brief Thread's parent identifier. */

@@ -426,6 +426,18 @@ int32_t cpu_cpuid_capable(void);
 OS_RETURN_E cpu_detect(const uint32_t print);
 
 /**
+ * @brief Enables the SSE features of the CPU.
+ * 
+ * @details Enables the SSE features of the CPU. This also enables the FPU 
+ * at the same time.
+ * 
+ * @return he success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_UNAUTHORIZED_ACTION is returned if the CPU does not support SSE.
+ */
+OS_RETURN_E cpu_enable_sse(void);
+
+/**
  * @brief Returns the highest support CPUID feature request ID.
  *
  * @details Returns the highest supported input value for CPUID instruction.

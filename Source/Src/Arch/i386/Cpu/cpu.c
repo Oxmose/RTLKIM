@@ -332,3 +332,24 @@ OS_RETURN_E cpu_detect(const uint32_t print)
 
     return OS_NO_ERR;
 }
+
+OS_RETURN_E cpu_enable_sse(void)
+{
+    /* Check for SSE support */
+    if((cpu_info.cpuid_data[1] & EDX_SSE) != EDX_SSE) 
+    {
+        return OS_ERR_UNAUTHORIZED_ACTION;
+    }
+    /* Enables SSE and FPU */
+    __asm__ __volatile__(
+        "mov %%cr0, %%eax\n\t"
+        "and $0xFFFFFFFB, %%eax\n\t"
+        "or  $0x00000002, %%eax\n\t"
+        "mov %%eax, %%cr0\n\t"
+        "mov %%cr4, %%eax\n\t"
+        "or  $0x00000600, %%eax\n\t"
+        "mov %%eax, %%cr4\n\t"
+    :::"eax");
+
+    return OS_NO_ERR;
+}
