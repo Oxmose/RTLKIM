@@ -212,6 +212,6 @@
 #define PAGING_KERNEL_DEBUG 0
 
 /** @brief Enables test mode features. */
-#define TEST_MODE_ENABLED 0
+#define TEST_MODE_ENABLED 1
 
 #endif /* __CONFIG_H_ */

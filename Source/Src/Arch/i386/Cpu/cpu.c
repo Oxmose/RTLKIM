@@ -17,10 +17,13 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Lib/stdint.h>       /* Generic int types */
-#include <Lib/stddef.h>       /* OS_RETURN_E */
-#include <Lib/string.h>       /* memcpy */
-#include <IO/kernel_output.h> /* kernel_info */
+#include <Lib/stdint.h>           /* Generic int types */
+#include <Lib/stddef.h>           /* OS_RETURN_E */
+#include <Lib/string.h>           /* memcpy */
+#include <IO/kernel_output.h>     /* kernel_info */
+#include <Interrupt/exceptions.h> /* Register SSE exception */
+#include <Cpu/panic.h>            /* Kernel panic */
+#include <Core/scheduler.h>       /* Thread management */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -36,9 +39,78 @@
 /** @brief CPU info storage, stores basix CPU information. */
 cpu_info_t cpu_info;
 
+/** @brief Stores the SSE state */
+uint8_t sse_enabled = 0;
+
+/** @brief Stores a pointer to the SSE region that should be used to save the
+ * SSE registers.
+ */
+uint8_t* sse_save_region[MAX_CPU_COUNT] = {NULL};
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
+
+/**
+ * @brief Handles a sse use exception (coprocessor not available)
+ *
+ * @details Handles a sse use exception (coprocessor not available). This will
+ * clear the CR0.TS bit to allow the use of SSE and save the old SSE content
+ * if needed.
+ *
+ * @param cpu_state The cpu registers structure.
+ * @param int_id The exception number.
+ * @param stack_state The stack state before the exception that contain cs, eip,
+ * error code and the eflags register value.
+ */
+static void sse_use_exception_handler(cpu_state_t* cpu_state,
+                                      uint32_t int_id,
+                                      stack_state_t* stack_state)
+{
+    uint8_t* fxregs_addr;
+    uint32_t cpu_id;
+    kernel_thread_t* current_thread;
+
+    (void)cpu_state;
+    (void)stack_state;
+    /* Check the interrupt line */
+    if(int_id != DEVICE_NOT_FOUND_LINE)
+    {
+        kernel_panic(OR_ERR_UNAUTHORIZED_INTERRUPT_LINE);
+    }
+
+    /* Update the CR0.TS bit */
+    __asm__ __volatile__(
+        "mov %%cr0, %%eax\n\t"
+        "and $0xFFFFFFF7, %%eax\n\t"
+        "mov %%eax, %%cr0\n\t"
+    :::"eax");
+
+    cpu_id = cpu_get_id();
+
+    /* Check if there is a SSE to save */
+    if(sse_save_region[cpu_id] != NULL)
+    {
+        /* Align */
+        fxregs_addr = (uint8_t*)((((uint32_t)sse_save_region) & 0xFFFFFFF0) +
+                            16);
+        __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
+    }
+
+    /* Restore the current SSE context */
+    current_thread = sched_get_self();
+    fxregs_addr = (uint8_t*)((((uint32_t)current_thread->fxsave_reg) & 
+                              0xFFFFFFF0) +
+                             16);
+    __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
+
+    /* Update the save region */
+    sse_save_region[cpu_id] = current_thread->fxsave_reg;
+
+    #if TEST_MODE_ENABLED
+    kernel_serial_debug("[TESTMODE] SSE Context switch\n");
+    #endif
+}
 
 OS_RETURN_E cpu_get_info(cpu_info_t* info)
 {
@@ -50,6 +122,11 @@ OS_RETURN_E cpu_get_info(cpu_info_t* info)
     memcpy(info, &cpu_info, sizeof(cpu_info_t));
 
     return OS_NO_ERR;
+}
+
+uint8_t cpu_is_sse_enabled(void)
+{
+    return sse_enabled;
 }
 
 int32_t cpu_cpuid_capable(void)
@@ -342,6 +419,7 @@ OS_RETURN_E cpu_enable_sse(void)
     }
     /* Enables SSE and FPU */
     __asm__ __volatile__(
+        "fninit\t\n"
         "mov %%cr0, %%eax\n\t"
         "and $0xFFFFFFFB, %%eax\n\t"
         "or  $0x00000002, %%eax\n\t"
@@ -351,5 +429,9 @@ OS_RETURN_E cpu_enable_sse(void)
         "mov %%eax, %%cr4\n\t"
     :::"eax");
 
-    return OS_NO_ERR;
+    sse_enabled = 1;
+
+    /* Sets the SSE exception to catch SSE uses */
+    return kernel_exception_register_handler(DEVICE_NOT_FOUND_LINE,
+                                             sse_use_exception_handler);
 }

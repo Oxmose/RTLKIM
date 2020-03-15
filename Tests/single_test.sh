@@ -11,17 +11,17 @@ function testcase() {
     # Select the test
     sed -i "s/$filename_up 0/$filename_up 1/g" Tests/test_bank.h
     sed -i 's/TEST_MODE_ENABLED 0/TEST_MODE_ENABLED 1/g' ../Source/Config/i386/config.h
-    {
-        # Execute the test
-        rm -f *.out
-        cd ../Source
-        make arch=i386 TESTS=TRUE && (make arch=i386 qemu-test-mode > test.out &)
-        sleep $2
-        killall qemu-system-i386
-        killall make
-        mv test.out ../Tests/test.out
-        cd ../Tests
-    } > /dev/null
+    # Execute the test
+    rm -f *.out
+    cd ../Source
+    make arch=i386 TESTS=TRUE && (make arch=i386 qemu-test-mode > test.out &)
+    sleep $2
+    killall qemu-system-i386
+    killall make
+    cat test.out
+    mv test.out ../Tests/test.out
+    
+    cd ../Tests
     # Filter output
     grep "\[TESTMODE\]\|ERROR" test.out > filtered.out
     #Compare output

@@ -136,26 +136,6 @@ void cpu_restore_context(cpu_state_t* cpu_state,
                          const kernel_thread_t* thread);
 
 /**
- * @brief Saves the thread's SSE context.
- * 
- * @details Saves the thread's SSE context from the thread storage 
- * structure.
- * 
- * @param[in] thread The thread structure to read the data from.
- */
-void cpu_save_sse(const kernel_thread_t* thread);
-
-/**
- * @brief Restores the thread's SSE context.
- * 
- * @details Restores the thread's SSE context from the thread storage 
- * structure. Registers are updated.
- * 
- * @param[out] thread The thread structure to read the data from.
- */
-void cpu_restore_sse(const kernel_thread_t* thread);
-
-/**
  * @brief Sets the next thread's isntruction.
  * 
  * @details Modifies the thread's next instruction pointer to 

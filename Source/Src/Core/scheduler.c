@@ -710,6 +710,7 @@ static void* init_func(void* args)
     mailbox_test();
     userqueue_test();
     spinlock_test();
+    sse_test();
     while(1)
     {
         sched_sleep(10000000);

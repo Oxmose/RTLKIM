@@ -5,7 +5,7 @@
 #include <Sync/semaphore.h>
 #include <Memory/kheap.h>
 
-#define TAB_SIZE 10000000
+#define TAB_SIZE 10
 #define THREAD_COUNT 10
 
 semaphore_t sem;

@@ -135,26 +135,13 @@ void cpu_restore_context(cpu_state_t* cpu_state,
 
     /* Update esp */
     cpu_state->esp = thread->cpu_context.esp;
-}
 
-void cpu_save_sse(const kernel_thread_t* thread)
-{
-    uint8_t* fxregs_addr;
-
-    /* Save SSE registers */
-    fxregs_addr = (uint8_t*)((((uint32_t)thread->fxsave_reg) & 0xFFFFFFF0) + 
-                            16);
-    __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
-}
-
-void cpu_restore_sse(const kernel_thread_t* thread)
-{
-    uint8_t* fxregs_addr;
-
-    /* Restore SSE registers */
-    fxregs_addr = (uint8_t*)((((uint32_t)thread->fxsave_reg) & 0xFFFFFFF0) +
-                            16);
-    __asm__ __volatile__("fxrstor %0"::"m"(*fxregs_addr));
+    /* On context restore, the CR0.TS bit is set to catch FPU/SSE use */
+    __asm__ __volatile__(
+        "mov %%cr0, %%eax\n\t"
+        "or  $0x00000008, %%eax\n\t"
+        "mov %%eax, %%cr0\n\t"
+    :::"eax");
 }
 
 void cpu_update_pgdir(const uint32_t new_pgdir)

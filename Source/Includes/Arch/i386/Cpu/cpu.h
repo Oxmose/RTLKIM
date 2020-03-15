@@ -399,6 +399,16 @@ typedef enum cpuid_requests CPUID_REQ_E;
  */
 OS_RETURN_E cpu_get_info(cpu_info_t* info);
 
+
+/**
+ * @brief Return the SSE state.
+ *
+ * @details Return the SSE state.
+ *
+ * @return The function return 0 if SSE is not enabled, 1 otherwise.
+ */
+uint8_t cpu_is_sse_enabled(void);
+
 /**
  * @brief Returns 1 if the CPUID intruction is available on the CPU. 0 is
  * returned otherwise.
