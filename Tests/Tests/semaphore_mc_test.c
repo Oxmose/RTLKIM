@@ -44,9 +44,6 @@ void *sem_thread_1(void *args)
             return NULL;
         }
     }
-    pause_spinlock(&lock);
-    printf(" (T1 END) ");
-    lock = 0;
 
     return NULL;
 }
@@ -70,9 +67,6 @@ void *sem_thread_2(void *args)
             return NULL;
         }
     }
-    pause_spinlock(&lock);
-    printf(" (T2 END) ");
-    lock = 0;
 
     return NULL;
 }
@@ -102,9 +96,6 @@ void *sem_thread_3(void *args)
         (void )args;
             return NULL;
     }
-    pause_spinlock(&lock);
-    printf(" (T3 END) ");
-    lock = 0;
 
     return NULL;
 }
@@ -147,9 +138,6 @@ void *sem_thread_4(void *args)
             return NULL;
         }
     }
-    pause_spinlock(&lock);
-    printf(" (T4 END) ");
-    lock = 0;
 
     return NULL;
 }
@@ -169,9 +157,6 @@ void *sem_thread_5(void *args)
             return NULL;
         }
     }
-    pause_spinlock(&lock);
-    printf(" (T5 END) ");
-    lock = 0;
 
     return NULL;
 }

@@ -26,7 +26,7 @@
 #include <Memory/paging_alloc.h>  /* kernel_paging_alloc */
 #include <Memory/paging.h>        /* KERNEL_PAGE_SIZE */
 #include <Cpu/cpu.h>              /* cpu_hlt */
-#include <API/cpu_api.h>          /* cpu_get_id */
+#include <API/cpu_api.h>          /* lapic_get_id */
 #include <Cpu/panic.h>      /* kernel_panic */
 #include <Interrupt/interrupts.h> /* register_interrupt_handler,
                                    * set_IRQ_EOI, update_tick */

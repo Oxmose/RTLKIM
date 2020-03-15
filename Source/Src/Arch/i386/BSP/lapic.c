@@ -459,6 +459,7 @@ OS_RETURN_E lapic_timer_init(void)
         return err;
     }
 
+
     err = pit_remove_handler();
     if(err != OS_NO_ERR)
     {
@@ -501,7 +502,7 @@ OS_RETURN_E lapic_ap_timer_init(void)
     #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     #endif
 
     #if LAPIC_KERNEL_DEBUG == 1
@@ -551,7 +552,7 @@ uint32_t lapic_timer_get_frequency(void)
     #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     #endif
 
     #if MAX_CPU_COUNT > 1
@@ -578,7 +579,7 @@ OS_RETURN_E lapic_timer_set_frequency(const uint32_t frequency)
     #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     #endif 
 
     #if LAPIC_KERNEL_DEBUG == 1
@@ -623,7 +624,7 @@ OS_RETURN_E lapic_timer_enable(void)
     #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     #endif
 
     #if LAPIC_KERNEL_DEBUG == 1
@@ -665,7 +666,7 @@ OS_RETURN_E lapic_timer_disable(void)
     #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     #endif
 
     #if LAPIC_KERNEL_DEBUG == 1
@@ -711,7 +712,7 @@ OS_RETURN_E lapic_timer_set_handler(void(*handler)(
     #if MAX_CPU_COUNT > 1
     int32_t cpu_id;
 
-    cpu_id = lapic_get_id();
+    cpu_id = cpu_get_id();
     #endif
 
     #if LAPIC_KERNEL_DEBUG == 1

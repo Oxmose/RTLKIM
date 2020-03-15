@@ -196,4 +196,42 @@ section .data
     dd 0x00800083
     ; This page directory entry defines a 4MB page containing the kernel.
     dd 0x00C00083
-    times (1024 - KERNEL_START_PAGE_ID - 5) dd 0  ; Pages after the kernel image.
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x01000083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x01400083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x018000083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x01C00083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x02000083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x02400083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x02800083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x02C00083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x0300083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x03400083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x03800083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x03C00083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x04000083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x04400083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x04800083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x04C00083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x05000083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x05400083
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x05800083
+    times (1024 - KERNEL_START_PAGE_ID - 23) dd 0  ; Pages after the kernel image.

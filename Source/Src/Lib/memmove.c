@@ -13,6 +13,7 @@
  ******************************************************************************/
 
 #include <Lib/stddef.h> /* size_t */
+#include <Cpu/cpu.h>    /* CPU infos */
 
 /* Header file */
 #include <Lib/string.h>

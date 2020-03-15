@@ -65,7 +65,7 @@ endif
 
 ASFLAGS = -g -f elf -w+gnu-elf-extensions
 LDFLAGS = -e loader -T $(LINKER_FILE) -melf_i386 -no-pie
-QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 256M \
+QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 1G \
            -gdb tcp::1234 -smp 4 \
 		   -drive format=raw,file=../Peripherals/hdd_primary_master.img -kernel
 

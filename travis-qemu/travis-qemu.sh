@@ -2,7 +2,7 @@
 set -e
 
 VERSION=${QEMU_VERSION:=3.1.0}
-ARCHES=${QEMU_ARCHES:=x86_64}
+ARCHES=${QEMU_ARCHES:=i386}
 TARGETS=${QEMU_TARGETS:=$(echo $ARCHES | sed 's#$# #;s#\([^ ]*\) #\1-softmmu \1-linux-user #g')}
 
 if echo "$VERSION $TARGETS" | cmp --silent $HOME/qemu/.build -; then

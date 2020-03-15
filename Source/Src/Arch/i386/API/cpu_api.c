@@ -18,6 +18,7 @@
 
 #include <Lib/stdint.h>           /* Generic int types */
 #include <BSP/lapic.h>            /* lapic_get_id() */
+#include <BSP/acpi.h>             /* acpi_get_cpu_lapics() */
 #include <Core/thread.h>          /* kernel_thread_t */
 #include <Interrupt/interrupts.h> /* cpu_state, stack_state */
 
@@ -38,13 +39,25 @@
  ******************************************************************************/
 
 int32_t cpu_get_id(void)
-{
+{   
+    uint32_t i;
+
     /* If lapic is not activated but we only use one CPU */
     if(MAX_CPU_COUNT == 1)
     {
         return 0;
     }    
-    return lapic_get_id();
+    const local_apic_t** lapics = acpi_get_cpu_lapics();
+    const int32_t lapic_id = lapic_get_id();
+    for(i = 0; i < MAX_CPU_COUNT; ++i)
+    {
+        if(lapics[i]->apic_id == lapic_id)
+        {
+            return i;
+        }
+    }
+
+    return 0;
 }
 
 void cpu_init_thread_context(void (*entry_point)(void), 

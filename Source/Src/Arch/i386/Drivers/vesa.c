@@ -538,6 +538,7 @@ OS_RETURN_E vesa_text_vga_to_vesa(void)
 
             /* Print char */
             vesa_set_color_scheme(new_colorscheme);
+
             vesa_process_char(character);
 
             ++vga_fb;

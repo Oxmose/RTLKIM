@@ -79,7 +79,7 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
         }
     }
 
-    current_cpu_id = lapic_get_id();
+    current_cpu_id = cpu_get_id();
 
     cpu_clear_interrupt();
 

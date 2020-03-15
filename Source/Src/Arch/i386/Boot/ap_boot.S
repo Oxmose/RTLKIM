@@ -28,7 +28,7 @@ extern kernel_pgdir
 %define CODE16 0x18
 %define DATA16 0x20
 
-%define CODE_LOCATION 0x8000
+%define CODE_LOCATION 0x4000
 %define OFFSET_ADDR(addr)  (((addr) - ap_boot_loader) + CODE_LOCATION)
 
 global ap_boot_loader_init
@@ -56,10 +56,6 @@ section .text
   ap_boot_loader:
     use16
     cli
-ap_boot_loader_halt:
-    hlt
-    jmp ap_boot_loader_halt
-
     ; Set the GDT for the current CPU
     lgdt [OFFSET_ADDR(gdt16_ptr)]
 
@@ -118,11 +114,6 @@ ap_boot_loader_halt:
 
       ; Init CPU GDT
       lgdt [cpu_gdt_size]
-
-      ; Update the number of booted AP
-      mov ecx, [dword init_cpu_count]
-      inc ecx
-      mov [dword init_cpu_count], ecx
 
       mov eax, smp_ap_core_init
       call eax
