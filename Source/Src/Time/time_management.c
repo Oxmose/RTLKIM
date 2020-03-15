@@ -24,7 +24,7 @@
 #include <Lib/string.h>           /* memset() */
 #include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t */
 #include <BSP/rtc.h>              /* rtc_update_time */
-#include <API/cpu_api.h>          /* cpu_get_id() */
+#include <API/cpu_api.h>          /* lapic_get_id() */
 
 /* RTLK configuration file */
 #include <config.h>

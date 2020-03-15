@@ -36,7 +36,7 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-#define KERNEL_MIN_PGTABLE_SIZE 4
+#define KERNEL_MIN_PGTABLE_SIZE 128
 #define KERNEL_PAGE_DIR_OFFSET  (KERNEL_MEM_OFFSET / KERNEL_PAGE_SIZE / 1024)
 
 /* Memory map data */
@@ -176,8 +176,13 @@ OS_RETURN_E paging_init(void)
     {
         ++dir_entry_count;
     }
+
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Using %u directory entries\n", dir_entry_count);
+    #endif
     for(i = KERNEL_PAGE_DIR_OFFSET;
-        i < KERNEL_MIN_PGTABLE_SIZE + KERNEL_PAGE_DIR_OFFSET;
+        i < MIN(KERNEL_MIN_PGTABLE_SIZE + KERNEL_PAGE_DIR_OFFSET, 
+                dir_entry_count + KERNEL_PAGE_DIR_OFFSET);
         ++i)
     {
         /* Create a new frame for the pgdire */
@@ -191,12 +196,14 @@ OS_RETURN_E paging_init(void)
                             PAGE_FLAG_READ_WRITE |
                             PAGE_FLAG_PRESENT;
             --to_map;
+   
         }
         kernel_pgdir[i] = ((uint32_t)page_table  - KERNEL_MEM_OFFSET) |
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                       PG_DIR_FLAG_PAGE_READ_WRITE |
                       PG_DIR_FLAG_PAGE_PRESENT;
+        
     }
 
     /* Map the current page dir */

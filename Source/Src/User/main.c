@@ -1,38 +1,73 @@
-#include <Lib/stddef.h>
-#include <Lib/stdio.h>
 #include <Core/scheduler.h>
+#include <Lib/stdio.h>
+#include <BSP/lapic.h>
+#include <Sync/mutex.h>
+#include <Memory/kheap.h>
 
-/* Used as example, it will be changed in the future. */
+#define TAB_SIZE 10000000
 
-int main(void)
+static uint8_t* arrayTab;
+static uint32_t arrayVal[MAX_CPU_COUNT];
+
+mutex_t mut;
+void* thread_routine(void* args)
 {
-    uint64_t idle_shed, last_idle_sched = 0;
-    uint64_t tmp;
-    uint64_t sched_call, last_sched_call = 0;
-
-    uint32_t i = 0;
-    for(;;)
+    uint32_t index = (int)args;
+    for(uint32_t k = 0; k < 1600 / MAX_CPU_COUNT; ++k)
     {
-        ++i;
-        if(i % 1000000 == 0)
+        for(uint32_t i = 0; i < TAB_SIZE; ++i)
         {
-            sched_sleep(10);
-        }
-        if(i % 50000000 == 0)
-        {
-            idle_shed = sched_get_idle_schedule_count();
-            tmp = idle_shed;
-            idle_shed -= last_idle_sched;
-            last_idle_sched = tmp;
-            sched_call = sched_get_schedule_count();
-            tmp = sched_call;
-            sched_call -= last_sched_call;
-            last_sched_call = tmp;
-
-            uint64_t cpu_use = 100 - (idle_shed * 100) / sched_call;
-            printf("\r CPU Use: %03u%%    %d %d            ", 
-            (uint32_t) cpu_use, (uint32_t)idle_shed, (uint32_t)sched_call);
+            arrayVal[index] += arrayTab[i];
         }
     }
+
+    return NULL;
+}
+
+/* Used as example, it will be changed in the future. */
+int main(void)
+{
+    thread_t threads[MAX_CPU_COUNT];
+    uint32_t start_time;
+
+    kernel_printf("Starting Main\n");
+
+
+    arrayTab = kmalloc(sizeof(uint8_t) * TAB_SIZE);
+    if(arrayTab == NULL)
+    {
+        printf("ERROR Could not allocate memory");
+        return -1;
+    }
+
+    start_time = time_get_current_uptime();
+    for(uint32_t k = 0; k < 1600; ++k)
+    {
+        for(uint32_t i = 0; i < TAB_SIZE; ++i)
+        {
+            arrayVal[0] += arrayTab[i];
+        }
+    }
+    printf("Single core took: %u\n", (uint32_t)time_get_current_uptime() -  start_time);
+
+
+
+    mutex_init(&mut, MUTEX_FLAG_NONE, MUTEX_PRIORITY_ELEVATION_NONE);
+
+    start_time = time_get_current_uptime();
+
+    for(uint32_t i = 0; i < MAX_CPU_COUNT; ++i)
+    {
+        sched_create_kernel_thread(&threads[i], 0, "thread T", 4096,
+                                   i, thread_routine, (void*)i);
+        sched_sleep(100);
+    }
+    for(uint32_t i = 0; i < MAX_CPU_COUNT; ++i)
+    {
+        sched_wait_thread(threads[i], NULL, NULL);
+    }
+
+    printf("Multi core took: %u\n", (uint32_t)time_get_current_uptime() -  start_time);
+
     return 0;
 }

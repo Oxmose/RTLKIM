@@ -71,7 +71,7 @@ OS_RETURN_E smp_init(void)
 
     kernel_info("Init %d CPU cores\n", cpu_count);
 
-    main_core_id = lapic_get_id();
+    main_core_id = cpu_get_id();
 
     kernel_info("Main core ID %d\n", main_core_id);
 
@@ -80,7 +80,7 @@ OS_RETURN_E smp_init(void)
     cpu_lapics = acpi_get_cpu_lapics();
 
     /* Map needed memory */
-    err = kernel_direct_mmap((void*)0x8000, (void*)0x8000, 0x1,
+    err = kernel_direct_mmap((void*)0x4000, (void*)0x4000, 0x1,
                              PG_DIR_FLAG_PAGE_SIZE_4KB |
                              PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                              PG_DIR_FLAG_PAGE_READ_WRITE,
@@ -100,7 +100,8 @@ OS_RETURN_E smp_init(void)
         uint32_t current_cpu_init;
 
         current_cpu_init = init_cpu_count;
-        if(cpu_ids[i] == main_core_id) continue;
+        if(i == main_core_id) continue;
+
 
         err = lapic_send_ipi_init(cpu_lapics[i]->apic_id);
         if(err != OS_NO_ERR)
@@ -114,7 +115,7 @@ OS_RETURN_E smp_init(void)
         kernel_interrupt_disable();
 
         /* Send startup */
-        err = lapic_send_ipi_startup(cpu_lapics[i]->apic_id, 0x8);
+        err = lapic_send_ipi_startup(cpu_lapics[i]->apic_id, 0x4);
         if(err != OS_NO_ERR)
         {
             kernel_error("Cannot send STARTUP IPI [%d]\n", err);
@@ -128,7 +129,7 @@ OS_RETURN_E smp_init(void)
         if(current_cpu_init == init_cpu_count)
         {
             /* Send startup */
-            err = lapic_send_ipi_startup(cpu_lapics[i]->apic_id, 0x8);
+            err = lapic_send_ipi_startup(cpu_lapics[i]->apic_id, 0x4);
             if(err != OS_NO_ERR)
             {
                 kernel_error("Cannot send STARTUP IPI [%d]\n", err);
@@ -151,11 +152,7 @@ OS_RETURN_E smp_init(void)
 void smp_ap_core_init(void)
 {
     OS_RETURN_E err;
-    uint32_t cpu_id = lapic_get_id();
-
-    /* Load AP TSS */
-    __asm__ __volatile__("ltr %0" : : "rm" ((uint16_t)
-                                            (TSS_SEGMENT + cpu_id * 0x00)));
+    uint32_t cpu_id = cpu_get_id();
 
     /* Init local APIC */
     err = lapic_init();
@@ -174,6 +171,8 @@ void smp_ap_core_init(void)
                      err, cpu_id);
         kernel_panic(err);
     }
+
+
 
     ++init_cpu_count;
 

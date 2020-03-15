@@ -85,9 +85,7 @@ void kernel_kickstart(void)
     OS_RETURN_E err;
 
     /* Init VGA display if needed */
-    #if DISPLAY_TYPE == DISPLAY_VGA
-    graphic_set_selected_driver(&vga_text_driver);
-    #endif 
+    graphic_set_selected_driver(&vga_text_driver); 
 
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Kickstarting the kernel\n");
@@ -100,7 +98,7 @@ void kernel_kickstart(void)
     output_test();
     kheap_test();
     #endif
-
+    kernel_printf("                                                          ");
     kernel_printf("\n==== Kickstarting RTLK ====\n");
 
     /* Detect CPU */

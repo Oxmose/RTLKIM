@@ -301,6 +301,9 @@ void setup_kheap(void)
     first_chunk = NULL;
     last_chunk = NULL;
 
+
+    kernel_info("Start: 0x%08x, End: 0x%08x\n", mem_start, mem_end);
+
     first_chunk = (mem_chunk_t*)mem_start;
     second = first_chunk + 1;
 
@@ -308,8 +311,8 @@ void setup_kheap(void)
 
     memory_chunk_init(first_chunk);
     memory_chunk_init(second);
-    memory_chunk_init(last_chunk);
 
+    memory_chunk_init(last_chunk);
     insert_after(&first_chunk->all, &second->all);
     insert_after(&second->all, &last_chunk->all);
 
