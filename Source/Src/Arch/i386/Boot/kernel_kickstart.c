@@ -127,7 +127,8 @@ void kernel_kickstart(void)
     #endif
 
     /* Init VESA */
-    #if (DISPLAY_TYPE == DISPLAY_VESA && TEST_MODE_ENABLED == 0) || \
+    #if ((DISPLAY_TYPE == DISPLAY_VESA || DISPLAY_TYPE == DISPLAY_VESA_BUF) && \
+         TEST_MODE_ENABLED == 0) || \
          (TEST_MODE_ENABLED == 1 && VESA_TEXT_TEST == 1)
     err = vesa_init();
     if(err == OS_NO_ERR)

@@ -97,9 +97,9 @@ static void sse_use_exception_handler(cpu_state_t* cpu_state,
         fxregs_addr = (uint8_t*)((((uint32_t)sse_save_region) & 0xFFFFFFF0) +
                             16);
         __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
-        //#if TEST_MODE_ENABLED
+        #if TEST_MODE_ENABLED
         kernel_serial_debug("[TESTMODE] SSE Context switch SAVE\n");
-        //#endif
+        #endif
     }
 
     if(sse_save_region[cpu_id] != current_thread->fxsave_reg)
@@ -114,9 +114,9 @@ static void sse_use_exception_handler(cpu_state_t* cpu_state,
         /* Update the save region */
         sse_save_region[cpu_id] = current_thread->fxsave_reg;
 
-        //#if TEST_MODE_ENABLED
+        #if TEST_MODE_ENABLED
         kernel_serial_debug("[TESTMODE] SSE Context switch RESTORE\n");
-        //#endif
+        #endif
     }
 }
 

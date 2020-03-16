@@ -18,20 +18,20 @@
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
 
-#include <Memory/kheap.h>     /* kmalloc, kfree */
-#include <Lib/stdint.h>       /* Generic int types */
-#include <Lib/stddef.h>       /* OS_RETURN_E */
-#include <Lib/string.h>       /* memmove, memset */
-#include <BSP/bios_call.h>    /* regs_t, bios_call */
-#include <Fonts/uni_vga.h>    /* __font_bitmap__ */
-#include <Cpu/cpu.h>          /* inb  */
-#include <Drivers/vga_text.h> /* vga_get_framebuffer */
-#include <BSP/serial.h>   /* serial_write */
-#include <IO/graphic.h>       /* structures */
-#include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
-#include <Memory/paging.h>    /* kernel_mmap */
-#include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
-
+#include <Memory/kheap.h>        /* kmalloc, kfree */
+#include <Lib/stdint.h>          /* Generic int types */
+#include <Lib/stddef.h>         /* OS_RETURN_E */
+#include <Lib/string.h>          /* memmove, memset */
+#include <BSP/bios_call.h>       /* regs_t, bios_call */
+#include <Fonts/uni_vga.h>       /* __font_bitmap__ */
+#include <Cpu/cpu.h>             /* inb  */
+#include <Drivers/vga_text.h>    /* vga_get_framebuffer */
+#include <BSP/serial.h>          /* serial_write */
+#include <IO/graphic.h>          /* structures */
+#include <Sync/critical.h>       /* ENTER_CRITICAL, EXIT_CRITICAL */
+#include <Memory/paging.h>       /* kernel_mmap */
+#include <Memory/paging_alloc.h> /* kernel_paging_alloc_page */
+#include <Core/scheduler.h>      /* Scheduler management */
 /* RTLK configuration file */
 #include <config.h>
 
@@ -586,8 +586,8 @@ OS_RETURN_E vesa_text_vga_to_vesa(void)
         }
         cursor = cursor->next;
     }
-    #ifdef DEBUG_VESA
-    kernel_serial_debug("SELECTED VESA mode %dx%d %dbits\n",
+    #ifdef VESA_KERNEL_DEBUG
+    kernel_serial_debug("Selected VESA mode %dx%d %dbits\n",
                                                   selected_mode.width,
                                                   selected_mode.height,
                                                   selected_mode.bpp);
@@ -734,21 +734,6 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         ++page_count;
     }
 
-    /* Dealocate old virtual buffer */
-    if(virt_buffer != NULL)
-    {
-        kfree(virt_buffer);
-    }
-
-    /* Allocate the virtual buffer, aligned on 16Bytes*/
-    virt_buffer = kmalloc(buffer_size + 16);
-    if(virt_buffer == NULL)
-    {
-        return OS_ERR_MALLOC;
-    }
-    virt_buffer_align = (uint8_t*)(((uint32_t)virt_buffer & 0xFFFFFFF0) + 16);
-
-
     /* Get a new pages */
     cursor->framebuffer = (uint32_t)kernel_paging_alloc_pages(page_count, &err);
     if(cursor->framebuffer == 0 || err != OS_NO_ERR)
@@ -760,6 +745,27 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         #endif
         return err;
     }
+
+#if DISPLAY_TYPE == DISPLAY_VESA_BUF
+    /* Dealocate old virtual buffer */
+    if(virt_buffer != NULL)
+    {
+        kfree(virt_buffer);
+    }
+
+    /* Allocate the virtual buffer, aligned on 16Bytes*/
+
+    virt_buffer = kmalloc(buffer_size + 16);
+    if(virt_buffer == NULL)
+    {
+        err = kernel_munmap((void*)current_mode->framebuffer, buffer_size);
+        return OS_ERR_MALLOC;
+    }
+    virt_buffer_align = (uint8_t*)(((uint32_t)virt_buffer & 0xFFFFFFF0) + 16);
+#else 
+    virt_buffer = (uint8_t*)cursor->framebuffer;
+    virt_buffer_align = (uint8_t*)cursor->framebuffer;
+#endif 
 
     /* Mmap the new buffer */
     err = kernel_direct_mmap((void*)cursor->framebuffer,
@@ -776,8 +782,10 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         #else
         EXIT_CRITICAL(word);
         #endif
+#if DISPLAY_TYPE == DISPLAY_VESA_BUF
         kfree(virt_buffer);
         virt_buffer = NULL;
+#endif
         return err;
     }
 
@@ -797,9 +805,10 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         #else
         EXIT_CRITICAL(word);
         #endif
+#if DISPLAY_TYPE == DISPLAY_VESA_BUF
         kfree(virt_buffer);
         virt_buffer = NULL;
-
+#endif
         return OS_ERR_MALLOC;
     }
     fast_memset(last_columns, 0, last_columns_size);
@@ -819,8 +828,10 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         #endif
         kfree(last_columns);
         last_columns = NULL;
+#if DISPLAY_TYPE == DISPLAY_VESA_BUF
         kfree(virt_buffer);
         virt_buffer = NULL;
+#endif
         return OS_ERR_VESA_MODE_NOT_SUPPORTED;
     }
     /* Tell generic driver we loaded a VESA mode, ID mapped */
@@ -851,17 +862,19 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     EXIT_CRITICAL(word);
     #endif
 
-    #if VESA_KERNEL_DEBUG == 1
-    kernel_serial_debug("VESA Mode set %d\n", mode.mode_id);
-    #endif
-
     if(err != OS_NO_ERR)
     {
         kfree(last_columns);
         last_columns = NULL;
+#if DISPLAY_TYPE == DISPLAY_VESA_BUF
         kfree(virt_buffer);
         virt_buffer = NULL;
+#endif
     }
+
+    #if VESA_KERNEL_DEBUG == 1
+    kernel_serial_debug("VESA Mode set %d (%d)\n", mode.mode_id, err);
+    #endif
 
     return err;
 }
@@ -1106,12 +1119,9 @@ void vesa_clear_screen(void)
     ENTER_CRITICAL(word);
     #endif
 
-
     fast_memset(buffer, 0, current_mode->width *
            current_mode->height *
            (current_mode->bpp / 8));
-
-    vesa_put_cursor_at(0, 0);
 
     #if MAX_CPU_COUNT > 1
     EXIT_CRITICAL(word, &lock);
@@ -1450,6 +1460,7 @@ void vesa_fill_screen(uint32_t* pointer)
 
 void vesa_flush_buffer(void)
 {
+#if DISPLAY_TYPE == DISPLAY_VESA_BUF
     uint32_t* buffer;
     uint32_t* hw_buffer;
 
@@ -1460,9 +1471,23 @@ void vesa_flush_buffer(void)
            current_mode->width *
            current_mode->height *
            (current_mode->bpp / 8));
+#endif
 }
 
 void vesa_set_transparent_char(const uint32_t enabled)
 {
     transparent_char = enabled == 1 ? 1 : 0;
+}
+
+void* vesa_double_buffer_thread(void* args)
+{
+    (void)args;
+
+    while(1)
+    {
+        vesa_flush_buffer();
+        sched_sleep(30);
+    }
+
+    return NULL;
 }

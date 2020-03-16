@@ -56,11 +56,13 @@
 #define MAX_CPU_COUNT  4
 
 /** @brief Display with serial driver. */
-#define DISPLAY_SERIAL 0
+#define DISPLAY_SERIAL   0
 /** @brief Display with VGA driver. */
-#define DISPLAY_VGA    1
+#define DISPLAY_VGA      1
 /** @brief Display with VESA driver. */
-#define DISPLAY_VESA   2
+#define DISPLAY_VESA     2
+/** @brief Display with buffered VESA driver. */
+#define DISPLAY_VESA_BUF 3
 
 /*******************************************************************************
  * I386 Arch Settings
@@ -76,7 +78,7 @@
 #define ENABLE_LAPIC_TIMER 1
 
 /** @brief Enables support for graphic drivers. */
-#define DISPLAY_TYPE       DISPLAY_VESA
+#define DISPLAY_TYPE       DISPLAY_VGA
 
 /** @brief Enables ATA drivers support. */
 #define ENABLE_ATA         1
@@ -173,7 +175,7 @@
 #define TIME_KERNEL_DEBUG 0
 
 /** @brief Enables VESA driver debuging feature. */
-#define VESA_KERNEL_DEBUG 0
+#define VESA_KERNEL_DEBUG 1
 
 /** @brief Enables kernel heap debuging feature. */
 #define KHEAP_KERNEL_DEBUG 0
