@@ -539,4 +539,16 @@ void vesa_flush_buffer(void);
  */
 void vesa_set_transparent_char(const uint32_t enabled);
 
+/**
+ * @brief VESA buffered thread. 
+ *
+ * @details VESA buffered thread. Copies the virtual bufer into the hardware
+ * buffer. 
+ * 
+ * @param[in] args Unused.
+ * 
+ * @return Never returns, NULL in case of bad return.
+ */
+void* vesa_double_buffer_thread(void* args);
+
 #endif /* __VESA_H_ */

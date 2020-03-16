@@ -6,7 +6,7 @@
 #include <Memory/kheap.h>
 #include <Drivers/vesa.h>
 
-#define TAB_SIZE 10
+#define TAB_SIZE 1000000
 #define THREAD_COUNT 10
 
 semaphore_t sem;
@@ -58,7 +58,7 @@ int sem_ex(void)
 
     for(i = 0; i < THREAD_COUNT; ++i)
     {
-        err = sched_create_kernel_thread(&threads[i], i % 10, "sem_ex", 512, 0,
+        err = sched_create_kernel_thread(&threads[i], i % 10, "sem_ex", 1024, 0,
                                   sem_thread_routine, (void*)i);
         if(err != OS_NO_ERR)
         {
@@ -69,32 +69,16 @@ int sem_ex(void)
 
     while(1)
     {
-        sched_sleep(1000);
+        sched_sleep(50);
         sem_post(&sem);
     }
     return 0;
 }
 
-void* vesatest(void*args)
-{
-    (void)args;
-
-    while(1)
-    {
-        vesa_flush_buffer();
-        sched_sleep(10);
-    }
-
-    return NULL;
-}
 
 /* Used as example, it will be changed in the future. */
 int main(void)
 {
-    thread_t vesa;
-    sched_create_kernel_thread(&vesa, 0, "thread VESA", 0x4000,
-                               0, vesatest, NULL);
-
     thread_t threads[MAX_CPU_COUNT];
     uint32_t start_time;
 
@@ -128,7 +112,6 @@ int main(void)
     {
         sched_create_kernel_thread(&threads[i], 0, "thread T", 4096,
                                    i, thread_routine, (void*)i);
-        sched_sleep(100);
     }
     for(uint32_t i = 0; i < MAX_CPU_COUNT; ++i)
     {

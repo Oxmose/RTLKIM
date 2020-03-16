@@ -27,7 +27,7 @@
 #include <Memory/paging.h>        /* KERNEL_PAGE_SIZE */
 #include <Cpu/cpu.h>              /* cpu_hlt */
 #include <API/cpu_api.h>          /* lapic_get_id */
-#include <Cpu/panic.h>      /* kernel_panic */
+#include <Cpu/panic.h>            /* kernel_panic */
 #include <Interrupt/interrupts.h> /* register_interrupt_handler,
                                    * set_IRQ_EOI, update_tick */
 #include <IO/kernel_output.h>     /* kernel_success, kernel_error */
@@ -36,6 +36,7 @@
 #include <Time/time_management.h> /* time_get_current_uptime(),
                                    * time_register_scheduler() */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
+#include <Drivers/vesa.h>         /* Vesa thread */
 
 /* RTLK configuration file */
 #include <config.h>
@@ -1212,6 +1213,19 @@ OS_RETURN_E sched_init(void)
     {
         return err;
     }
+
+# if DISPLAY_TYPE == DISPLAY_VESA_BUF
+    /* Create the VESA double buffer thread */
+    err = sched_create_kernel_thread(NULL, 
+                                     KERNEL_HIGHEST_PRIORITY,
+                                     "vesa_buf", 0x1000,
+                                     0, vesa_double_buffer_thread,
+                                     (void*)0);
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+#endif
 
     system_state = SYSTEM_STATE_RUNNING;
     kernel_success("SCHEDULER Initialized\n");
