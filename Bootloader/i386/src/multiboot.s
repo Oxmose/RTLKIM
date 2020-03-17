@@ -19,7 +19,7 @@
 ;-------------------------------------------------------------------------------
 ; DEFINE Section
 ;-------------------------------------------------------------------------------
-MEM_DETECT_POINTER equ 0x80000
+MEM_DETECT_POINTER equ 0x1400
 
 ;-------------------------------------------------------------------------------
 ; TEXT Section
@@ -29,7 +29,7 @@ detect_hardware_:
 	push eax
 
 	; Detect memory map
-	;call detect_memory_
+	call detect_memory_
 	
 	; Add boot devices 
 	call detect_boot_device_
@@ -94,6 +94,7 @@ detect_memory_call_:
 	je  detect_memory_end_
 	
 detect_memory_call_next_:
+
 	xor eax, eax
 	mov [first_loop_], eax 
 
@@ -107,7 +108,6 @@ detect_memory_call_next_:
 	add eax, 0x4
 
 	; Check entry type
-	
 	mov ebx, [mem_buffer_ + 16]
 	cmp ebx, 1
 	jne detect_memory_type_nonusable_
