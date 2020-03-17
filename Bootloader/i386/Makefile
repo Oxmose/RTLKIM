@@ -48,7 +48,7 @@ $(BOOTLOADER): $(BUILD_DIR)/bootstage01.bin
 	@echo "\e[1m\e[94m============ Bootloader generated ============\e[22m\e[39m"
 	@echo
 
-$(BUILD_DIR)/bootstage01.bin: $(BUILD_DIR)/boot_stage0.bin $(BUILD_DIR)/boot_stage1.bin $(BUILD_DIR)/loader.bin $(BUILD_DIR)/configuration.bin $(BUILD_DIR)/dummy.bin
+$(BUILD_DIR)/bootstage01.bin: $(BUILD_DIR)/boot_stage0.bin $(BUILD_DIR)/boot_stage1.bin $(BUILD_DIR)/loader.bin $(BUILD_DIR)/configuration.bin #$(BUILD_DIR)/dummy.bin
 	@echo  "\e[32mMerging stages...\e[22m\e[39m"
 	@cat $^ > $@
 
@@ -59,4 +59,4 @@ $(BUILD_DIR)/%.bin:$(SRC_DIR)/%.s
 
 # Clean
 clean:
-	rm -rf *.o *.bin $(BUILD_DIR) $(BIN_DIR)
+	rm -rf *.o *.bin *.vdi *.img *.iso $(BUILD_DIR) $(BIN_DIR)
