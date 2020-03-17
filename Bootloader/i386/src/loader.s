@@ -265,6 +265,7 @@ loader_search_kernel_:
 	jmp loader_search_kernel_
 	
 loader_boot_kernel_:
+	call boot_sect_clear_screen_
 	mov ebx, [multiboot_info_]
 	add eax, 12
 	jmp eax
@@ -275,6 +276,7 @@ loader_end_load_halt_:
 	mov  ebx, 0
 	mov  ecx, MSG_LOADER_NO_KERNEL
 	call boot_sect_out_pm_	
+	call boot_sect_clear_screen_
 	hlt 
 	jmp loader_end_load_halt_
 

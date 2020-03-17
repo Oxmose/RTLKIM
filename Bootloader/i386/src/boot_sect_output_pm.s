@@ -52,3 +52,23 @@ boot_sect_out_pm_loop_:      ; Display loop
 boot_sect_out_pm_end_:
 	popa ; Restore registers
 	ret
+
+boot_sect_clear_screen_:
+	pusha 
+	mov eax, VGA_BUFFER
+	mov ebx, 80
+	mov ecx, 24
+	mov edx, 0x0
+boot_sect_clear_screen_loop_:
+	mov [eax], edx
+	sub ebx, 2
+	add eax, 4
+	cmp ebx, 0
+	jne boot_sect_clear_screen_loop_
+	mov ebx, 80
+	dec ecx
+	cmp ecx, 0
+	jne boot_sect_clear_screen_loop_
+		
+	popa 
+	ret
