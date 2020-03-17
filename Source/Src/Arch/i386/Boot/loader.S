@@ -46,6 +46,8 @@ KERNEL_STACK_SIZE equ 16384     ; DO NOT FORGET TO MODIFY IN CONFIG.H
 KERNEL_MEM_OFFSET    equ 0xE0000000 ; DO NOT FORGET TO MODIFY IN CONFIG.H
 KERNEL_START_PAGE_ID equ (KERNEL_MEM_OFFSET >> 22)
 
+low_loader equ (loader - KERNEL_MEM_OFFSET)
+
 ;-----------------------------
 ; MULTIBOOT SETTINGS
 ;-----------------------------
@@ -62,10 +64,14 @@ section .multiboot
     dd MAGIC
     dd FLAGS
     dd CHECKSUM
+  
+  ; In case it is not grub that loaded us
+  mov eax, low_loader
+  jmp eax
 
 section .text:
 
-  low_loader equ (loader - KERNEL_MEM_OFFSET)
+  
 
   align 4
   loader:
