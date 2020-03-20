@@ -26,7 +26,7 @@
 #include <Lib/string.h>    /* strlen */
 #include <Cpu/cpu.h>       /* outb, inb */
 #include <IO/graphic.h>    /* kernel_graphic_driver_t */
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

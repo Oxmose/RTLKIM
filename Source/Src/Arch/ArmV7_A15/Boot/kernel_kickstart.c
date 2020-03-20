@@ -21,7 +21,7 @@
 #include <IO/kernel_output.h>
 #include <Cpu/panic.h>
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 #if TEST_MODE_ENABLED
@@ -60,7 +60,7 @@ void test(cpu_state_t *cpu_state, uint32_t int_id, stack_state_t* stack_state)
  */
 void kernel_kickstart(void)
 {
-    kernel_printf("\n==== Kickstarting RTLK ====\n");
+    kernel_printf("\n==== Kickstarting UTK ====\n");
 
     kernel_panic(1);
 

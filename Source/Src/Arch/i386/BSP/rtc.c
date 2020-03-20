@@ -24,7 +24,7 @@
 #include <Lib/stddef.h>           /* OS_RETURN_E, OS_EVENT_ID */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header include */

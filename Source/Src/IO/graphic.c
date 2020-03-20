@@ -22,7 +22,7 @@
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <BSP/serial.h>   /* Serial drivers */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

@@ -12,7 +12,7 @@ function display_usage()
     echo
     echo -e "\e[1m\e[31m\t [QEMU | HW]\e[22m\e[39m"
     echo -e "\e[1m\e[31m\t\t- Choose QEMU to build a QEMU image\e[22m\e[39m"
-    echo -e "\e[1m\e[31m\t\t- Choose HW to build a bootable image image\e[22m\e[39m"
+    echo -e "\e[1m\e[31m\t\t- Choose HW to build a bootable image\e[22m\e[39m"
     echo
     echo -e "\e[1m\e[31m\t [GRUB | UTK]\e[22m\e[39m"
     echo -e "\e[1m\e[31m\t\t- Choose GRUB to use GRUB as bootloader\e[22m\e[39m"

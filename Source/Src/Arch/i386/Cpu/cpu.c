@@ -25,7 +25,7 @@
 #include <Cpu/panic.h>            /* Kernel panic */
 #include <Core/scheduler.h>       /* Thread management */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

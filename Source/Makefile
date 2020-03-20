@@ -7,7 +7,7 @@
 #
 # Last author: Alexy Torres Aurora Dugo
 #
-# RTLK's main makefile
+# UTK's main makefile
 ################################################################################
 
 ######################### Compile options

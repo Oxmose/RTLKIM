@@ -18,7 +18,7 @@ void ata_pio_driver_test(void)
     OS_RETURN_E err;
     uint32_t error = 0;
 
-    char buffer[36] = "Read/Write test RTLK ATA-PIO driver\0";
+    char buffer[36] = "Read/Write test UTK ATA-PIO driver\0";
     char recv[36] = {0};
     if((err = ata_pio_write_sector(&dev, 0, (void*)buffer, 35)) != OS_NO_ERR)
     {

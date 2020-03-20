@@ -15,7 +15,7 @@
 #include <Lib/stdint.h>            /* Generic int types */
 #include <Lib/stddef.h>            /* OS_RETURN_E */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

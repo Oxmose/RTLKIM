@@ -27,7 +27,7 @@
 #include <Time/time_management.h> /* kernel_timer_t */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header include */

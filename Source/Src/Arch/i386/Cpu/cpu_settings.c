@@ -22,7 +22,7 @@
 #include <Lib/stdint.h>       /* Generic int types */
 #include <IO/kernel_output.h> /* kernel_success */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

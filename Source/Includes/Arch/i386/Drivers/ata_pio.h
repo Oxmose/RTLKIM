@@ -25,7 +25,7 @@
 #include <Lib/stddef.h>    /* OS_RETURN_E */
 #include <Sync/critical.h> /* spinlock_t */
 
-/* RTLK Configuration file */
+/* UTK Configuration file */
 #include <config.h>
 
 /*******************************************************************************

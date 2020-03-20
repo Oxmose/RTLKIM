@@ -20,7 +20,7 @@
 #include <Cpu/gic.h>          /* gic_get_status */
 #include <Cpu/cpu_settings.h> /* CPU structures. */    
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

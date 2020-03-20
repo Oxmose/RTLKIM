@@ -24,7 +24,7 @@
 #include <Cpu/cpu.h>               /* hlt */
 #include <Memory/paging.h>         /* kernel_mmap */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

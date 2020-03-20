@@ -28,7 +28,7 @@
 #include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Core/scheduler.h>   /* sched_terminate_thread */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

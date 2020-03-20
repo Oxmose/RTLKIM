@@ -24,7 +24,7 @@
 #include <Core/kernel_queue.h> /* kernel_queue_node_t kernel_queue_t */
 #include <Sync/critical.h>     /* spinlock_t */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /*******************************************************************************

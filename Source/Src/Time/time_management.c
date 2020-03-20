@@ -26,7 +26,7 @@
 #include <BSP/rtc.h>              /* rtc_update_time */
 #include <API/cpu_api.h>          /* lapic_get_id() */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */
