@@ -167,7 +167,6 @@ then
         fi
     } > /dev/null
 
-    qemu-system-i386 -gdb tcp::1234 -smp 4 -m 8G -drive format=raw,file=QEMU_UTK.img
     echo
     echo -e "\e[1m\e[34m========== Image generated: QEMU_UTK.bin\e[22m\e[39m"
     exit 0
@@ -204,7 +203,12 @@ then
     echo
     echo -e "\e[1m\e[34m========== Creating Binaries\e[22m\e[39m"
     {
-        cp build/os_binary.bin HW_UTK.img
+        mkdir -p build/deploy
+        cp build/os_binary.bin
+        dd bs=1024 count=1440 if=/dev/zero of=build/deploy/os_image.img
+        dd if=build/os_binary.bin of=build/deploy/os_image.img seek=0 conv=notrunc
+        xorriso -as mkisofs -hard-disk-boot -U -b os_image.img -hide os_image.img -V "UTK HW" -iso-level 3 -o ./HW_UTK.iso ./build/deploy
+
     } > /dev/null
 
     echo
