@@ -20,7 +20,7 @@
 #include <Lib/stdint.h>    /* Generic int types */
 #include <Sync/critical.h> /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h> /* kernel_mmap */
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 

@@ -7,7 +7,7 @@
 #
 # Last author: Alexy Torres Aurora Dugo
 #
-# RTLK's main makefile
+# UTK's main makefile
 ################################################################################
 
 ######################### Modules selection
@@ -147,4 +147,4 @@ bootable: all
 	@$(RM) -f ../Image/bootable.iso
 	grub-mkrescue -o ../Image/bootable.iso ../Image
 	@$(RM) -f ../Image/boot/$(KERNEL)
-	VBoxManage startvm "RTLK"
+	VBoxManage startvm "UTK"

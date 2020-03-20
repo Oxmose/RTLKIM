@@ -26,7 +26,7 @@
 #include <Lib/stdint.h>    /* Generic int types */
 #include <Sync/critical.h> /* spinlock_t */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /*******************************************************************************

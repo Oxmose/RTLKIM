@@ -39,7 +39,7 @@
 #include <Lib/string.h>           /* strlen() */
 #include <Core/scheduler.h>       /* sched_init() */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 #if TEST_MODE_ENABLED
@@ -99,7 +99,7 @@ void kernel_kickstart(void)
     kheap_test();
     #endif
     kernel_printf("                                                          ");
-    kernel_printf("\n==== Kickstarting RTLK ====\n");
+    kernel_printf("\n==== Kickstarting UTK ====\n");
 
     /* Detect CPU */
     #if KERNEL_DEBUG == 1

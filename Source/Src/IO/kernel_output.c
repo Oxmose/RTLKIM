@@ -25,7 +25,7 @@
 #include <IO/graphic.h>       /* graphic_save_color_scheme, set_color_sheme,
                                * graphic_put_char, graphic_put_string */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

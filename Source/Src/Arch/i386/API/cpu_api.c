@@ -22,7 +22,7 @@
 #include <Core/thread.h>          /* kernel_thread_t */
 #include <Interrupt/interrupts.h> /* cpu_state, stack_state */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

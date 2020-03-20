@@ -31,7 +31,7 @@
 #include <Interrupt/interrupts.h> /* kernel_interrupt_get_state */
 #include <Cpu/panic.h>      /* kernel_panic */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

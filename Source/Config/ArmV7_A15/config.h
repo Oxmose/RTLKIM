@@ -12,7 +12,7 @@
  * @brief Kernel's main configuration file.
  *
  * @details Kernel configuration's definitions. This file stores the different
- * settings used when compiling RTLK.
+ * settings used when compiling UTK.
  *
  * @copyright Alexy Torres Aurora Dugo
  ******************************************************************************/
@@ -44,10 +44,10 @@
 /** @brief Use versatil A15 BSP. */
 #define BSP_A15_VERSATILE 2
 
-/** @brief RTLK current architecture. */
-#define RTLK_ARCH ARCH_ARMV7
-/** @brief RTLK current BSP. */
-#define RTLK_BSP  BSP_A15_VERSATILE
+/** @brief UTK current architecture. */
+#define UTK_ARCH ARCH_ARMV7
+/** @brief UTK current BSP. */
+#define UTK_BSP  BSP_A15_VERSATILE
 
 /*******************************************************************************
  * Features settings

@@ -23,7 +23,7 @@
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Cpu/cpu.h>              /* cpu_clear_interrupt */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

@@ -26,7 +26,7 @@
 #include <Core/scheduler.h>     /* sched_get_thread_free_page_table */
 #include <Memory/arch_paging.h> /* Paging information */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

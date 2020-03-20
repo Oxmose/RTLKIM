@@ -22,7 +22,7 @@
 #include <IO/kernel_output.h> /* kernel_info */
 #include <Cpu/panic.h>  /* kernel_panic.h */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

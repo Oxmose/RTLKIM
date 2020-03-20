@@ -21,7 +21,7 @@
 #include <Lib/stdint.h>    /* Generic int types */
 #include <Lib/string.h>    /* strlen */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

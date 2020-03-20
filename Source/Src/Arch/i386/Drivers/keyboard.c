@@ -26,7 +26,7 @@
 #include <Lib/stddef.h>            /* OS_RETURN_E, OS_EVENT_ID */
 #include <Lib/string.h>            /* memcpy */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

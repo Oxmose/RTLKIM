@@ -22,7 +22,7 @@
 #include <IO/kernel_output.h> /* kernel_error */
 #include <Memory/paging.h>    /* kernel_direct_mmap */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

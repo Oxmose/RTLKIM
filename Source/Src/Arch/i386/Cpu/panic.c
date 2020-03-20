@@ -29,7 +29,7 @@
 #include <BSP/bios_call.h>        /* bios_call() */
 #include <Drivers/vga_text.h>     /* vga_text_driver */
 #include <BSP/rtc.h>              /* RTC time */
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

@@ -27,7 +27,7 @@
 #include <Interrupt/interrupts.h> /* kernel_interrupt_disable(),
                                    * kernel_interrupt_restore() */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /**

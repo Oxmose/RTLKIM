@@ -27,7 +27,7 @@
 #include <IO/kernel_output.h> /* kernel_success */
 #include <Sync/critical.h>    /* ENTER_CRITICAL, EXIT_CRITICAL */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */

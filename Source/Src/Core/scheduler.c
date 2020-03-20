@@ -38,7 +38,7 @@
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Drivers/vesa.h>         /* Vesa thread */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */
@@ -691,7 +691,7 @@ static void* init_func(void* args)
     graphic_set_color_scheme(new_scheme);
 
     /* Print tag */
-    kernel_printf("\n -- RTLK Started -- \n\n");
+    kernel_printf("\n -- UTK Started -- \n\n");
 
     /* Restore original screen color scheme */
     graphic_set_color_scheme(buffer);

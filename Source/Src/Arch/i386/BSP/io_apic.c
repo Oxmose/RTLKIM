@@ -32,7 +32,7 @@
 #include <Memory/paging.h>        /* kernel_mmap */
 #include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
 
-/* RTLK configuration file */
+/* UTK configuration file */
 #include <config.h>
 
 /* Header file */
