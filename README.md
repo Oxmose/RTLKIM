@@ -21,6 +21,7 @@
 
 ## Architecture supported
 | i386 | x86_64 | ARMv7 (v15) |
+| --- | --- | --- |
 |  YES |   SOON |      LATTER |
 
 ### Multicore support
