@@ -327,8 +327,9 @@ curraddr_ :
 do_cpy_:
 	dd 0x0
 
+
 save_stack_:
-	dd 0x00000000
+  dd 0x00000000	
 
 ; All boot settings are here
 BOOT_DRIVE: db 0 ; Boot device ID

@@ -34,7 +34,6 @@ LOADER_STAGE   equ 0xC000  ; Loader entry point
 
 CONF_ADDR          equ 0x1000  ; Configuration entry point
 
-
 ;-------------------------------------------------------------------------------
 ; TEXT Section
 ;-------------------------------------------------------------------------------
@@ -128,6 +127,7 @@ boot_1_pm_:
 	mov  ecx, MSG_BOOTSTAGE1_PM_STACK_SET
 	call boot_sect_out_pm_
 
+
 	; Initialize interrupt 
 	call interrupt_init_idt_
 
@@ -177,6 +177,12 @@ boot_1_wait_loop_:
 	call boot_sect_clear_screen_
 	mov ebx, multiboot_info_
 	jmp eax
+
+	; Call kernel loader 
+	mov  al, [BOOT_DRIVE] ; Save boot device ID
+	mov  ebx, multiboot_info_
+	call LOADER_STAGE
+
 
 ; We should never get here
 boot_1_halt_pm_:
