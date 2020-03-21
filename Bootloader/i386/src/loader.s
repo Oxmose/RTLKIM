@@ -48,9 +48,11 @@ MEM_DETECT_POINTER equ 0x80000
 ; TEXT Section
 ;-------------------------------------------------------------------------------
 loader_:
+	pusha 
+	mov [save_stack_], esp
+
 	; Save boot drive
 	mov [BOOT_DRIVE], al
-	mov [multiboot_info_], ebx
 
 	; Read from configuration
 	mov eax, [CONF_ADDR]
@@ -265,10 +267,12 @@ loader_search_kernel_:
 	jmp loader_search_kernel_
 	
 loader_boot_kernel_:
-	call boot_sect_clear_screen_
-	mov ebx, [multiboot_info_]
+	mov esp, [save_stack_]
+	mov [kernel_entry_], eax
+	popa 
+	mov eax, [kernel_entry_]
 	add eax, 12
-	jmp eax
+	ret 
 
 loader_end_load_halt_:
 	cli
@@ -276,7 +280,6 @@ loader_end_load_halt_:
 	mov  ebx, 0
 	mov  ecx, MSG_LOADER_NO_KERNEL
 	call boot_sect_out_pm_	
-	call boot_sect_clear_screen_
 	hlt 
 	jmp loader_end_load_halt_
 
@@ -324,11 +327,14 @@ curraddr_ :
 do_cpy_:
 	dd 0x0
 
-multiboot_info_:
+save_stack_:
 	dd 0x00000000
 
 ; All boot settings are here
 BOOT_DRIVE: db 0 ; Boot device ID
+
+kernel_entry_:
+	dd 0x00000000
 
 ; LBA packet
 align 4

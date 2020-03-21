@@ -32,6 +32,9 @@ STACK_SIZE_PM  equ 0x4000 ; 16K kernel stack
 
 LOADER_STAGE   equ 0xC000  ; Loader entry point
 
+CONF_ADDR          equ 0x1000  ; Configuration entry point
+
+
 ;-------------------------------------------------------------------------------
 ; TEXT Section
 ;-------------------------------------------------------------------------------
@@ -125,31 +128,55 @@ boot_1_pm_:
 	mov  ecx, MSG_BOOTSTAGE1_PM_STACK_SET
 	call boot_sect_out_pm_
 
+	; Initialize interrupt 
+	call interrupt_init_idt_
+
+	; Initialize PIC
+	call interrupt_init_pic_
+
+	; Initialize PIT 
+	call interrupt_init_pit_
+
+
+
+	; Initialize KBD
+
+	; Wait for autoboot
+
+	mov edx, 5
+boot_1_wait_loop_:
+	mov  eax, 13
+	mov  ebx, 0
+	mov  ecx, MSG_BOOTSTAGE1_AUTOBOOT
+	call boot_sect_out_pm_
+
+	mov  eax, 13
+	mov  ecx, edx 
+	add  ecx, 48
+	mov  ebx, 9
+	mov  [MSG_BOOTSTAGE1_VAR], cl
+	mov  ecx, MSG_BOOTSTAGE1_VAR
+	call boot_sect_out_pm_
+
+	mov eax, 13
+	mov ebx, 11
+	mov ecx, CONF_ADDR + 16
+	call boot_sect_out_pm_	
+
+	mov eax, 1000
+	call interrupt_pit_wait_
+	dec edx 
+	cmp edx, 0
+	jne boot_1_wait_loop_
+
 	; Call kernel loader 
 	mov  al, [BOOT_DRIVE] ; Save boot device ID
-	mov  ebx, multiboot_info_
 	call LOADER_STAGE
 
-; Enable paging 4MB pages
-;enable_paging_:
-;	; Set page directory
-;	mov eax, pgdir_boot_
-;	mov cr3, eax
-;
-;	; Enable 4MB pages 
-;	mov eax, cr4
-;   or  eax, 0x00000010
-;   mov cr4, eax
-;
-;	; Enable paging
-;	mov eax, cr0
-;	or  eax, 0x80000000
-;	mov cr0, eax
-;
-;	mov eax, 13
-;	mov ebx, 0
-;	mov ecx, MSG_BOOTSTAGE1_PAGING_EN
-;	call boot_sect_out_pm_
+	; Jump to kernel, entry point is in eax
+	call boot_sect_clear_screen_
+	mov ebx, multiboot_info_
+	jmp eax
 
 ; We should never get here
 boot_1_halt_pm_:
@@ -177,28 +204,18 @@ MSG_BOOTSTAGE1_PM_WELCOME:
 	db "[OK] Protected mode enabled", 0
 MSG_BOOTSTAGE1_PM_STACK_SET: 
 	db "[OK] PM Stack set", 0
-;MSG_BOOTSTAGE1_PAGING_EN: 
-;	db "[OK] Paging enabled", 0
+MSG_BOOTSTAGE1_AUTOBOOT:
+	db "Autoboot ", 0
 MSG_BOOTSTAGE1_ENDLINE:
 	db 0xA, 0xD, 0
+MSG_BOOTSTAGE1_VAR:
+	db 0, 0
 
 ; All boot settings are here
 BOOT_DRIVE: db 0 ; Boot device ID
 
 %include "src/gdt_zone.s"
-%include "src/idt_zone.s"
-
-;align 0x1000
-;pgdir_boot_:
-;    ; 4MB R/W Present.
-;    dd 0x00000083
-;    ; 4MB R/W Present.
-;    dd 0x00400083
-;    ; 4MB R/W Present.
-;    dd 0x00800083
-;    ; 4MB R/W Present.
-;    dd 0x00C00083
-;    times 1020 dd 0  ; Non mapped pages
+%include "src/interrupt.s"
 
 ; Pad rest of the memory
 times 16382-($-$$) db 0
