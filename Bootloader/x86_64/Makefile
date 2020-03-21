@@ -3,7 +3,7 @@
 #
 # Original author: Alexy Torres Aurora Dugo
 #
-# UTK Bootloader makefile for i386 architecture
+# UTK Bootloader makefile for x86_64 architecture
 ################################################################################
 
 SRC_DIR    = src
@@ -31,7 +31,7 @@ bootable:
 
 # Initializes the build
 init:
-	@echo "\e[1m\e[34m============ Building i386 bootloader ============\e[22m\e[39m"
+	@echo "\e[1m\e[34m============ Building x86_64 bootloader ============\e[22m\e[39m"
 	@echo
 	@mkdir -p $(BIN_DIR)
 	@mkdir -p $(BUILD_DIR)
