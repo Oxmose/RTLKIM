@@ -151,7 +151,7 @@ then
         exit $?
     fi
 
-    build_bootloader
+    build_bootloader $3
 
     echo -e "\e[1m\e[34m========== Creating QEMU Disk\e[22m\e[39m"
     {
@@ -198,7 +198,7 @@ then
         exit $?
     fi
 
-    build_bootloader
+    build_bootloader $3
 
     echo
     echo -e "\e[1m\e[34m========== Creating Binaries\e[22m\e[39m"
