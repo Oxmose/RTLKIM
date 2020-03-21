@@ -39,9 +39,6 @@ COPY_REGION_SEGOFF_END equ 0x80000000 ; Copy region base segment:offset
 
 STACK_BASE_RM  equ 0x7C00  ; Stack base for real mode
 
-STACK_BASE_PM  equ 0x6C00 ; Kernel stack base
-STACK_SIZE_PM  equ 0x4000 ; 16K kernel stack
-
 MEM_DETECT_POINTER equ 0x80000
 
 ;-------------------------------------------------------------------------------
@@ -78,6 +75,9 @@ loader_prepare_rm_:
 	mov eax, cr0
 	and eax, 0x7FF7FFFF
 	mov cr0, eax
+
+	; Save stack 
+	mov [save_stack_], esp
 
 	; Far jump to 16 bit PM
 	jmp word CODE16:loader_16b_pm_entry_
@@ -140,10 +140,6 @@ loader_sect_set_:
 	mov si, DAPACK
 
 	call disk_load_ ; Load
-
-	; Message load once
-	;mov  bx, MSG_LOADER_POINT
-	;call boot_sect_out_
 
 	mov eax, 0x1 
 	mov [do_cpy_], eax
@@ -208,7 +204,7 @@ loader_copy_high_pm_:
 	mov  ss, ax
 
 	; Load stack
-	mov esp, STACK_BASE_PM
+	mov esp, [save_stack_]
 	mov ebp, esp
 
 	mov eax, [do_cpy_]
@@ -267,7 +263,6 @@ loader_search_kernel_:
 	jmp loader_search_kernel_
 	
 loader_boot_kernel_:
-	mov esp, [save_stack_]
 	mov [kernel_entry_], eax
 	popa 
 	mov eax, [kernel_entry_]

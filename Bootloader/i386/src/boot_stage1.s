@@ -13,9 +13,8 @@
 ; Set flat mode GDT
 ; Set PM stack
 ; Switch to protected mode
-; Set pagging refer to MiniKernel i386 memory map
-; Enables Qemu memory tracing
-; Call boot stage 2 entry point
+; Call kernel loader
+; Jump to kernel
 ;
 ; @copyright Alexy Torres Aurora Dugo
 ;-------------------------------------------------------------------------------
@@ -32,7 +31,7 @@ STACK_SIZE_PM  equ 0x4000 ; 16K kernel stack
 
 LOADER_STAGE   equ 0xC000  ; Loader entry point
 
-CONF_ADDR          equ 0x1000  ; Configuration entry point
+CONF_ADDR      equ 0x1000  ; Configuration entry point
 
 ;-------------------------------------------------------------------------------
 ; TEXT Section
@@ -108,6 +107,10 @@ boot_1_pm_:
 	mov  gs, ax
 	mov  ss, ax
 
+	; Load stack
+	mov esp, STACK_BASE_PM
+	mov ebp, esp
+
 	mov  eax, 9
 	mov  ebx, 0
 	mov  ecx, MSG_BOOTSTAGE1_IDT_LOADED
@@ -118,16 +121,6 @@ boot_1_pm_:
 	mov  ecx, MSG_BOOTSTAGE1_PM_WELCOME
 	call boot_sect_out_pm_
 
-	; Load stack
-	mov esp, STACK_BASE_PM
-	mov ebp, esp
-
-	mov  eax, 11
-	mov  ebx, 0
-	mov  ecx, MSG_BOOTSTAGE1_PM_STACK_SET
-	call boot_sect_out_pm_
-
-
 	; Initialize interrupt 
 	call interrupt_init_idt_
 
@@ -136,13 +129,8 @@ boot_1_pm_:
 
 	; Initialize PIT 
 	call interrupt_init_pit_
-
-
-
-	; Initialize KBD
-
+	
 	; Wait for autoboot
-
 	mov edx, 5
 boot_1_wait_loop_:
 	mov  eax, 13
@@ -178,12 +166,6 @@ boot_1_wait_loop_:
 	mov ebx, multiboot_info_
 	jmp eax
 
-	; Call kernel loader 
-	mov  al, [BOOT_DRIVE] ; Save boot device ID
-	mov  ebx, multiboot_info_
-	call LOADER_STAGE
-
-
 ; We should never get here
 boot_1_halt_pm_:
 	hlt
@@ -208,8 +190,6 @@ MSG_BOOTSTAGE1_IDT_LOADED:
 	db "[OK] IDT loaded", 0
 MSG_BOOTSTAGE1_PM_WELCOME: 
 	db "[OK] Protected mode enabled", 0
-MSG_BOOTSTAGE1_PM_STACK_SET: 
-	db "[OK] PM Stack set", 0
 MSG_BOOTSTAGE1_AUTOBOOT:
 	db "Autoboot ", 0
 MSG_BOOTSTAGE1_ENDLINE:
