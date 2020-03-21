@@ -1,0 +1,5 @@
+target remote: 1234
+break *0xC000
+break *0xc126
+layout asm
+continue

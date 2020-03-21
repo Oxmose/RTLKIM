@@ -14,10 +14,13 @@
 ; Set PM stack
 ; Switch to protected mode
 ; Call kernel loader
+; Enable flat paging
+; Switch to 
 ; Jump to kernel
 ;
 ; @copyright Alexy Torres Aurora Dugo
 ;-------------------------------------------------------------------------------
+
 
 [bits 16]
 [org 0x8000]
@@ -137,10 +140,13 @@ boot_1_pm_:
 	mov  al, [BOOT_DRIVE] ; Save boot device ID
 	call LOADER_STAGE
 
-	; Jump to kernel, entry point is in eax
-	call boot_sect_clear_screen_
+	; Init paging for 64 bits mode 
+	call x86_64_paging_init_
+
+	; Enable paging and switch 64 bits mode 
+	; Will also jump to kernel
 	mov ebx, multiboot_info_
-	jmp eax
+	jmp x86_64_switch_
 
 ; We should never get here
 boot_1_halt_pm_:
@@ -150,7 +156,7 @@ boot_1_halt_pm_:
 boot_1_autoboot_:
 	pusha
 
-	mov edx, 5
+	mov edx, 2
 boot_1_wait_loop_:
 	mov  eax, 13
 	mov  ebx, 0
@@ -181,7 +187,7 @@ boot_1_wait_loop_:
 
 
 %include "src/boot_sect_output_pm.s"
-
+%include "src/interrupt.s"
 ;-------------------------------------------------------------------------------
 ; DATA Section
 ;-------------------------------------------------------------------------------
@@ -210,7 +216,9 @@ MSG_BOOTSTAGE1_VAR:
 BOOT_DRIVE: db 0 ; Boot device ID
 
 %include "src/gdt_zone.s"
-%include "src/interrupt.s"
+
+; This uses 64 bits directive
+%include "src/x86_64_manager.s"
 
 ; Pad rest of the memory
 times 16382-($-$$) db 0
