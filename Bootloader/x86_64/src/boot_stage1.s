@@ -124,6 +124,9 @@ boot_1_pm_:
 	mov  ecx, MSG_BOOTSTAGE1_PM_WELCOME
 	call boot_sect_out_pm_
 
+	; Check for long mode availability
+	call boot_1_check_lm_
+
 	; Initialize interrupt 
 	call interrupt_init_idt_
 
@@ -152,6 +155,10 @@ boot_1_pm_:
 boot_1_halt_pm_:
 	hlt
 	jmp boot_1_halt_pm_
+
+;-------------------------
+; Wait for boot
+;-------------------------
 
 boot_1_autoboot_:
 	pusha
@@ -185,6 +192,68 @@ boot_1_wait_loop_:
 	popa 
 	ret
 
+;-------------------------
+; Check for long mode availability
+;-------------------------
+boot_1_check_lm_:
+	push eax 
+	push ebx 
+	push ecx 
+	push edx
+
+	; 1) Check CPUID availability
+
+	; Get flags
+	pushfd 
+	pop eax 
+
+	; Update flags 
+	mov  ebx, eax 
+	xor  eax, 0x00200000
+	push eax
+	popfd 
+
+	; Get flags
+	pushfd 
+	pop eax 
+
+	; Update back flags 
+	push ebx 
+	popfd 
+
+	; Compare eax and ecx, should have one bit flipped
+	cmp eax, ecx
+	mov ecx, MSG_BOOTSTAGE1_NO_CPUID
+	je  boot_1_check_lm_error_
+
+
+	; 2) Check CPUID extended features
+	mov eax, 0x80000000
+	cpuid 
+	cmp eax, 0x80000001
+	mov ecx, MSG_BOOTSTAGE1_NO_CPUID_EXT
+	jb  boot_1_check_lm_error_
+
+
+	; 3) Detect LM with CPUID
+	mov eax, 0x80000001
+	cpuid 
+	and edx, 0x20000000
+	cmp edx, 0
+	mov ecx, MSG_BOOTSTAGE1_LM_NOT_SUPPORTED
+	je boot_1_check_lm_error_
+
+	pop edx 
+	pop ecx 
+	pop ebx 
+	pop eax
+	ret
+
+boot_1_check_lm_error_:
+	mov  eax, 12
+	mov  ebx, 0
+	call boot_sect_out_pm_
+	jmp  boot_1_halt_pm_
 
 %include "src/boot_sect_output_pm.s"
 %include "src/interrupt.s"
@@ -205,6 +274,12 @@ MSG_BOOTSTAGE1_IDT_LOADED:
 	db "[OK] IDT loaded", 0
 MSG_BOOTSTAGE1_PM_WELCOME: 
 	db "[OK] Protected mode enabled", 0
+MSG_BOOTSTAGE1_NO_CPUID:
+	db "[ERROR] CPUID not supported", 0
+MSG_BOOTSTAGE1_NO_CPUID_EXT:
+	db "[ERROR] CPUID EXT supported", 0
+MSG_BOOTSTAGE1_LM_NOT_SUPPORTED:
+	db "[ERROR] 64Bits mode not supported, please use the 32Bits version", 0
 MSG_BOOTSTAGE1_AUTOBOOT:
 	db "Autoboot ", 0
 MSG_BOOTSTAGE1_ENDLINE:
