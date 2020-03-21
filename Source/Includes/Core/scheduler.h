@@ -437,7 +437,7 @@ uint64_t sched_get_idle_schedule_count(void);
  *
  * @return The address of the current thread's free page table.
  */
-uint32_t sched_get_thread_free_page_table(void);
+address_t sched_get_thread_free_page_table(void);
 
 /**
  * @brief Returns the physical address of the current thread's page directory.
@@ -446,6 +446,6 @@ uint32_t sched_get_thread_free_page_table(void);
  *
  * @return The address physical of the current thread's page directory.
  */
-uint32_t sched_get_thread_phys_pgdir(void);
+address_t sched_get_thread_phys_pgdir(void);
 
 #endif /* __SCHEDULER_H_ */

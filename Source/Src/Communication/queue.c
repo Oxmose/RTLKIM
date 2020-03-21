@@ -98,7 +98,7 @@ OS_RETURN_E queue_init(queue_t* queue, const uint32_t size)
     queue->init = 1;
 
     #if USERQUEUE_KERNEL_DEBUG == 1
-    kernel_serial_debug("Queue 0x%08x INIT\n", (uint32_t)queue);
+    kernel_serial_debug("Queue 0x%08x INIT\n", queue);
     #endif
 
     return OS_NO_ERR;
@@ -110,7 +110,7 @@ OS_RETURN_E queue_destroy(queue_t* queue)
     uint32_t    word;
 
     #if USERQUEUE_KERNEL_DEBUG == 1
-    kernel_serial_debug("Queue 0x%08x DESTROY\n", (uint32_t)queue);
+    kernel_serial_debug("Queue 0x%08x DESTROY\n", queue);
     #endif
 
     if(queue == NULL)
@@ -159,7 +159,7 @@ void* queue_pend(queue_t* queue, OS_RETURN_E* error)
     uint32_t    word;
 
     #if USERQUEUE_KERNEL_DEBUG == 1
-    kernel_serial_debug("Queue 0x%08x PEND\n", (uint32_t)queue);
+    kernel_serial_debug("Queue 0x%08x PEND\n", queue);
     #endif
 
     /* Check queue pointer */
@@ -259,7 +259,7 @@ void* queue_pend(queue_t* queue, OS_RETURN_E* error)
     #endif
 
     #if USERQUEUE_KERNEL_DEBUG == 1
-    kernel_serial_debug("Queue 0x%08x ACQUIRED\n", (uint32_t)queue);
+    kernel_serial_debug("Queue 0x%08x ACQUIRED\n", queue);
     #endif
 
     if(error != NULL)
@@ -276,7 +276,7 @@ OS_RETURN_E queue_post(queue_t* queue, void* element)
     uint32_t    word;
 
     #if USERQUEUE_KERNEL_DEBUG == 1
-    kernel_serial_debug("Queue 0x%08x POST\n", (uint32_t)queue);
+    kernel_serial_debug("Queue 0x%08x POST\n", queue);
     #endif
 
     if(queue == NULL)

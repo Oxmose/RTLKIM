@@ -18,6 +18,7 @@
 #ifndef __STDDEF_H_
 #define __STDDEF_H_
 
+#include <config.h>           /* Kernel configuration */
 #include <IO/kernel_output.h> /* kernel_panic(), kernel_error() */
 #include <Lib/stdint.h>       /* Generic int types */
 
@@ -212,8 +213,12 @@ typedef __SIZE_TYPE__ size_t;
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 
 /**
- * @brief Defines intptr_t type as a renaming for int32_t.
+ * @brief Defines address_t type as a renaming for int32_t.
  */
-typedef int32_t intptr_t;
+#if ARCH_X86_64
+typedef uint64_t address_t;
+#elif ARCH_I386
+typedef uint32_t address_t;
+#endif
 
 #endif /* __STDDEF_H_ */

@@ -261,7 +261,7 @@ OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
 
     #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Added INT %d handler at 0x%08x\n",
-                        interrupt_line, (uint32_t)handler);
+                        interrupt_line, handler);
     #endif
 
     return OS_NO_ERR;

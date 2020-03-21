@@ -66,7 +66,7 @@ static uint32_t enabled;
 
 __inline__ static void invalidate_tlb(void)
 {
-    uint32_t tmp;
+    address_t tmp;
 
     /* Invalidate the TLB */
     __asm__ __volatile__("mov %%cr3, %0\n\t"
@@ -75,15 +75,15 @@ __inline__ static void invalidate_tlb(void)
 
 static void* map_pgtable(void* pgtable_addr)
 {
-    uint32_t  pgdir_entry;
-    uint32_t  pgtable_entry;
+    address_t  pgdir_entry;
+    address_t  pgtable_entry;
     uint32_t* current_pgdir;
     uint32_t* pgtable;
 
     /* Get PGDIR entry */
-    pgdir_entry = (((uint32_t)&kernel_current_pgtable) >> 22);
+    pgdir_entry = (((address_t)&kernel_current_pgtable) >> 22);
     /* Get PGTABLE entry */
-    pgtable_entry = (((uint32_t)&kernel_current_pgtable) >> 12) & 0x03FF;
+    pgtable_entry = (((address_t)&kernel_current_pgtable) >> 12) & 0x03FF;
 
     /* This should always be mapped */
     current_pgdir = (uint32_t*)&kernel_current_pgdir;
@@ -91,8 +91,8 @@ static void* map_pgtable(void* pgtable_addr)
 
 
     /* Update the pgtable mapping to virtual */
-    pgtable = (uint32_t*)(((uint32_t)pgtable + KERNEL_MEM_OFFSET) & 0xFFFFF000);
-    pgtable[pgtable_entry] = (uint32_t)pgtable_addr |
+    pgtable = (uint32_t*)(((address_t)pgtable + KERNEL_MEM_OFFSET) & 0xFFFFF000);
+    pgtable[pgtable_entry] = (address_t)pgtable_addr |
                             PAGE_FLAG_SUPER_ACCESS |
                             PAGE_FLAG_READ_WRITE |
                             PAGE_FLAG_PRESENT;
@@ -112,8 +112,8 @@ OS_RETURN_E paging_init(void)
     uint32_t* page_table;
     void*     virt_addr;
     void*     new_frame;
-    uint32_t pgdir_entry;
-    uint32_t pgtable_entry;
+    address_t pgdir_entry;
+    address_t pgtable_entry;
 
     OS_RETURN_E err;
 
@@ -198,7 +198,7 @@ OS_RETURN_E paging_init(void)
             --to_map;
    
         }
-        kernel_pgdir[i] = ((uint32_t)page_table  - KERNEL_MEM_OFFSET) |
+        kernel_pgdir[i] = ((address_t)page_table  - KERNEL_MEM_OFFSET) |
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                       PG_DIR_FLAG_PAGE_READ_WRITE |
@@ -208,13 +208,13 @@ OS_RETURN_E paging_init(void)
 
     /* Map the current page dir */
     /* Get PGDIR entry */
-    pgdir_entry = (((uint32_t)&kernel_current_pgdir) >> 22);
+    pgdir_entry = (((address_t)&kernel_current_pgdir) >> 22);
     /* Get PGTABLE entry */
-    pgtable_entry = (((uint32_t)&kernel_current_pgdir) >> 12) & 0x03FF;
+    pgtable_entry = (((address_t)&kernel_current_pgdir) >> 12) & 0x03FF;
 
     /* This should always be mapped */
     min_pgtable[pgdir_entry - KERNEL_PAGE_DIR_OFFSET][pgtable_entry] =
-                            ((uint32_t)kernel_pgdir - KERNEL_MEM_OFFSET) |
+                            ((address_t)kernel_pgdir - KERNEL_MEM_OFFSET) |
                             PAGE_FLAG_SUPER_ACCESS |
                             PAGE_FLAG_READ_WRITE |
                             PAGE_FLAG_PRESENT;
@@ -223,8 +223,8 @@ OS_RETURN_E paging_init(void)
     next_free_frame = (uint8_t*)((kernel_memory_size) * 0x1000);
 
     /* Check bounds */
-    if((uint32_t)next_free_frame < current_mem_range.base ||
-       (uint32_t)next_free_frame >= current_mem_range.limit)
+    if((address_t)next_free_frame < current_mem_range.base ||
+       (address_t)next_free_frame >= current_mem_range.limit)
     {
         kernel_error("Paging Out of Bounds: request=0x%08x, base=0x%08x, "
                      "limit=0x%08x\n",
@@ -234,7 +234,7 @@ OS_RETURN_E paging_init(void)
     }
 
     /* Set CR3 register */
-    __asm__ __volatile__("mov %%eax, %%cr3": :"a"((uint32_t)kernel_pgdir -
+    __asm__ __volatile__("mov %%eax, %%cr3": :"a"((address_t)kernel_pgdir -
                                                   KERNEL_MEM_OFFSET));
 
     #if PAGING_KERNEL_DEBUG == 1
@@ -263,7 +263,7 @@ OS_RETURN_E paging_init(void)
                                 PAGE_FLAG_READ_WRITE |
                                 PAGE_FLAG_NOT_PRESENT;
 
-    kernel_pgdir[0] = (uint32_t)new_frame |
+    kernel_pgdir[0] = (address_t)new_frame |
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                       PG_DIR_FLAG_PAGE_READ_WRITE |
@@ -350,7 +350,7 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
     current_pgdir = (uint32_t*)&kernel_current_pgdir;
 
     /* Get end mapping addr */
-    end_map = (uint32_t)virt_addr + mapping_size;
+    end_map = (address_t)virt_addr + mapping_size;
 
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Mapping (before align) 0x%08x, to 0x%08x (%d bytes)\n",
@@ -358,22 +358,22 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
     #endif
 
     /* Align addr */
-    virt_addr = (uint8_t*)((uint32_t)virt_addr & 0xFFFFF000);
-    phys_addr = (uint8_t*)((uint32_t)phys_addr & 0xFFFFF000);
+    virt_addr = (uint8_t*)((address_t)virt_addr & 0xFFFFF000);
+    phys_addr = (uint8_t*)((address_t)phys_addr & 0xFFFFF000);
 
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Mapping (after align) 0x%08x, to 0x%08x (%d bytes)\n",
                         virt_addr, phys_addr, mapping_size);
-    virt_save = (uint32_t)virt_addr;
+    virt_save = (address_t)virt_addr;
     #endif
 
     /* Map all pages needed */
-    while((uint32_t)virt_addr < end_map)
+    while((address_t)virt_addr < end_map)
     {
         /* Get PGDIR entry */
-        pgdir_entry = (((uint32_t)virt_addr) >> 22);
+        pgdir_entry = (((address_t)virt_addr) >> 22);
         /* Get PGTABLE entry */
-        pgtable_entry = (((uint32_t)virt_addr) >> 12) & 0x03FF;
+        pgtable_entry = (((address_t)virt_addr) >> 12) & 0x03FF;
 
         /* If page table not present create it */
         if((current_pgdir[pgdir_entry] & PG_DIR_FLAG_PAGE_PRESENT) !=
@@ -395,7 +395,7 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
                                 PAGE_FLAG_NOT_PRESENT;
             }
 
-            current_pgdir[pgdir_entry] = (uint32_t)new_frame |
+            current_pgdir[pgdir_entry] = (address_t)new_frame |
                                          PG_DIR_FLAG_PAGE_SIZE_4KB |
                                          PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                                          PG_DIR_FLAG_PAGE_READ_WRITE |
@@ -404,7 +404,7 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
 
         /* Map the address */
         page_table = (uint32_t*)
-                     ((uint32_t)current_pgdir[pgdir_entry] & 0xFFFFF000);
+                     ((address_t)current_pgdir[pgdir_entry] & 0xFFFFF000);
         page_table = map_pgtable(page_table);
         page_entry = &page_table[pgtable_entry];
 
@@ -416,13 +416,13 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
             kernel_serial_debug("Mapping (after align) 0x%08x, to 0x%08x "
                                 "(%d bytes) Already mapped)\n",
                                 virt_addr, phys_addr, mapping_size);
-            virt_save = (uint32_t)virt_addr;
+            virt_save = (address_t)virt_addr;
             #endif
 
             return OS_ERR_MAPPING_ALREADY_EXISTS;
         }
 
-        *page_entry = (uint32_t)phys_addr |
+        *page_entry = (address_t)phys_addr |
                       flags |
                       PAGE_FLAG_PRESENT;
         #if PAGING_KERNEL_DEBUG == 1
@@ -436,9 +436,9 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
 
     #if PAGING_KERNEL_DEBUG == 1
     /* Get PGDIR entry */
-    pgdir_entry = (((uint32_t)virt_save) >> 22);
+    pgdir_entry = (((address_t)virt_save) >> 22);
     /* Get PGTABLE entry */
-    pgtable_entry = (((uint32_t)virt_save) >> 12) & 0x03FF;
+    pgtable_entry = (((address_t)virt_save) >> 12) & 0x03FF;
 
 
     #endif
@@ -466,7 +466,7 @@ OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
     }
 
     /* Get end mapping addr */
-    end_map = (uint32_t)virt_addr + mapping_size;
+    end_map = (address_t)virt_addr + mapping_size;
 
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Mapping (before align) 0x%08x(%d bytes)\n",
@@ -474,18 +474,18 @@ OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
     #endif
 
     /* Align addr */
-    virt_addr = (uint8_t*)((uint32_t)virt_addr & 0xFFFFF000);
+    virt_addr = (uint8_t*)((address_t)virt_addr & 0xFFFFF000);
 
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Mapping (after align) 0x%08x (%d bytes)\n",
                         virt_addr, mapping_size);
     #endif
 
-    virt_save = (uint32_t)virt_addr;
+    virt_save = (address_t)virt_addr;
     err = OS_NO_ERR;
 
     /* Map all pages needed */
-    while((uint32_t)virt_addr < end_map)
+    while((address_t)virt_addr < end_map)
     {
         /* Get a new frame */
         phys_addr = kernel_paging_alloc_frames(1, &err);
@@ -505,7 +505,7 @@ OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
     /* If there was an error, unmap all that we mapped */
     if(err != OS_NO_ERR)
     {
-        while(virt_save < (uint32_t)virt_addr)
+        while(virt_save < (address_t)virt_addr)
         {
             kernel_munmap((void*)virt_save, KERNEL_PAGE_SIZE);
             virt_save += KERNEL_PAGE_SIZE;
@@ -541,7 +541,7 @@ OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size)
     current_pgdir = (uint32_t*)&kernel_current_pgdir;
 
     /* Get end mapping addr */
-    end_map = (uint32_t)virt_addr + mapping_size;
+    end_map = (address_t)virt_addr + mapping_size;
 
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Unmapping (before align) 0x%08x (%d bytes)\n",
@@ -549,21 +549,21 @@ OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size)
     #endif
 
     /* Align addr */
-    virt_addr = (uint8_t*)((uint32_t)virt_addr & 0xFFFFF000);
+    virt_addr = (uint8_t*)((address_t)virt_addr & 0xFFFFF000);
 
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Unmapping (after align) 0x%08x (%d bytes)\n",
                         virt_addr, mapping_size);
-    virt_save = (uint32_t)virt_addr;
+    virt_save = (address_t)virt_addr;
     #endif
 
     /* Unmap all pages needed */
-    while((uint32_t)virt_addr < end_map)
+    while((address_t)virt_addr < end_map)
     {
         /* Get PGDIR entry */
-        pgdir_entry = (((uint32_t)virt_addr) >> 22);
+        pgdir_entry = (((address_t)virt_addr) >> 22);
         /* Get PGTABLE entry */
-        pgtable_entry = (((uint32_t)virt_addr) >> 12) & 0x03FF;
+        pgtable_entry = (((address_t)virt_addr) >> 12) & 0x03FF;
 
         /* If page table not present no need to unmap */
         if((current_pgdir[pgdir_entry] & PG_DIR_FLAG_PAGE_PRESENT) !=
@@ -574,7 +574,7 @@ OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size)
 
         /* Get the address */
         page_table = (uint32_t*)
-                     ((uint32_t)current_pgdir[pgdir_entry] & 0xFFFFF000);
+                     ((address_t)current_pgdir[pgdir_entry] & 0xFFFFF000);
         pgtable_mapped = map_pgtable(page_table);
         page_entry = &pgtable_mapped[pgtable_entry];
 
@@ -584,7 +584,7 @@ OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size)
             return OS_ERR_MEMORY_NOT_MAPPED;
         }
 
-        phy_addr = (void*)((uint32_t)page_entry & 0xFFFFF000);
+        phy_addr = (void*)((address_t)page_entry & 0xFFFFF000);
 
         /* Release the frame */
         kernel_paging_free_frames(phy_addr, 1);
@@ -617,9 +617,9 @@ OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size)
 
     #if PAGING_KERNEL_DEBUG == 1
     /* Get PGDIR entry */
-    pgdir_entry = (((uint32_t)virt_save) >> 22);
+    pgdir_entry = (((address_t)virt_save) >> 22);
     /* Get PGTABLE entry */
-    pgtable_entry = (((uint32_t)virt_save) >> 12) & 0x03FF;
+    pgtable_entry = (((address_t)virt_save) >> 12) & 0x03FF;
 
 
     #endif
@@ -631,24 +631,24 @@ OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size)
 
 void* paging_get_phys_address(const void* virt_addr)
 {
-    uint32_t  phys_addr;
-    uint32_t  page_id;
-    uint32_t  offset;
-    uint32_t  pgdir_entry;
-    uint32_t  pgtable_entry;
-    uint32_t* current_pgdir;
-    uint32_t* current_pgtable;
-    uint32_t* page_entry;
+    address_t  phys_addr;
+    uint32_t   page_id;
+    uint32_t   offset;
+    address_t  pgdir_entry;
+    address_t  pgtable_entry;
+    uint32_t*  current_pgdir;
+    uint32_t*  current_pgtable;
+    uint32_t*  page_entry;
 
-    page_id = (uint32_t)virt_addr & 0xFFFFF000;
-    offset  = (uint32_t)virt_addr & 0x00000FFF;
+    page_id = (address_t)virt_addr & 0xFFFFF000;
+    offset  = (address_t)virt_addr & 0x00000FFF;
 
     current_pgdir = (uint32_t*)&kernel_current_pgdir;
 
     /* Get PGDIR entry */
-    pgdir_entry = (((uint32_t)page_id) >> 22);
+    pgdir_entry = (((address_t)page_id) >> 22);
     /* Get PGTABLE entry */
-    pgtable_entry = (((uint32_t)page_id) >> 12) & 0x03FF;
+    pgtable_entry = (((address_t)page_id) >> 12) & 0x03FF;
 
     if((current_pgdir[pgdir_entry] & PG_DIR_FLAG_PAGE_PRESENT) !=
         PG_DIR_FLAG_PAGE_PRESENT)
@@ -660,7 +660,7 @@ void* paging_get_phys_address(const void* virt_addr)
     current_pgtable = (uint32_t*)current_pgdir[pgdir_entry];
     page_entry = &current_pgtable[pgtable_entry];
 
-    phys_addr = ((uint32_t)page_entry & 0xFFFFF000);
+    phys_addr = ((address_t)page_entry & 0xFFFFF000);
 
     return (void*)(offset | phys_addr);
 }

@@ -89,34 +89,34 @@ OS_RETURN_E memory_map_init(void)
     /* Copy multiboot data in upper memory */
     mmap = (multiboot_memory_map_t*)(multiboot_data_ptr->mmap_addr +
                                      KERNEL_MEM_OFFSET);
-    mmap_end = (multiboot_memory_map_t*)((uint32_t)mmap +
+    mmap_end = (multiboot_memory_map_t*)((address_t)mmap +
                                          multiboot_data_ptr->mmap_length);
     i = 0;
     total_memory = 0;
     /* Mark all static used memory as used */
-    static_used_memory = (uint32_t)&_end - (uint32_t)&_start;
+    static_used_memory = (address_t)&_end - (address_t)&_start;
     while(mmap < mmap_end)
     {
         /* Everything over the 4G limit is not registered */
-        if(i != 0 && (uint32_t)mmap->addr == 0)
+        if(i != 0 && (address_t)mmap->addr == 0)
         {
             break;
         }
-        total_memory += (uint32_t)mmap->len;
+        total_memory += mmap->len;
 
-        memory_map_data[i].base  = (uint32_t)mmap->addr;
-        memory_map_data[i].limit = (uint32_t)mmap->addr + (uint32_t)mmap->len;
+        memory_map_data[i].base  = (address_t)mmap->addr;
+        memory_map_data[i].limit = (address_t)mmap->addr + mmap->len;
         memory_map_data[i].type  = mmap->type;
 
         /* Adds all unsusable memory after the kernel's static end as used */
-        if(mmap->type != 1 && (uint32_t)mmap->addr > (uint32_t)&_end)
+        if(mmap->type != 1 && (address_t)mmap->addr > (address_t)&_end)
         {
-            static_used_memory += (uint32_t)mmap->len;
+            static_used_memory += mmap->len;
         }
 
         ++i;
         mmap = (multiboot_memory_map_t*)
-               ((uint32_t)mmap + mmap->size + sizeof(mmap->size));
+               ((address_t)mmap + mmap->size + sizeof(mmap->size));
     }
     memory_map_size = i;
 
@@ -130,20 +130,20 @@ OS_RETURN_E memory_map_init(void)
                     (memory_map_data[i].limit - memory_map_data[i].base) / 1024
                     );
     }
-    free_size   = (uint32_t)&kernel_heap_end - (uint32_t)&kernel_heap_start;
-    static_free = (uint32_t)&kernel_heap_start - (uint32_t)&_end;
-    size        = (uint32_t)&_end - (uint32_t)&_start;
+    free_size   = (address_t)&kernel_heap_end - (address_t)&kernel_heap_start;
+    static_free = (address_t)&kernel_heap_start - (address_t)&_end;
+    size        = (address_t)&_end - (address_t)&_start;
 
     kernel_info("Kernel memory ranges:\n");
     kernel_info("    [STATIC:  0x%08x - 0x%08x] \n\t"
                 "   %uKb (%uKb used, %uKb free)\n",
-                (uint32_t)&_start, (uint32_t)&_end, 
-                ((uint32_t)&kernel_heap_start - (uint32_t)&_start) / 1024, 
+                &_start, &_end, 
+                ((address_t)&kernel_heap_start - (address_t)&_start) / 1024, 
                 size / 1024,
                 static_free / 1024);
     kernel_info("    [DYNAMIC: 0x%08x - 0x%08x] \n\t"
                 "   %uKb (%uKb used, %uKb free)\n",
-                (uint32_t)&kernel_heap_start, (uint32_t)&kernel_heap_end, 
+                &kernel_heap_start, &kernel_heap_end, 
                 free_size / 1024, 0, free_size / 1024);
 
     kernel_info("Total memory: %uKb | %uMb\n", total_memory / 1024,
@@ -151,10 +151,10 @@ OS_RETURN_E memory_map_init(void)
     kernel_info("Used memory: %uKb | %uMb\n", static_used_memory / 1024,
                 static_used_memory / 1024 / 1024);
 
-    if((uint32_t)&_end > (uint32_t)&kernel_static_limit)
+    if((address_t)&_end > (address_t)&kernel_static_limit)
     {
         kernel_error("Error, kernel size if too big (%u), consider modifying "
-                     "the configuration file.\n", (uint32_t)&_end );
+                     "the configuration file.\n", &_end );
         kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
     }
 
@@ -168,7 +168,7 @@ uint32_t meminfo_kernel_heap_usage(void)
 
 uint32_t meminfo_kernel_heap_size(void)
 {
-    return (uint32_t)&kernel_heap_end - (uint32_t)&kernel_heap_start;
+    return (address_t)&kernel_heap_end - (address_t)&kernel_heap_start;
 }
 
 uint32_t meminfo_kernel_memory_usage(void)
@@ -178,7 +178,7 @@ uint32_t meminfo_kernel_memory_usage(void)
 
 uint32_t meminfo_kernel_total_size(void)
 {
-    return (uint32_t)&_kernel_end - (uint32_t)&_start;
+    return (address_t)&_kernel_end - (address_t)&_start;
 }
 
 uint32_t meminfo_get_memory_size(void)

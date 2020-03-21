@@ -71,7 +71,7 @@ OS_RETURN_E sem_init(semaphore_t* sem, const int32_t init_level)
     sem->init = 1;
 
     #if SEMAPHORE_KERNEL_DEBUG == 1
-    kernel_serial_debug("Semaphore 0x%08x initialized\n", (uint32_t)sem);
+    kernel_serial_debug("Semaphore 0x%08x initialized\n", sem);
     #endif
 
     return OS_NO_ERR;
@@ -134,7 +134,7 @@ OS_RETURN_E sem_destroy(semaphore_t* sem)
 
         #if SEMAPHORE_KERNEL_DEBUG == 1
         kernel_serial_debug("Semaphore 0x%08x unlocked thead %d\n",
-                            (uint32_t)sem,
+                            sem,
                             ((kernel_thread_t*)node->data)->tid);
         #endif
     }
@@ -150,7 +150,7 @@ OS_RETURN_E sem_destroy(semaphore_t* sem)
     }
 
     #ifdef DEBUG_MUTEX
-    kernel_serial_debug("Semaphore 0x%08x destroyed\n", (uint32_t)sem);
+    kernel_serial_debug("Semaphore 0x%08x destroyed\n", sem);
     #endif
 
     #if MAX_CPU_COUNT > 1
@@ -224,7 +224,7 @@ OS_RETURN_E sem_pend(semaphore_t* sem)
 
         #if SEMAPHORE_KERNEL_DEBUG == 1
         kernel_serial_debug("Semaphore 0x%08x locked thead %d\n",
-                            (uint32_t)sem,
+                            sem,
                             ((kernel_thread_t*)active_thread->data)->tid);
         #endif
 
@@ -258,7 +258,7 @@ OS_RETURN_E sem_pend(semaphore_t* sem)
 
     #if SEMAPHORE_KERNEL_DEBUG == 1
     kernel_serial_debug("Semaphore 0x%08x aquired by thead %d\n",
-                        (uint32_t)sem,
+                        sem,
                         sched_get_tid());
     #endif
 
@@ -323,7 +323,7 @@ OS_RETURN_E sem_post(semaphore_t* sem)
 
             #if SEMAPHORE_KERNEL_DEBUG == 1
             kernel_serial_debug("Semaphore 0x%08x unlocked thead %d\n",
-                                (uint32_t)sem,
+                                sem,
                                 ((kernel_thread_t*)node->data)->tid);
             #endif
 
@@ -357,7 +357,7 @@ OS_RETURN_E sem_post(semaphore_t* sem)
 
             #if SEMAPHORE_KERNEL_DEBUG == 1
             kernel_serial_debug("Semaphore 0x%08x released by thead %d\n",
-                                (uint32_t)sem,
+                                sem,
                                 sched_get_tid());
             #endif
 
@@ -377,7 +377,7 @@ OS_RETURN_E sem_post(semaphore_t* sem)
 
     #if SEMAPHORE_KERNEL_DEBUG == 1
     kernel_serial_debug("Semaphore 0x%08x released by thead %d\n",
-                        (uint32_t)sem,
+                        sem,
                         sched_get_tid());
     #endif
 
@@ -427,7 +427,7 @@ OS_RETURN_E sem_try_pend(semaphore_t* sem, int32_t* value)
 
         #if SEMAPHORE_KERNEL_DEBUG == 1
         kernel_serial_debug("Locked semaphore 0x%08x try pend by thead %d\n",
-                            (uint32_t)sem,
+                            sem,
                             sched_get_tid());
         #endif
 
@@ -455,7 +455,7 @@ OS_RETURN_E sem_try_pend(semaphore_t* sem, int32_t* value)
     #if SEMAPHORE_KERNEL_DEBUG == 1
     kernel_serial_debug("Unlocked semaphore 0x%08x try pend and aquired by "
                         "thead %d\n",
-                        (uint32_t)sem,
+                        sem,
                         sched_get_tid());
     #endif
 

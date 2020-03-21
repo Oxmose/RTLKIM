@@ -74,7 +74,7 @@ static void div_by_zero_handler(cpu_state_t* cpu_state, uint32_t int_id,
     }
     sched_set_thread_termination_cause(THREAD_TERMINATE_CAUSE_DIV_BY_ZERO);
     cpu_set_next_thread_instruction(cpu_state, stack_state, 
-                                    (uint32_t)sched_terminate_thread);
+                                    (address_t)sched_terminate_thread);
     
 }
 
@@ -140,7 +140,7 @@ OS_RETURN_E kernel_exception_register_handler(const uint32_t exception_line,
 
     #if EXCEPTION_KERNEL_DEBUG == 1
     kernel_serial_debug("Added exception %d handler at 0x%08x\n",
-                        exception_line, (uint32_t)handler);
+                        exception_line, handler);
     #endif
 
     return OS_NO_ERR;

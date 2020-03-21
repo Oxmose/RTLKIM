@@ -137,8 +137,8 @@ OS_RETURN_E io_apic_init(void)
     }
 
     /* Add offset */
-    io_apic_base_addr = (void*)((uint32_t)io_apic_base_addr +
-                               ((uint32_t)io_apic_phy_addr & 0xFFF));
+    io_apic_base_addr = (void*)((address_t)io_apic_base_addr +
+                               ((address_t)io_apic_phy_addr & 0xFFF));
 
     #if IOAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("IOAPIC address mapped to 0x%08x\n",

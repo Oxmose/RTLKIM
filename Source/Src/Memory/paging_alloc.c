@@ -281,7 +281,7 @@ static void* get_block_from(const void* page_start_address, mem_area_t** list,
 {
     mem_area_t* cursor;
     mem_area_t* selected;
-    uint32_t    address;
+    address_t   address;
     uint32_t    end_alloc;
     uint32_t    end_block;
     /* Search for the next block with this size */
@@ -291,7 +291,7 @@ static void* get_block_from(const void* page_start_address, mem_area_t** list,
     {
          /* Check if the size of the block is ok */
         if(cursor->start + cursor->size >=
-           KERNEL_PAGE_SIZE * block_count + (uint32_t)page_start_address &&
+           KERNEL_PAGE_SIZE * block_count + (address_t)page_start_address &&
            cursor->size >= KERNEL_PAGE_SIZE * block_count)
         {
             selected = cursor;
@@ -310,9 +310,9 @@ static void* get_block_from(const void* page_start_address, mem_area_t** list,
     }
 
     /* Save the block address */
-    address = (uint32_t)page_start_address;
+    address = (address_t)page_start_address;
 
-    end_alloc = (uint32_t)page_start_address + KERNEL_PAGE_SIZE * block_count;
+    end_alloc = (address_t)page_start_address + KERNEL_PAGE_SIZE * block_count;
     end_block = selected->start + selected->size;
 
     /* Modify the block */
@@ -339,7 +339,7 @@ static void* get_block_from(const void* page_start_address, mem_area_t** list,
 OS_RETURN_E paging_alloc_init(void)
 {
     uint32_t    i;
-    uint32_t    start;
+    address_t    start;
     OS_RETURN_E err;
 
     kernel_free_frames = NULL;
@@ -351,9 +351,9 @@ OS_RETURN_E paging_alloc_init(void)
         /* Check if free */
         if(memory_map_data[i].type == 1 &&
            memory_map_data[i].limit >
-            (uint32_t)&_kernel_end - KERNEL_MEM_OFFSET)
+            (address_t)&_kernel_end - KERNEL_MEM_OFFSET)
         {
-            start = MAX((uint32_t)&_kernel_end - KERNEL_MEM_OFFSET,
+            start = MAX((address_t)&_kernel_end - KERNEL_MEM_OFFSET,
                         memory_map_data[i].base);
             err = add_free(start,
                            memory_map_data[i].limit - start,
@@ -372,13 +372,13 @@ OS_RETURN_E paging_alloc_init(void)
 
     /* Init the free pages */
     /* Add kernel succeding memory */
-    err = add_free((uint32_t)&_kernel_end,
-                   0xFFFFFFFF - (uint32_t)&_kernel_end + 1,
+    err = add_free((address_t)&_kernel_end,
+                   0xFFFFFFFF - (address_t)&_kernel_end + 1,
                    &kernel_free_pages);
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Added free page area 0x%08x (%uB)\n",
-                         (uint32_t)&_kernel_end,
-                         0xFFFFFFFF - (uint32_t)&_kernel_end + 1);
+                         &_kernel_end,
+                         0xFFFFFFFF - (address_t)&_kernel_end + 1);
     #endif
 
     if(err != OS_NO_ERR)
@@ -423,7 +423,7 @@ OS_RETURN_E kernel_paging_free_frames(void* frame_addr,
     ENTER_CRITICAL(word);
     #endif
 
-    err = add_free((uint32_t)frame_addr, frame_count * KERNEL_PAGE_SIZE,
+    err = add_free((address_t)frame_addr, frame_count * KERNEL_PAGE_SIZE,
                     &kernel_free_frames);
 
     #if MAX_CPU_COUNT > 1
@@ -462,7 +462,7 @@ OS_RETURN_E kernel_paging_free_pages(void* page_addr, const uint32_t page_count)
     OS_RETURN_E err;
     uint32_t    word;
 
-    if((uint32_t)page_addr < KERNEL_MEM_OFFSET + (uint32_t)&_kernel_end)
+    if((address_t)page_addr < KERNEL_MEM_OFFSET + (address_t)&_kernel_end)
     {
         return OS_ERR_UNAUTHORIZED_ACTION;
     }
@@ -473,7 +473,7 @@ OS_RETURN_E kernel_paging_free_pages(void* page_addr, const uint32_t page_count)
     ENTER_CRITICAL(word);
     #endif
 
-    err = add_free((uint32_t)page_addr, page_count * KERNEL_PAGE_SIZE,
+    err = add_free((address_t)page_addr, page_count * KERNEL_PAGE_SIZE,
                    &kernel_free_pages);
 
     #if MAX_CPU_COUNT > 1
@@ -546,7 +546,7 @@ OS_RETURN_E paging_free_pages(void* page_addr, const uint32_t page_count)
     uint32_t    word;
     mem_area_t* free_pages_table;
 
-    if((uint32_t)page_addr + page_count * KERNEL_PAGE_SIZE > KERNEL_MEM_OFFSET)
+    if((address_t)page_addr + page_count * KERNEL_PAGE_SIZE > KERNEL_MEM_OFFSET)
     {
         return OS_ERR_UNAUTHORIZED_ACTION;
     }
@@ -560,7 +560,7 @@ OS_RETURN_E paging_free_pages(void* page_addr, const uint32_t page_count)
     ENTER_CRITICAL(word);
     #endif
 
-    err = add_free((uint32_t)page_addr, page_count * KERNEL_PAGE_SIZE,
+    err = add_free((address_t)page_addr, page_count * KERNEL_PAGE_SIZE,
                    &free_pages_table);
 
     #if MAX_CPU_COUNT > 1

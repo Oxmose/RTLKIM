@@ -83,7 +83,7 @@ OS_RETURN_E mutex_init(mutex_t* mutex, const uint32_t flags,
     mutex->init = 1;
 
     #if MUTEX_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mutex 0x%08x initialized\n", (uint32_t)mutex);
+    kernel_serial_debug("Mutex 0x%08x initialized\n", mutex);
     #endif
 
     return OS_NO_ERR;
@@ -146,7 +146,7 @@ OS_RETURN_E mutex_destroy(mutex_t* mutex)
 
         #if MUTEX_KERNEL_DEBUG == 1
         kernel_serial_debug("Mutex 0x%08x unlocked thead %d\n",
-                            (uint32_t)mutex,
+                            mutex,
                             ((kernel_thread_t*)node->data)->tid);
         #endif
     }
@@ -166,7 +166,7 @@ OS_RETURN_E mutex_destroy(mutex_t* mutex)
     mutex->init = 0;
 
     #if MUTEX_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mutex 0x%08x destroyed\n", (uint32_t)mutex);
+    kernel_serial_debug("Mutex 0x%08x destroyed\n", mutex);
     #endif
 
     #if MAX_CPU_COUNT > 1
@@ -250,7 +250,7 @@ OS_RETURN_E mutex_pend(mutex_t* mutex)
 
         #if MUTEX_KERNEL_DEBUG == 1
         kernel_serial_debug("Mutex 0x%08x locked thead %d\n",
-                            (uint32_t)mutex,
+                            mutex,
                             ((kernel_thread_t*)active_thread->data)->tid);
         #endif
 
@@ -303,7 +303,7 @@ OS_RETURN_E mutex_pend(mutex_t* mutex)
     }
     #if MUTEX_KERNEL_DEBUG == 1
     kernel_serial_debug("Mutex 0x%08x aquired by thread %d\n",
-                        (uint32_t)mutex,
+                        mutex,
                         sched_get_tid());
     #endif
 
@@ -386,7 +386,7 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
 
         #if MUTEX_KERNEL_DEBUG == 1
         kernel_serial_debug("Mutex 0x%08x unlocked thead %d\n",
-                            (uint32_t)mutex,
+                            mutex,
                             ((kernel_thread_t*)node->data)->tid);
         #endif
 
@@ -405,7 +405,7 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
 
         #if MUTEX_KERNEL_DEBUG == 1
         kernel_serial_debug("Mutex 0x%08x released by thead %d\n",
-                            (uint32_t)mutex,
+                            mutex,
                             sched_get_tid());
         #endif
 
@@ -424,7 +424,7 @@ OS_RETURN_E mutex_post(mutex_t* mutex)
 
     #if MUTEX_KERNEL_DEBUG == 1
     kernel_serial_debug("Mutex 0x%08x released by thead %d\n",
-                        (uint32_t)mutex,
+                        mutex,
                         sched_get_tid());
     #endif
 
@@ -479,7 +479,7 @@ OS_RETURN_E mutex_try_pend(mutex_t* mutex, int32_t* value)
 
         #if MUTEX_KERNEL_DEBUG == 1
         kernel_serial_debug("Locked mutex 0x%08x try pend by thead %d\n",
-                            (uint32_t)mutex,
+                            mutex,
                             sched_get_tid());
         #endif
 
@@ -507,7 +507,7 @@ OS_RETURN_E mutex_try_pend(mutex_t* mutex, int32_t* value)
     #if MUTEX_KERNEL_DEBUG == 1
     kernel_serial_debug("Unlocked mutex 0x%08x try pend and aquired by thead"
                         " %d\n",
-                        (uint32_t)mutex,
+                        mutex,
                         sched_get_tid());
     #endif
 

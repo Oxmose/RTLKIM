@@ -79,7 +79,7 @@ OS_RETURN_E mailbox_init(mailbox_t* mailbox)
     mailbox->init = 1;
 
     #if MAILBOX_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mailbox 0x%08x INIT\n", (uint32_t)mailbox);
+    kernel_serial_debug("Mailbox 0x%08x INIT\n", mailbox);
     #endif
 
     return OS_NO_ERR;
@@ -91,7 +91,7 @@ OS_RETURN_E mailbox_destroy(mailbox_t* mailbox)
     uint32_t    word;
 
     #if MAILBOX_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mailbox 0x%08x DESTROY\n", (uint32_t)mailbox);
+    kernel_serial_debug("Mailbox 0x%08x DESTROY\n", mailbox);
     #endif
 
     if(mailbox == NULL)
@@ -137,7 +137,7 @@ void* mailbox_pend(mailbox_t* mailbox, OS_RETURN_E* error)
     uint32_t    word;
 
     #if MAILBOX_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mailbox 0x%08x PEND\n", (uint32_t)mailbox);
+    kernel_serial_debug("Mailbox 0x%08x PEND\n", mailbox);
     #endif
 
     /* Check mailbox pointer */
@@ -238,7 +238,7 @@ void* mailbox_pend(mailbox_t* mailbox, OS_RETURN_E* error)
     }
 
     #if MAILBOX_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mailbox 0x%08x ACQUIRED\n", (uint32_t)mailbox);
+    kernel_serial_debug("Mailbox 0x%08x ACQUIRED\n", mailbox);
     #endif
 
     return ret_val;
@@ -250,7 +250,7 @@ OS_RETURN_E mailbox_post(mailbox_t* mailbox, void* element)
     uint32_t    word;
 
     #if MAILBOX_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mailbox 0x%08x POST\n", (uint32_t)mailbox);
+    kernel_serial_debug("Mailbox 0x%08x POST\n", mailbox);
     #endif
 
     if(mailbox == NULL)

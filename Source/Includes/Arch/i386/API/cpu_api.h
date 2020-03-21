@@ -19,6 +19,7 @@
 #ifndef __CPU_API_H_
 #define __CPU_API_H_
 
+#include <Lib/stddef.h>           /* address_t */
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Interrupt/interrupts.h> /* cpu_state, stack_state */
 
@@ -91,7 +92,7 @@ void cpu_init_thread_context(void (*entry_point)(void),
  * 
  * @return The current CR3 value.
  */
-uint32_t cpu_get_current_pgdir(void);
+address_t cpu_get_current_pgdir(void);
 
 /**
  * @brief Saves the current thread CPU context.
@@ -118,7 +119,7 @@ void cpu_save_context(const uint32_t first_sched,
  * 
  * @param[in] new_pgdir The physical address of the new page directory.
  */
-void cpu_update_pgdir(const uint32_t new_pgdir);
+void cpu_update_pgdir(const address_t new_pgdir);
 
 /**
  * @brief Restores the thread's CPU context.
@@ -148,7 +149,7 @@ void cpu_restore_context(cpu_state_t* cpu_state,
  */
 void cpu_set_next_thread_instruction(const cpu_state_t* cpu_state,
                                      stack_state_t* stack_state, 
-                                     const uint32_t next_inst);
+                                     const address_t next_inst);
 
 /**
  * @brief Raises CPU interrupt.

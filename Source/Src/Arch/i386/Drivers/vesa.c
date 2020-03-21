@@ -454,7 +454,7 @@ OS_RETURN_E vesa_init(void)
      /* Init the registers for the bios call */
     regs.ax = BIOS_CALL_GET_VESA_INFO;
     regs.es = 0;
-    regs.di = (uint16_t)(uint32_t)(&vbe_info_base);
+    regs.di = (uint16_t)(address_t)(&vbe_info_base);
 
     /* Issue call */
     bios_call(BIOS_INTERRUPT_VESA, &regs);
@@ -473,7 +473,7 @@ OS_RETURN_E vesa_init(void)
         regs.ax = BIOS_CALL_GET_VESA_MODE;
         regs.cx = modes[i];
         regs.es = 0;
-        regs.di = (uint16_t)(uint32_t)(&vbe_mode_info_base);
+        regs.di = (uint16_t)(address_t)(&vbe_mode_info_base);
 
         bios_call(BIOS_INTERRUPT_VESA, &regs);
 
@@ -508,7 +508,7 @@ OS_RETURN_E vesa_init(void)
         new_mode->height          = vbe_mode_info_base.height;
         new_mode->bpp             = vbe_mode_info_base.bpp;
         new_mode->mode_id         = modes[i];
-        new_mode->framebuffer_phy = vbe_mode_info_base.framebuffer;
+        new_mode->framebuffer_phy = (void*)vbe_mode_info_base.framebuffer;
 
         /* Save mode in list */
         new_mode->next = saved_modes;
@@ -735,7 +735,7 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     }
 
     /* Get a new pages */
-    cursor->framebuffer = (uint32_t)kernel_paging_alloc_pages(page_count, &err);
+    cursor->framebuffer = kernel_paging_alloc_pages(page_count, &err);
     if(cursor->framebuffer == 0 || err != OS_NO_ERR)
     {
         #if MAX_CPU_COUNT > 1
@@ -789,7 +789,7 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         return err;
     }
 
-    cursor->framebuffer += (cursor->framebuffer_phy & 0xFFF);
+    cursor->framebuffer += ((address_t)cursor->framebuffer_phy & 0xFFF);
 
     /* Set the last collumn array */
     last_columns_size = sizeof(uint32_t) * cursor->height / font_height;
@@ -1434,7 +1434,7 @@ void vesa_console_write_keyboard(const char* string, const uint32_t size)
     }
 }
 
-void vesa_fill_screen(uint32_t* pointer)
+void vesa_fill_screen(const void* pointer)
 {
     uint32_t* buffer;
     uint32_t  word;

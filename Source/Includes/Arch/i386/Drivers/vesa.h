@@ -22,7 +22,7 @@
 #define __VESA_H_
 
 #include <Lib/stdint.h> /* Generic int types */
-#include <Lib/stddef.h> /* OS_RETURN_E */
+#include <Lib/stddef.h> /* OS_RETURN_E, address_t */
 #include <IO/graphic.h> /* structures */
 
 /*******************************************************************************
@@ -140,10 +140,10 @@ struct vesa_mode
     uint16_t mode_id;
 
     /** @brief Start address of the mode's framebuffer. */
-    uint32_t framebuffer;
+    void* framebuffer;
 
     /** @brief Start of the physical address of the mode's framebuffer. */
-    uint32_t framebuffer_phy;
+    void* framebuffer_phy;
 
     /** @brief Next mode in the list. */
     struct vesa_mode* next;
@@ -518,7 +518,7 @@ void vesa_console_write_keyboard(const char* str, const uint32_t len);
  *
  * @param[in] pointer The pointer to the buffer to copy to the video memory.
  */
-void vesa_fill_screen(uint32_t* pointer);
+void vesa_fill_screen(const void* pointer);
 
 
 /**

@@ -94,7 +94,7 @@ static void sse_use_exception_handler(cpu_state_t* cpu_state,
        sse_save_region[cpu_id] != current_thread->fxsave_reg)
     {
         /* Align */
-        fxregs_addr = (uint8_t*)((((uint32_t)sse_save_region) & 0xFFFFFFF0) +
+        fxregs_addr = (uint8_t*)((((address_t)sse_save_region) & 0xFFFFFFF0) +
                             16);
         __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));
         #if TEST_MODE_ENABLED
@@ -106,7 +106,7 @@ static void sse_use_exception_handler(cpu_state_t* cpu_state,
     {
 
         /* Restore the current SSE context */
-        fxregs_addr = (uint8_t*)((((uint32_t)current_thread->fxsave_reg) & 
+        fxregs_addr = (uint8_t*)((((address_t)current_thread->fxsave_reg) & 
                                 0xFFFFFFF0) +
                                 16);
         __asm__ __volatile__("fxsave %0"::"m"(*fxregs_addr));

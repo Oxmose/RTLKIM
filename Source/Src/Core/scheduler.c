@@ -502,12 +502,12 @@ static void sched_clean_joined_thread(kernel_thread_t* thread)
             /* Releases the frame */
             kernel_paging_free_frames(
                 paging_get_phys_address(
-                    (void*)((uint32_t)thread->stack * i *
+                    (void*)((address_t)thread->stack * i *
                         KERNEL_PAGE_SIZE)), 1);
 
             /* Unmapp the frame */
             kernel_munmap((void*)
-                ((uint32_t)thread->stack * i * KERNEL_PAGE_SIZE),
+                ((address_t)thread->stack * i * KERNEL_PAGE_SIZE),
                 KERNEL_PAGE_SIZE);
         }
         /* Free all pages */
@@ -882,8 +882,8 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
 
     /* Init thread stack */
     stack_index = (idle_stack_size + ALIGN - 1) & (~(ALIGN - 1));
-    stack_index /= sizeof(uint32_t);
-    idle_thread[cpu_id]->stack = kmalloc(stack_index * sizeof(uint32_t));
+    stack_index /= sizeof(address_t);
+    idle_thread[cpu_id]->stack = kmalloc(stack_index * sizeof(address_t));
     if(idle_thread[cpu_id]->stack == NULL)
     {
         kfree(idle_thread[cpu_id]);
@@ -891,7 +891,7 @@ static OS_RETURN_E create_idle(const uint32_t idle_stack_size)
     }
 
     cpu_init_thread_context(thread_wrapper, stack_index, 
-                            (uint32_t)kernel_free_pages, 
+                            (address_t)kernel_free_pages, 
                             cpu_get_current_pgdir(), idle_thread[cpu_id]);
 
     strncpy(idle_thread[cpu_id]->name, idle_name, 5);
@@ -1131,7 +1131,7 @@ OS_RETURN_E sched_init(void)
     init_thread      = NULL;
     init_thread_node = NULL;
 
-    memset((void*)first_sched, 0, sizeof(uint32_t) * MAX_CPU_COUNT);
+    memset((void*)first_sched, 0, sizeof(address_t) * MAX_CPU_COUNT);
 
     #if MAX_CPU_COUNT > 1
     INIT_SPINLOCK(&sched_lock);
@@ -1569,8 +1569,8 @@ OS_RETURN_E sched_create_kernel_thread(thread_t* thread,
 
     /* Init thread stack and align stack size */
     stack_index = (stack_size + ALIGN - 1) & (~(ALIGN - 1));
-    stack_index /= sizeof(uint32_t);
-    new_thread->stack = kmalloc(stack_index * sizeof(uint32_t));
+    stack_index /= sizeof(address_t);
+    new_thread->stack = kmalloc(stack_index * sizeof(address_t));
     if(new_thread->stack == NULL)
     {
         kernel_queue_delete_node(&new_thread_node);
@@ -1917,7 +1917,7 @@ uint64_t sched_get_idle_schedule_count(void)
     return idle_sched_count[cpu_id];
 }
 
-uint32_t sched_get_thread_free_page_table(void)
+address_t sched_get_thread_free_page_table(void)
 {
     int32_t cpu_id;
 
@@ -1929,12 +1929,12 @@ uint32_t sched_get_thread_free_page_table(void)
 
     if(first_sched[cpu_id] == 1)
     {
-        return (uint32_t)kernel_free_pages;
+        return (address_t)kernel_free_pages;
     }
     return active_thread[cpu_id]->free_page_table;
 }
 
-uint32_t sched_get_thread_phys_pgdir(void)
+address_t sched_get_thread_phys_pgdir(void)
 {
     int32_t cpu_id;
 
@@ -1946,7 +1946,7 @@ uint32_t sched_get_thread_phys_pgdir(void)
 
     if(first_sched[cpu_id] == 1)
     {
-        return (uint32_t)kernel_pgdir - KERNEL_MEM_OFFSET;
+        return (address_t)kernel_pgdir - KERNEL_MEM_OFFSET;
     }
     return cpu_get_current_pgdir();
 }

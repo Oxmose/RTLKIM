@@ -141,8 +141,8 @@ OS_RETURN_E kernel_queue_push(kernel_queue_node_t* node,
 
     #if QUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Enqueue 0x%08x in queue 0x%08x\n",
-                        (uint32_t)node,
-                        (uint32_t)queue);
+                        node,
+                        queue);
     #endif
 
     if(node == NULL || queue == NULL)
@@ -207,8 +207,8 @@ OS_RETURN_E kernel_queue_push_prio(kernel_queue_node_t* node,
 
     #if QUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Enqueue 0x%08x in queue 0x%08x\n",
-                        (uint32_t)node,
-                        (uint32_t)queue);
+                        node,
+                        queue);
     #endif
 
     if(node == NULL || queue == NULL)
@@ -294,7 +294,7 @@ kernel_queue_node_t* kernel_queue_pop(kernel_queue_t* queue,
 
     #if QUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Dequeue kernel element in queue 0x%08x\n",
-                        (uint32_t)queue);
+                        queue);
     #endif
 
     if(queue == NULL)
@@ -365,8 +365,8 @@ kernel_queue_node_t* kernel_queue_find(kernel_queue_t* queue, void* data,
 
     #if QUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Find kernel data 0x%08x in queue 0x%08x\n",
-                        (uint32_t)data,
-                        (uint32_t)queue);
+                        data,
+                        queue);
     #endif
 
     /* If this queue is empty */
@@ -429,8 +429,8 @@ OS_RETURN_E kernel_queue_remove(kernel_queue_t* queue,
 
     #if QUEUE_KERNEL_DEBUG == 1
     kernel_serial_debug("Remove node kernel node 0x%08x inqueue0x%08x\n",
-                        (uint32_t)node,
-                        (uint32_t)queue);
+                        node,
+                        queue);
     #endif
 
     #if MAX_CPU_COUNT > 1
