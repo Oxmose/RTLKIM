@@ -1,6 +1,7 @@
 
 #include <Lib/stdio.h>
 #include <Lib/stdint.h>
+#include <Lib/stddef.h>
 #include <Cpu/cpu_settings.h>
 
 #include <Tests/test_bank.h>

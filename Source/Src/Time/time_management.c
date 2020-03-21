@@ -23,7 +23,7 @@
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Lib/string.h>           /* memset() */
 #include <Interrupt/interrupts.h> /* cpu_state_t, stack_state_t */
-#include <BSP/rtc.h>              /* rtc_update_time */
+#include <Drivers/rtc.h>              /* rtc_update_time */
 #include <API/cpu_api.h>          /* lapic_get_id() */
 
 /* UTK configuration file */

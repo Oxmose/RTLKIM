@@ -26,7 +26,7 @@
 #include <config.h>
 
 /* Header file */
-#include <BSP/serial.h>
+#include <Drivers/serial.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

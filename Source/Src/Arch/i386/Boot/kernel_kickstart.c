@@ -21,12 +21,12 @@
 #include <Cpu/cpu.h>              /* cpu_detect() */
 #include <Cpu/smp.h>              /* init_smp() */
 #include <IO/kernel_output.h>     /* kernel_output() */
-#include <BSP/pic.h>              /* pic_init(), pic_driver */
-#include <BSP/io_apic.h>          /* io-apic_init(), io_apic_driver */
-#include <BSP/lapic.h>            /* lapic_init() */
-#include <BSP/pit.h>              /* pit_init() */
-#include <BSP/rtc.h>              /* rtc_init() */
-#include <BSP/acpi.h>             /* acpi_init() */
+#include <Drivers/pic.h>              /* pic_init(), pic_driver */
+#include <Drivers/io_apic.h>          /* io-apic_init(), io_apic_driver */
+#include <Drivers/lapic.h>            /* lapic_init() */
+#include <Drivers/pit.h>              /* pit_init() */
+#include <Drivers/rtc.h>              /* rtc_init() */
+#include <Drivers/acpi.h>             /* acpi_init() */
 #include <Interrupt/interrupts.h> /* kernel_interrupt_init() */
 #include <Interrupt/exceptions.h> /* kernel_exception_init() */
 #include <Cpu/panic.h>      /* kernel_panic() */

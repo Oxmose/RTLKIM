@@ -28,8 +28,8 @@
 #include <Interrupt/interrupts.h> /* SPURIOUS_INTERRUPT_LINE,
                                    * register_interrupt_line */
 #include <Cpu/cpu.h>              /* mapped_io_read_32, mapped_io_write_32 */
-#include <BSP/acpi.h>             /* get_lapic_addr */
-#include <BSP/pit.h>              /* set_pit_freq, emable_pit, diable_pit */
+#include <Drivers/acpi.h>             /* get_lapic_addr */
+#include <Drivers/pit.h>              /* set_pit_freq, emable_pit, diable_pit */
 #include <Time/time_management.h> /* kernel_timer_t */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h>        /* kernel_mmap */
@@ -39,7 +39,7 @@
 #include <config.h>
 
 /* Header file */
-#include <BSP/lapic.h>
+#include <Drivers/lapic.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

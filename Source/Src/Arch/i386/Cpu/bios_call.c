@@ -25,7 +25,7 @@
 
 
 /* Header file */
-#include <BSP/bios_call.h>
+#include <Cpu/bios_call.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

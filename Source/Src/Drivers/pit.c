@@ -31,7 +31,7 @@
 #include <config.h>
 
 /* Header include */
-#include <BSP/pit.h>
+#include <Drivers/pit.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

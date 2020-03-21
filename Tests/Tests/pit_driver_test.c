@@ -21,7 +21,7 @@
 #include <Cpu/panic.h>
 #include <IO/kernel_output.h>
 #include <Cpu/cpu.h>
-#include <BSP/pit.h>
+#include <Drivers/pit.h>
 #include <Tests/test_bank.h>
 
 #if PIT_DRIVER_TEST == 1

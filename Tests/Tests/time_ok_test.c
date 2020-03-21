@@ -2,7 +2,7 @@
 #include <Cpu/panic.h>
 #include <IO/kernel_output.h>
 #include <Cpu/cpu.h>
-#include <BSP/rtc.h>
+#include <Drivers/rtc.h>
 #include <Tests/test_bank.h>
 
 #if TIME_OK_TEST == 1

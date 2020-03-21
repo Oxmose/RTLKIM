@@ -21,7 +21,7 @@
 #include <Interrupt/interrupts.h>
 #include <IO/kernel_output.h>
 #include <Cpu/cpu.h>
-#include <BSP/io_apic.h>
+#include <Drivers/io_apic.h>
 #include <Tests/test_bank.h>
 #include <Cpu/panic.h>
 

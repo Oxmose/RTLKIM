@@ -27,7 +27,7 @@
 #include <config.h>
 
 /* Header file */
-#include <BSP/pic.h>
+#include <Drivers/pic.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

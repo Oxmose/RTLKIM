@@ -22,11 +22,11 @@
 #include <Lib/stdint.h>          /* Generic int types */
 #include <Lib/stddef.h>         /* OS_RETURN_E */
 #include <Lib/string.h>          /* memmove, memset */
-#include <BSP/bios_call.h>       /* regs_t, bios_call */
-#include <Fonts/uni_vga.h>       /* __font_bitmap__ */
 #include <Cpu/cpu.h>             /* inb  */
+#include <Cpu/bios_call.h>       /* regs_t, bios_call */
+#include <Fonts/uni_vga.h>       /* __font_bitmap__ */
 #include <Drivers/vga_text.h>    /* vga_get_framebuffer */
-#include <BSP/serial.h>          /* serial_write */
+#include <Drivers/serial.h>      /* serial_write */
 #include <IO/graphic.h>          /* structures */
 #include <Sync/critical.h>       /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h>       /* kernel_mmap */

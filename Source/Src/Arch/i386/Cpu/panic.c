@@ -23,12 +23,12 @@
 #include <IO/kernel_output.h>     /* kernel_printf */
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Cpu/cpu.h>              /* hlt cpu_clear_interrupt */
+#include <Cpu/bios_call.h>        /* bios_call() */
 #include <Core/scheduler.h>       /* sched_get_tid */
-#include <BSP/lapic.h>            /* lapic_get_id() */
-#include <BSP/acpi.h>             /* acpi_get_detected_cpu_count() */
-#include <BSP/bios_call.h>        /* bios_call() */
+#include <Drivers/lapic.h>            /* lapic_get_id() */
+#include <Drivers/acpi.h>             /* acpi_get_detected_cpu_count() */
 #include <Drivers/vga_text.h>     /* vga_text_driver */
-#include <BSP/rtc.h>              /* RTC time */
+#include <Drivers/rtc.h>              /* RTC time */
 /* UTK configuration file */
 #include <config.h>
 

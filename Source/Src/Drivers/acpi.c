@@ -26,7 +26,7 @@
 #include <config.h>
 
 /* Header file */
-#include <BSP/acpi.h>
+#include <Drivers/acpi.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

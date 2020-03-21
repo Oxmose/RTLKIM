@@ -28,7 +28,7 @@
 #include <config.h>
 
 /* Header include */
-#include <BSP/rtc.h>
+#include <Drivers/rtc.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

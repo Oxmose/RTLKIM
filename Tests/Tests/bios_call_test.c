@@ -1,7 +1,7 @@
 #include <Interrupt/interrupts.h>
 #include <IO/kernel_output.h>
 #include <Cpu/cpu.h>
-#include <BSP/bios_call.h>
+#include <Cpu/bios_call.h>
 #include <Tests/test_bank.h>
 #include <IO/graphic.h>
 #include <Drivers/vga_text.h>

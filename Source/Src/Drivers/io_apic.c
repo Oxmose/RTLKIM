@@ -25,9 +25,9 @@
 #include <Lib/stdint.h>           /* Generic int types */
 #include <Lib/stddef.h>           /* OS_RETURN_E, NULL */
 #include <IO/kernel_output.h>     /* kernel_success */
-#include <BSP/acpi.h>             /* acpi_get_io_apic_address */
-#include <BSP/lapic.h>            /* lapic_set_int_eoi */
-#include <BSP/pic.h>              /* PIC_MAX_IRQ_LINE */
+#include <Drivers/acpi.h>             /* acpi_get_io_apic_address */
+#include <Drivers/lapic.h>            /* lapic_set_int_eoi */
+#include <Drivers/pic.h>              /* PIC_MAX_IRQ_LINE */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h>        /* kernel_mmap */
 #include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
@@ -36,7 +36,7 @@
 #include <config.h>
 
 /* Header file */
-#include <BSP/io_apic.h>
+#include <Drivers/io_apic.h>
 
 /*******************************************************************************
  * GLOBAL VARIABLES

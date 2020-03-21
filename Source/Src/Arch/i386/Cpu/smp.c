@@ -14,9 +14,9 @@
 
 #include <Lib/stdint.h>            /* Generic int types */
 #include <Lib/stddef.h>            /* OS_RETURN_E */
-#include <BSP/acpi.h>              /* acpi_get_detected_cpu_count */
-#include <BSP/lapic.h>             /* get_lapic_id */
-#include <BSP/pit.h>               /* pit_disable() */
+#include <Drivers/acpi.h>              /* acpi_get_detected_cpu_count */
+#include <Drivers/lapic.h>             /* get_lapic_id */
+#include <Drivers/pit.h>               /* pit_disable() */
 #include <Interrupt/interrupts.h>  /* interrupts structures (cpu_state_t...) */
 #include <Cpu/panic.h>       /* kernel_panic */
 #include <IO/kernel_output.h>      /* kernel_info */

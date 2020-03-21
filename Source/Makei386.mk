@@ -12,8 +12,8 @@
 
 ######################### Modules selection
 
-MODULES  = IO Time Memory Core Lib User Sync Communication Interrupt \
-		   Arch/i386/API Arch/i386/Boot Arch/i386/BSP \
+MODULES  = IO Time Memory Drivers Core Lib User Sync Communication Interrupt \
+		   Arch/i386/API Arch/i386/Boot \
 	       Arch/i386/Cpu Arch/i386/Drivers Arch/i386/Memory
 
 ifeq ($(TESTS), TRUE)

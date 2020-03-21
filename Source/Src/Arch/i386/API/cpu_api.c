@@ -17,8 +17,8 @@
  ******************************************************************************/
 
 #include <Lib/stdint.h>           /* Generic int types */
-#include <BSP/lapic.h>            /* lapic_get_id() */
-#include <BSP/acpi.h>             /* acpi_get_cpu_lapics() */
+#include <Drivers/lapic.h>            /* lapic_get_id() */
+#include <Drivers/acpi.h>             /* acpi_get_cpu_lapics() */
 #include <Core/thread.h>          /* kernel_thread_t */
 #include <Interrupt/interrupts.h> /* cpu_state, stack_state */
 

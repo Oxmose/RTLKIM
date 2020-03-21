@@ -4,7 +4,7 @@
 #include <Cpu/panic.h>
 #include <IO/kernel_output.h>
 #include <Cpu/cpu.h>
-#include <BSP/lapic.h>
+#include <Drivers/lapic.h>
 #include <Tests/test_bank.h>
 
 #if LAPIC_DRIVER_TEST == 1

@@ -1,6 +1,6 @@
 #include <Core/scheduler.h>
 #include <Lib/stdio.h>
-#include <BSP/lapic.h>
+#include <Drivers/lapic.h>
 #include <Sync/mutex.h>
 #include <Sync/semaphore.h>
 #include <Memory/kheap.h>
@@ -9,7 +9,7 @@
 #if SSE_TEST == 1
 #include <Core/scheduler.h>
 #include <Lib/stdio.h>
-#include <BSP/lapic.h>
+#include <Drivers/lapic.h>
 #include <Sync/mutex.h>
 #include <Sync/semaphore.h>
 #include <Memory/kheap.h>

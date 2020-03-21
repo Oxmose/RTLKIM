@@ -1,5 +1,5 @@
 #include <Lib/stdio.h>
-#include <BSP/rtc.h>
+#include <Drivers/rtc.h>
 #include <Core/scheduler.h>
 
 /* Used as example, it will be changed in the future. */
