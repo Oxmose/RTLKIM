@@ -26,8 +26,8 @@ debug:
 bootable:
 	dd if=$(BIN_DIR)/$(BOOTLOADER) of=padded.iso bs=4M conv=sync && sync
 	rm -f new.vdi
-	VBoxManage convertfromraw padded.iso new.vdi --format VDI --uuid 42dd6ae8-5fab-45da-ba4b-f480709132c3
-	VBoxManage startvm --putenv VBOX_GUI_DBG_ENABLED=true UTK
+	VBoxManage convertfromraw padded.iso new.vdi --format VDI --uuid 42dd6ae3-5fab-45da-ba4b-f480709132c3
+	VBoxManage startvm --putenv VBOX_GUI_DBG_ENABLED=true UTK_BOOT
 
 # Initializes the build
 init:
