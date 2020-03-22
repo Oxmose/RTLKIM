@@ -377,7 +377,7 @@ static void manage_keycode(const int32_t keycode)
  * @param[in] int_id The interrupt line that called the handler.
  * @param[in] stack_state The stack state before the interrupt.
  */
-static void keyboard_interrupt_handler(cpu_state_t* cpu_state, uint32_t int_id,
+static void keyboard_interrupt_handler(cpu_state_t* cpu_state, address_t int_id,
                                        stack_state_t* stack_state)
 {
     (void)cpu_state;

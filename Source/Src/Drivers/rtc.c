@@ -77,7 +77,7 @@ static spinlock_t lock = SPINLOCK_INIT_VALUE;
  * @param[in] int_id The interrupt line that called the handler.
  * @param[in, out] stack_state The stack state before the interrupt.
  */
-static void dummy_handler(cpu_state_t* cpu_state, uint32_t int_id,
+static void dummy_handler(cpu_state_t* cpu_state, address_t int_id,
                           stack_state_t* stack_state)
 {
     (void)cpu_state;
@@ -327,7 +327,7 @@ uint32_t rtc_get_frequency(void)
 
 OS_RETURN_E rtc_set_handler(void(*handler)(
                                  cpu_state_t*,
-                                 uint32_t,
+                                 address_t,
                                  stack_state_t*
                                  ))
 {

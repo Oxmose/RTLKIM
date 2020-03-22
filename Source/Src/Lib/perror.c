@@ -140,7 +140,7 @@ divide your request into mulstiple read/write");
         case OS_ERR_MBR_PARTITION_INDEX_TOO_LARGE:
             printf("MBR Partition index too large");
             break;
-        case OS_ERR_KERNEL_OFFSET_UNALIGNED:
+        case OS_ERR_KERNEL_MEM_OFFSET_UNALIGNED:
             printf("Kernel alignment error");
             break;
         default:

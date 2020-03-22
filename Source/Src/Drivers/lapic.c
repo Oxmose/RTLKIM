@@ -105,7 +105,7 @@ __inline__ static void lapic_write(uint32_t reg, uint32_t data)
  * @param stack_state The stack state before the interrupt that contain cs, eip,
  * error code and the eflags register value.
  */
-static void lapic_dummy_handler(cpu_state_t* cpu_state, uint32_t int_id,
+static void lapic_dummy_handler(cpu_state_t* cpu_state, address_t int_id,
                                 stack_state_t* stack_state)
 {
     (void)cpu_state;
@@ -123,7 +123,7 @@ static void lapic_dummy_handler(cpu_state_t* cpu_state, uint32_t int_id,
  * @param stack_state The stack state before the interrupt that contain cs, eip,
  * error code and the eflags register value.
  */
-static void lapic_init_pit_handler(cpu_state_t* cpu_state, uint32_t int_id,
+static void lapic_init_pit_handler(cpu_state_t* cpu_state, address_t int_id,
                                    stack_state_t* stack_state)
 {
     (void)cpu_state;
@@ -702,7 +702,7 @@ OS_RETURN_E lapic_timer_disable(void)
 
 OS_RETURN_E lapic_timer_set_handler(void(*handler)(
                                     cpu_state_t*,
-                                    uint32_t,
+                                    address_t,
                                     stack_state_t*
                                     ))
 {

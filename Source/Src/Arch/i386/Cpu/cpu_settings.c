@@ -675,7 +675,7 @@ static void format_idt_entry(uint64_t* entry,
     /*
      * Low part[31;0] = Selector[15;0] Handler[15;0]
      */
-    lo_part = (KERNEL_CS << 16) | (handler & 0x0000FFFF);
+    lo_part = (KERNEL_CS_32 << 16) | (handler & 0x0000FFFF);
 
     /*
      * High part[7;0] = Handler[31;16] Flags[4;0] Type[4;0] ZERO[7;0]
@@ -755,12 +755,12 @@ void cpu_setup_gdt(void)
     memset(cpu_gdt, 0, sizeof(uint64_t) * GDT_ENTRY_COUNT);
 
     /* Load the segments */
-    format_gdt_entry(&cpu_gdt[KERNEL_CS / 8],
-                     KERNEL_CODE_SEGMENT_BASE, KERNEL_CODE_SEGMENT_LIMIT,
+    format_gdt_entry(&cpu_gdt[KERNEL_CS_32 / 8],
+                     KERNEL_CODE_SEGMENT_BASE_32, KERNEL_CODE_SEGMENT_LIMIT_32,
                      kernel_code_seg_type, kernel_code_seg_flags);
 
-    format_gdt_entry(&cpu_gdt[KERNEL_DS / 8],
-                     KERNEL_DATA_SEGMENT_BASE, KERNEL_DATA_SEGMENT_LIMIT,
+    format_gdt_entry(&cpu_gdt[KERNEL_DS_32 / 8],
+                     KERNEL_DATA_SEGMENT_BASE_32, KERNEL_DATA_SEGMENT_LIMIT_32,
                      kernel_data_seg_type, kernel_data_seg_flags);
 
     format_gdt_entry(&cpu_gdt[KERNEL_CS_16 / 8],
@@ -771,7 +771,7 @@ void cpu_setup_gdt(void)
                      KERNEL_DATA_SEGMENT_BASE_16, KERNEL_DATA_SEGMENT_LIMIT_16,
                      kernel_data_16_seg_type, kernel_data_16_seg_flags);
 
-    format_gdt_entry(&cpu_gdt[(TSS_SEGMENT) / 8],
+    format_gdt_entry(&cpu_gdt[TSS_SEGMENT / 8],
                      (address_t)&cpu_main_tss,
                      ((address_t)(&cpu_main_tss)) + sizeof(cpu_tss_entry_t),
                      tss_seg_type, tss_seg_flags);
@@ -797,8 +797,8 @@ void cpu_setup_gdt(void)
                          "movw %w0,%%es\n\t"
                          "movw %w0,%%fs\n\t"
                          "movw %w0,%%gs\n\t"
-                         "movw %w0,%%ss\n\t" :: "r" (KERNEL_DS));
-    __asm__ __volatile__("ljmp %0, $flab \n\t flab: \n\t" :: "i" (KERNEL_CS));
+                         "movw %w0,%%ss\n\t" :: "r" (KERNEL_DS_32));
+    __asm__ __volatile__("ljmp %0, $flab \n\t flab: \n\t" :: "i" (KERNEL_CS_32));
 
     kernel_success("GDT Initialized at 0x%08x\n",cpu_gdt_base);
 }
@@ -845,29 +845,29 @@ void cpu_setup_tss(void)
     memset(&cpu_main_tss, 0, sizeof(cpu_tss_entry_t));
 
     /* Set basic values */
-    cpu_main_tss.ss0 = KERNEL_DS;
+    cpu_main_tss.ss0 = KERNEL_DS_32;
 	cpu_main_tss.esp0 = (address_t)(kernel_stack + KERNEL_STACK_SIZE);
 
-    cpu_main_tss.es = KERNEL_DS;
-    cpu_main_tss.cs = KERNEL_CS;
-    cpu_main_tss.ss = KERNEL_DS;
-    cpu_main_tss.ds = KERNEL_DS;
-    cpu_main_tss.fs = KERNEL_DS;
-    cpu_main_tss.gs = KERNEL_DS;
+    cpu_main_tss.es = KERNEL_DS_32;
+    cpu_main_tss.cs = KERNEL_CS_32;
+    cpu_main_tss.ss = KERNEL_DS_32;
+    cpu_main_tss.ds = KERNEL_DS_32;
+    cpu_main_tss.fs = KERNEL_DS_32;
+    cpu_main_tss.gs = KERNEL_DS_32;
 
 	cpu_main_tss.iomap_base = sizeof(cpu_tss_entry_t);
 
     for(i = 0; i < MAX_CPU_COUNT - 1; ++i)
     {
-        cpu_ap_tss[i].ss0 = KERNEL_DS;
+        cpu_ap_tss[i].ss0 = KERNEL_DS_32;
         cpu_ap_tss[i].esp0 = (address_t)(ap_cpu_stacks[i] + ap_cpu_stack_size);
 
-        cpu_ap_tss[i].es = KERNEL_DS;
-        cpu_ap_tss[i].cs = KERNEL_CS;
-        cpu_ap_tss[i].ss = KERNEL_DS;
-        cpu_ap_tss[i].ds = KERNEL_DS;
-        cpu_ap_tss[i].fs = KERNEL_DS;
-        cpu_ap_tss[i].gs = KERNEL_DS;
+        cpu_ap_tss[i].es = KERNEL_DS_32;
+        cpu_ap_tss[i].cs = KERNEL_CS_32;
+        cpu_ap_tss[i].ss = KERNEL_DS_32;
+        cpu_ap_tss[i].ds = KERNEL_DS_32;
+        cpu_ap_tss[i].fs = KERNEL_DS_32;
+        cpu_ap_tss[i].gs = KERNEL_DS_32;
 
         cpu_ap_tss[i].iomap_base = sizeof(cpu_tss_entry_t);
     }

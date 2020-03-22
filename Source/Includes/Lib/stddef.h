@@ -181,7 +181,7 @@ enum OS_RETURN
     /** @brief UTK Error value. */
     OS_ERR_NOT_SUPPORTED                   = 59,
     /** @brief UTK Error value. */
-    OS_ERR_KERNEL_OFFSET_UNALIGNED         = 60
+    OS_ERR_KERNEL_MEM_OFFSET_UNALIGNED         = 60
 };
 
 /**

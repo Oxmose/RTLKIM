@@ -34,22 +34,27 @@
 /** @brief Number of entries in the kernel's GDT. */
 #define GDT_ENTRY_COUNT (6 + MAX_CPU_COUNT)
 /** @brief Kernel's 32 bits code segment descriptor. */
-#define KERNEL_CS    0x08
+#define KERNEL_CS_32 0x08
 /** @brief Kernel's 32 bits data segment descriptor. */
-#define KERNEL_DS    0x10
+#define KERNEL_DS_32 0x10
 /** @brief Kernel's 16 bits ode segment descriptor. */
 #define KERNEL_CS_16 0x18
 /** @brief Kernel's 16 bits data segment descriptor. */
 #define KERNEL_DS_16 0x20
 
+/** @brief Select the thread code segment. */
+#define THREAD_KERNEL_CS KERNEL_CS_32
+/** @brief Select the thread code segment. */
+#define THREAD_KERNEL_DS KERNEL_DS_32
+
 /** @brief Kernel's 32 bits code segment base address. */
-#define KERNEL_CODE_SEGMENT_BASE  0x00000000
+#define KERNEL_CODE_SEGMENT_BASE_32  0x00000000
 /** @brief Kernel's 32 bits code segment limit address. */
-#define KERNEL_CODE_SEGMENT_LIMIT 0x000FFFFF
+#define KERNEL_CODE_SEGMENT_LIMIT_32 0x000FFFFF
 /** @brief Kernel's 32 bits data segment base address. */
-#define KERNEL_DATA_SEGMENT_BASE  0x00000000
+#define KERNEL_DATA_SEGMENT_BASE_32  0x00000000
 /** @brief Kernel's 32 bits data segment limit address. */
-#define KERNEL_DATA_SEGMENT_LIMIT 0x000FFFFF
+#define KERNEL_DATA_SEGMENT_LIMIT_32 0x000FFFFF
 
 /** @brief Kernel's 16 bits code segment base address. */
 #define KERNEL_CODE_SEGMENT_BASE_16  0x00000000

@@ -87,10 +87,10 @@ static void spurious_handler(void)
  * eip, error code and the eflags register value.
  */
 void kernel_interrupt_handler(cpu_state_t cpu_state,
-                              uint32_t int_id,
+                              address_t int_id,
                               stack_state_t stack_state)
 {
-    void(*handler)(cpu_state_t*, uint32_t, stack_state_t*);
+    void(*handler)(cpu_state_t*, address_t, stack_state_t*);
 
     /* If interrupts are disabled */
     if(cpu_get_saved_interrupt_state(&cpu_state, &stack_state) == 0 &&
@@ -216,7 +216,7 @@ OS_RETURN_E kernel_interrupt_set_driver(const interrupt_driver_t* driver)
 OS_RETURN_E kernel_interrupt_register_int_handler(const uint32_t interrupt_line,
                                        void(*handler)(
                                              cpu_state_t*,
-                                             uint32_t,
+                                             address_t,
                                              stack_state_t*
                                              )
                                        )
@@ -312,7 +312,7 @@ OS_RETURN_E kernel_interrupt_remove_int_handler(const uint32_t interrupt_line)
 OS_RETURN_E kernel_interrupt_register_irq_handler(const uint32_t irq_number,
                                        void(*handler)(
                                              cpu_state_t*,
-                                             uint32_t,
+                                             address_t,
                                              stack_state_t*
                                              )
                                        )

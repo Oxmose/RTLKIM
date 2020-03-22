@@ -46,17 +46,17 @@
 /** @brief Thread's initial EDI register value. */
 #define THREAD_INIT_EDI    0
 /** @brief Thread's initial CS register value. */
-#define THREAD_INIT_CS     KERNEL_CS
+#define THREAD_INIT_CS     THREAD_KERNEL_CS
 /** @brief Thread's initial SS register value. */
-#define THREAD_INIT_SS     KERNEL_DS
+#define THREAD_INIT_SS     THREAD_KERNEL_DS
 /** @brief Thread's initial DS register value. */
-#define THREAD_INIT_DS     KERNEL_DS
+#define THREAD_INIT_DS     THREAD_KERNEL_DS
 /** @brief Thread's initial ES register value. */
-#define THREAD_INIT_ES     KERNEL_DS
+#define THREAD_INIT_ES     THREAD_KERNEL_DS
 /** @brief Thread's initial FS register value. */
-#define THREAD_INIT_FS     KERNEL_DS
+#define THREAD_INIT_FS     THREAD_KERNEL_DS
 /** @brief Thread's initial GS register value. */
-#define THREAD_INIT_GS     KERNEL_DS
+#define THREAD_INIT_GS     THREAD_KERNEL_DS
 
 /*******************************************************************************
  * STRUCTURES

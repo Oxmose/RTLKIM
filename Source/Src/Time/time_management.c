@@ -66,7 +66,7 @@ static kernel_timer_t sys_aux_timer = {NULL};
 static volatile uint32_t active_wait;
 
 /** @brief Stores the routine to call the scheduler. */
-void(*schedule_routine)(cpu_state_t*, uint32_t, stack_state_t*) = NULL;
+void(*schedule_routine)(cpu_state_t*, address_t, stack_state_t*) = NULL;
 
 /*******************************************************************************
  * FUNCTIONS
@@ -205,7 +205,7 @@ OS_RETURN_E time_init(const kernel_timer_t* main_timer,
     return OS_NO_ERR;
 }
 
-void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
+void time_main_timer_handler(cpu_state_t* cpu_state, address_t int_id,
                              stack_state_t* stack)
 {
     int32_t cpu_id;
@@ -251,7 +251,7 @@ void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
     kernel_interrupt_set_irq_eoi(sys_main_timer.get_irq());
 }
 
-void time_rtc_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
+void time_rtc_timer_handler(cpu_state_t* cpu_state, address_t int_id,
                             stack_state_t* stack)
 {
     (void)cpu_state;
@@ -268,7 +268,7 @@ void time_rtc_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
     kernel_interrupt_set_irq_eoi(sys_rtc_timer.get_irq());
 }
 
-void time_aux_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
+void time_aux_timer_handler(cpu_state_t* cpu_state, address_t int_id,
                             stack_state_t* stack)
 {
     (void)cpu_state;
@@ -328,7 +328,7 @@ void time_wait_no_sched(const uint32_t ms)
 
 OS_RETURN_E time_register_scheduler(void(*scheduler_call)(
                                              cpu_state_t*,
-                                             uint32_t,
+                                             address_t,
                                              stack_state_t*
                                              )
                                        )

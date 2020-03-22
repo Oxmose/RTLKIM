@@ -82,7 +82,7 @@ OS_RETURN_E kernel_exception_init(void);
 OS_RETURN_E kernel_exception_register_handler(const uint32_t exception_line,
                                        void(*handler)(
                                              cpu_state_t*,
-                                             uint32_t,
+                                             address_t,
                                              stack_state_t*
                                              )
                                        );

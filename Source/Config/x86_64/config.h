@@ -31,9 +31,9 @@
 /**
  * @brief Kernel's high memory offset.
  *
- * @warning Must be 4MB aligned.
+ * @warning Must be 512MB aligned.
  */
-#define KERNEL_MEM_OFFSET 0xE000000000000000
+#define KERNEL_MEM_OFFSET 0xE0000000
 
 /*******************************************************************************
  * Architecture settings
@@ -78,7 +78,7 @@
 #define ENABLE_LAPIC_TIMER 1
 
 /** @brief Enables support for graphic drivers. */
-#define DISPLAY_TYPE       DISPLAY_VESA
+#define DISPLAY_TYPE       DISPLAY_VEGA
 
 /** @brief Enables ATA drivers support. */
 #define ENABLE_ATA         1

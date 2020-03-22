@@ -466,7 +466,7 @@ OS_RETURN_E vesa_init(void)
     }
 
     /* Get modes */
-    modes = (uint16_t*)vbe_info_base.video_modes;
+    modes = (uint16_t*)(address_t)vbe_info_base.video_modes;
     for (i = 0 ; mode_count < MAX_VESA_MODE_COUNT && modes[i] != 0xFFFF ; ++i)
     {
         /* Prepare registers for mode query call */
@@ -508,7 +508,7 @@ OS_RETURN_E vesa_init(void)
         new_mode->height          = vbe_mode_info_base.height;
         new_mode->bpp             = vbe_mode_info_base.bpp;
         new_mode->mode_id         = modes[i];
-        new_mode->framebuffer_phy = (void*)vbe_mode_info_base.framebuffer;
+        new_mode->framebuffer_phy = (void*)(address_t)vbe_mode_info_base.framebuffer;
 
         /* Save mode in list */
         new_mode->next = saved_modes;

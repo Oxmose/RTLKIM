@@ -591,7 +591,7 @@ static void* main_kickstart(void* args)
     /* Call main */
     int32_t ret = main(1, argv);
 
-    return (void*)ret;
+    return (void*)(address_t)ret;
 }
 
 /**
@@ -1071,7 +1071,7 @@ static void select_thread(void)
  * @param[in] int_id The interrupt id when calling this function.
  * @param[in] stack_state The pre interrupt stack state.
  */
-static void schedule_int(cpu_state_t* cpu_state, uint32_t int_id,
+static void schedule_int(cpu_state_t* cpu_state, address_t int_id,
                          stack_state_t* stack_state)
 {
     int32_t cpu_id;

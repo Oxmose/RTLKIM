@@ -233,7 +233,7 @@ static void* get_block(mem_area_t** list, const uint32_t block_count,
 {
     mem_area_t* cursor;
     mem_area_t* selected;
-    uint32_t    address;
+    address_t   address;
     /* Search for the next block with this size */
     cursor = *list;
     selected = NULL;

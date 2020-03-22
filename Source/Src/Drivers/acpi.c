@@ -421,11 +421,11 @@ static OS_RETURN_E acpi_parse_fadt(acpi_fadt_t* fadt_ptr)
     }
 
     /* Parse FACS */
-    err = acpi_parse_facs((acpi_facs_t*)fadt_ptr->firmware_control);
+    err = acpi_parse_facs((acpi_facs_t*)(address_t)fadt_ptr->firmware_control);
     if(err == OS_NO_ERR)
     {
         facs_parse_success = 1;
-        facs = (acpi_facs_t*)fadt_ptr->firmware_control;
+        facs = (acpi_facs_t*)(address_t)fadt_ptr->firmware_control;
     }
     else
     {
@@ -434,11 +434,11 @@ static OS_RETURN_E acpi_parse_fadt(acpi_fadt_t* fadt_ptr)
     }
 
     /* Parse DSDT */
-    err =  acpi_parse_dsdt((acpi_dsdt_t*)fadt_ptr->dsdt);
+    err =  acpi_parse_dsdt((acpi_dsdt_t*)(address_t)fadt_ptr->dsdt);
     if(err == OS_NO_ERR)
     {
         dsdt_parse_success = 1;
-        dsdt = (acpi_dsdt_t*)fadt_ptr->dsdt;
+        dsdt = (acpi_dsdt_t*)(address_t)fadt_ptr->dsdt;
     }
     else
     {
@@ -589,7 +589,7 @@ static OS_RETURN_E acpi_parse_rsdt(rsdt_descriptor_t* rsdt_ptr)
     /* Parse each SDT of the RSDT */
     while(range_begin < range_end)
     {
-        volatile uint32_t address = *range_begin;
+        volatile address_t address = *range_begin;
 
         #if ACPI_KERNEL_DEBUG == 1
         kernel_serial_debug("Parsing SDT at 0x%08x\n", (address_t)address);
@@ -757,7 +757,7 @@ static OS_RETURN_E acpi_parse_rsdp(rsdp_descriptor_t* rsdp_desc)
     if(rsdp_desc->revision == 0)
     {
 
-        err = acpi_parse_rsdt((rsdt_descriptor_t*)rsdp_desc->rsdt_address);
+        err = acpi_parse_rsdt((rsdt_descriptor_t*)(address_t)rsdp_desc->rsdt_address);
         if(err != OS_NO_ERR)
         {
             return err;
@@ -796,7 +796,8 @@ static OS_RETURN_E acpi_parse_rsdp(rsdp_descriptor_t* rsdp_desc)
         }
         else
         {
-            err = acpi_parse_rsdt((rsdt_descriptor_t*)rsdp_desc->rsdt_address);
+            err = acpi_parse_rsdt(
+                (rsdt_descriptor_t*)(address_t)rsdp_desc->rsdt_address);
             if(err != OS_NO_ERR)
             {
                 return err;
@@ -974,7 +975,7 @@ const void* acpi_get_io_apic_address(const uint32_t io_apic_id)
         return NULL;
     }
 
-    return (void*)io_apic_tables[io_apic_id]->io_apic_addr;
+    return (void*)(address_t)io_apic_tables[io_apic_id]->io_apic_addr;
 }
 
 void* acpi_get_lapic_addr(void)
@@ -989,7 +990,7 @@ void* acpi_get_lapic_addr(void)
         return NULL;
     }
 
-    return (void*)madt->local_apic_addr;
+    return (void*)(address_t)madt->local_apic_addr;
 }
 
 OS_RETURN_E acpi_check_lapic_id(const uint32_t lapic_id)

@@ -71,8 +71,6 @@ section .multiboot
 
 section .text:
 
-  
-
   align 4
   loader:
     ; Make sure interrupts are disabled and clear flags

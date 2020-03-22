@@ -96,9 +96,9 @@ void cpu_init_thread_context(void (*entry_point)(void),
     thread->stack[stack_index - 18] = thread->cpu_context.esp;
 }
 
-uint32_t cpu_get_current_pgdir(void)
+address_t cpu_get_current_pgdir(void)
 {
-    uint32_t current_pgdir;
+    address_t current_pgdir;
 
         /* Init thread context */
     __asm__ __volatile__(
@@ -144,7 +144,7 @@ void cpu_restore_context(cpu_state_t* cpu_state,
     :::"eax");
 }
 
-void cpu_update_pgdir(const uint32_t new_pgdir)
+void cpu_update_pgdir(const address_t new_pgdir)
 {
     /* Update CR3 */
     __asm__ __volatile__("mov %%eax, %%cr3": :"a"(new_pgdir));
@@ -152,7 +152,7 @@ void cpu_update_pgdir(const uint32_t new_pgdir)
 
 void cpu_set_next_thread_instruction(const cpu_state_t* cpu_state,
                                      stack_state_t* stack_state, 
-                                     const uint32_t next_inst)
+                                     const address_t next_inst)
 {
     (void) cpu_state;
     /* Set next instruction */

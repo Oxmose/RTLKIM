@@ -61,7 +61,7 @@ static spinlock_t lock = SPINLOCK_INIT_VALUE;
  * @param stack_state The stack state before the exception that contain cs, eip,
  * error code and the eflags register value.
  */
-static void div_by_zero_handler(cpu_state_t* cpu_state, uint32_t int_id,
+static void div_by_zero_handler(cpu_state_t* cpu_state, address_t int_id,
                                 stack_state_t* stack_state)
 {
     (void)cpu_state;
@@ -96,7 +96,7 @@ OS_RETURN_E kernel_exception_init(void)
 OS_RETURN_E kernel_exception_register_handler(const uint32_t exception_line,
                                        void(*handler)(
                                              cpu_state_t*,
-                                             uint32_t,
+                                             address_t,
                                              stack_state_t*
                                              )
                                        )

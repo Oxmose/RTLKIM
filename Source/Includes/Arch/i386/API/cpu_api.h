@@ -80,9 +80,9 @@ int32_t cpu_get_id(void);
  * @param[out] thread The thread to initialize.
  */
 void cpu_init_thread_context(void (*entry_point)(void), 
-                             const uint32_t stack_index, 
-                             const uint32_t free_table_page,
-                             const uint32_t page_table_address,
+                             const address_t stack_index, 
+                             const address_t free_table_page,
+                             const address_t page_table_address,
                              kernel_thread_t* thread);
 
 /** 

@@ -139,7 +139,7 @@ uint32_t pit_get_frequency(void);
  */
 OS_RETURN_E pit_set_handler(void(*handler)(
                                  cpu_state_t*,
-                                 uint32_t,
+                                 address_t,
                                  stack_state_t*
                                  ));
 

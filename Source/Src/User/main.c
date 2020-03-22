@@ -16,7 +16,7 @@ static uint32_t arrayVal[MAX_CPU_COUNT];
 mutex_t mut;
 void* thread_routine(void* args)
 {
-    uint32_t index = (int)args;
+    uint32_t index = (address_t)args;
     for(uint32_t k = 0; k < 1600 / MAX_CPU_COUNT; ++k)
     {
         for(uint32_t i = 0; i < TAB_SIZE; ++i)
@@ -34,7 +34,7 @@ void* sem_thread_routine(void* args)
     while(1)
     {
         sem_pend(&sem);
-        printf("%d ", (int)args);
+        printf("%u ", (uint32_t)(address_t)args);
     }
 
     return NULL;
@@ -59,7 +59,7 @@ int sem_ex(void)
     for(i = 0; i < THREAD_COUNT; ++i)
     {
         err = sched_create_kernel_thread(&threads[i], i % 10, "sem_ex", 1024, 0,
-                                  sem_thread_routine, (void*)i);
+                                  sem_thread_routine, (void*)(address_t)i);
         if(err != OS_NO_ERR)
         {
             printf("Error while creating thread %u: %d\n", i, err);
@@ -111,7 +111,7 @@ int main(void)
     for(uint32_t i = 0; i < MAX_CPU_COUNT; ++i)
     {
         sched_create_kernel_thread(&threads[i], 0, "thread T", 4096,
-                                   i, thread_routine, (void*)i);
+                                   i, thread_routine, (void*)(address_t)i);
     }
     for(uint32_t i = 0; i < MAX_CPU_COUNT; ++i)
     {

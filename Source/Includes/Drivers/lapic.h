@@ -352,7 +352,7 @@ uint32_t lapic_timer_get_frequency(void);
  */
 OS_RETURN_E lapic_timer_set_handler(void(*handler)(
                                  cpu_state_t*,
-                                 uint32_t,
+                                 address_t,
                                  stack_state_t*
                                  ));
 

@@ -266,7 +266,7 @@ uint16_t* vga_get_framebuffer(const uint32_t line, const uint32_t column)
     }
 
     /* Returns the mem adress of the coordinates */
-    return (uint16_t*)(VGA_TEXT_FRAMEBUFFER + KERNEL_MEM_OFFSET + 2 *
+    return (uint16_t*)(address_t)(VGA_TEXT_FRAMEBUFFER + KERNEL_MEM_OFFSET + 2 *
            (column + line * VGA_TEXT_SCREEN_COL_SIZE));
 }
 

@@ -110,7 +110,7 @@ struct kernel_timer
      */
     OS_RETURN_E (*set_handler)(void(*handler)(
                                  cpu_state_t*,
-                                 uint32_t,
+                                 address_t,
                                  stack_state_t*
                                  ));
 
@@ -187,7 +187,7 @@ OS_RETURN_E time_init(const kernel_timer_t* main_timer,
  * @param[in] int_id The interrupt line that called the handler.
  * @param[in, out] stack The stack state before the interrupt.
  */
-void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
+void time_main_timer_handler(cpu_state_t* cpu_state, address_t int_id,
                              stack_state_t* stack);
 
 /**
@@ -200,7 +200,7 @@ void time_main_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
  * @param[in] int_id The interrupt line that called the handler.
  * @param[in, out] stack The stack state before the interrupt.
  */
-void time_rtc_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
+void time_rtc_timer_handler(cpu_state_t* cpu_state, address_t int_id,
                             stack_state_t* stack);
 
 /**
@@ -213,7 +213,7 @@ void time_rtc_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
  * @param[in] int_id The interrupt line that called the handler.
  * @param[in, out] stack The stack state before the interrupt.
  */
-void time_aux_timer_handler(cpu_state_t* cpu_state, uint32_t int_id,
+void time_aux_timer_handler(cpu_state_t* cpu_state, address_t int_id,
                             stack_state_t* stack);
 
 /** 
@@ -259,7 +259,7 @@ void time_wait_no_sched(const uint32_t ms);
  */
 OS_RETURN_E time_register_scheduler(void(*scheduler_call)(
                                              cpu_state_t*,
-                                             uint32_t,
+                                             address_t,
                                              stack_state_t*
                                              )
                                        );

@@ -190,7 +190,7 @@ uint32_t rtc_get_frequency(void);
  */
 OS_RETURN_E rtc_set_handler(void(*handler)(
                                  cpu_state_t*,
-                                 uint32_t,
+                                 address_t,
                                  stack_state_t*
                                  ));
 
