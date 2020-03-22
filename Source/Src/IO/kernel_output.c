@@ -42,6 +42,17 @@ static output_t current_output;
  * FUNCTIONS
  ******************************************************************************/
 
+#define PAD_SEQ                         \
+{                                       \
+    str_size = strlen(tmp_seq);         \
+                                        \
+    while(padding_mod > str_size)       \
+    {                                   \
+        used_output.putc(pad_char_mod); \
+        --padding_mod;                  \
+    }                                   \
+}
+
 /**
  * @brief Converts a string to upper case characters.
  * 
@@ -86,6 +97,206 @@ static void tolower(char* string)
     }
 }
 
+static uint64_t get_seq_val(__builtin_va_list args, uint8_t length_mod)
+{
+    /* Harmonize length */
+    if(length_mod > 8)
+    {
+        length_mod = 8;
+    }
+
+    switch(length_mod)
+    {
+        case 1:
+            return (__builtin_va_arg(args, uint32_t) & 0xFF);
+        case 2:
+            return (__builtin_va_arg(args, uint32_t) & 0xFFFF);
+        case 4:
+            return __builtin_va_arg(args, uint32_t);
+        case 8:
+            return __builtin_va_arg(args, uint64_t);
+        default:
+            return __builtin_va_arg(args, uint32_t);            
+    }
+}
+
+
+/**
+ * @brief Prints a formated string.
+ * 
+ * @details Prints a formated string to the output and managing the formated 
+ * string arguments.
+ * 
+ * @param[in] str The formated string to output.
+ * @param[in] args The arguments to use with the formated string.
+ * @param[in] used_output The output to use.
+ */
+static void formater(const char* str, __builtin_va_list args, 
+                     output_t used_output)
+{
+    uint64_t pos;
+    uint64_t str_length;
+    uint64_t seq_val;
+    uint64_t str_size;
+
+   
+    uint8_t  modifier;
+
+    uint8_t  length_mod;
+    uint8_t  padding_mod;
+    uint8_t  upper_mod;
+    char     pad_char_mod;
+
+    char tmp_seq[128];
+
+    modifier     = 0;
+    length_mod   = 4;
+    padding_mod  = 0;
+    upper_mod    = 0;
+    pad_char_mod = ' ';
+    str_length   = strlen(str);
+
+    for(pos = 0; pos < str_length; ++pos)
+    {
+        if(str[pos] == '%')
+        {
+            /* If we encouter this character in a modifier sequence, it was 
+             * just an escape one.
+             */
+            modifier = !modifier;
+            if(modifier)
+            {
+                continue;
+            }
+        }
+        else if(modifier)
+        {
+            switch(str[pos]) 
+            {
+                /* Length mods */
+                case 'h': 
+                    length_mod /= 2;
+                    continue;
+                case 'l':
+                    length_mod *= 2;
+                    continue;
+
+                /* Specifier mods */
+                case 'd':
+                case 'i':
+                    seq_val = get_seq_val(args, length_mod);
+					memset(tmp_seq, 0, sizeof(tmp_seq));
+					itoa(seq_val, tmp_seq, 10);
+                    PAD_SEQ
+					used_output.puts(tmp_seq);
+                    break;
+                case 'u':
+                    seq_val = get_seq_val(args, length_mod);
+					memset(tmp_seq, 0, sizeof(tmp_seq));
+					uitoa(seq_val, tmp_seq, 10);
+                    PAD_SEQ
+					used_output.puts(tmp_seq);
+                    break;
+                case 'X': 
+                    upper_mod = 1;
+                    __attribute__ ((fallthrough));
+                case 'x':
+                    seq_val = get_seq_val(args, length_mod);
+					memset(tmp_seq, 0, sizeof(tmp_seq));
+					uitoa(seq_val, tmp_seq, 16);
+                    PAD_SEQ
+                    if(upper_mod)
+                    {
+                        toupper(tmp_seq);
+                    }
+                    else 
+                    {
+                        tolower(tmp_seq);
+                    }
+					used_output.puts(tmp_seq);
+                    break;                    
+                case 'P': 
+                    upper_mod = 1;
+                    __attribute__ ((fallthrough));
+                case 'p':
+                    padding_mod  = 2 * sizeof(address_t);
+                    pad_char_mod = '0';
+                    seq_val = get_seq_val(args, sizeof(address_t));
+					memset(tmp_seq, 0, sizeof(tmp_seq));
+					uitoa(seq_val, tmp_seq, 16);
+                    PAD_SEQ
+                    if(upper_mod)
+                    {
+                        toupper(tmp_seq);
+                    }
+                    else 
+                    {
+                        tolower(tmp_seq);
+                    }
+					used_output.puts(tmp_seq);
+                    break;
+                case 'c':
+                    tmp_seq[0] = (char)get_seq_val(args, sizeof(char));
+					used_output.putc(tmp_seq[0]);
+                    break;
+
+                /* Padding mods */
+                case '0':
+                    if(padding_mod == 0)
+                    {
+                        pad_char_mod = '0';
+                    }
+                    else 
+                    {
+                        padding_mod *= 10;
+                    }
+                    continue;
+                case '1':
+                    padding_mod = padding_mod * 10 + 1;
+                    continue;
+                case '2':
+                    padding_mod = padding_mod * 10 + 2;
+                    continue;
+                case '3':
+                    padding_mod = padding_mod * 10 + 3;
+                    continue;
+                case '4':
+                    padding_mod = padding_mod * 10 + 4;
+                    continue;
+                case '5':
+                    padding_mod = padding_mod * 10 + 5;
+                    continue;
+                case '6':
+                    padding_mod = padding_mod * 10 + 6;
+                    continue;
+                case '7':
+                    padding_mod = padding_mod * 10 + 7;
+                    continue;
+                case '8':
+                    padding_mod = padding_mod * 10 + 8;
+                    continue;
+                case '9':
+                    padding_mod = padding_mod * 10 + 9;
+                    continue;
+                default:
+                    continue;
+            }
+        }
+        else 
+        {
+            used_output.putc(str[pos]);
+        }
+
+        /* Reinit mods */
+        length_mod   = 4;
+        padding_mod  = 0;
+        upper_mod    = 0;
+        pad_char_mod = ' ';
+        modifier     = 0;
+        
+    }
+}
+
 /**
  * @brief Prints a formated string.
  * 
@@ -97,119 +308,7 @@ static void tolower(char* string)
  */
 static void kprint_fmt(const char* str, __builtin_va_list args)
 {
-    uint32_t i;
-    int32_t  char_val;
-    char*    args_value;
-    char     tmp[32];
-    int32_t  str_size;
-    uint32_t offset;
-    char     char_padding = ' ';
-    int32_t  padding = -1;
-
-	for(i = 0; i < strlen(str); ++i)
-	{
-		if(str[i] == '%')
-		{
-            offset = 1;
-            /* Search for padding */
-            if((str[i + offset] >= 48 && str[i + offset] <= 57))
-            {
-                char_padding = str[i + offset];
-                ++offset;
-
-                /* Search for padding size */
-                if((str[i + offset] >= 48 && str[i + offset] <= 57))
-                {
-                    padding = str[i + offset] - 48;
-                    ++offset;
-                }
-                else
-                {
-                    padding = 0;
-                }
-            }
-
-            /* Search for format */
-			switch(str[i + offset])
-			{
-				case 's':
-					args_value = __builtin_va_arg(args, char*);
-					current_output.puts(args_value);
-                    i += offset;
-					continue;
-                case 'i':
-				case 'd':
-
-					char_val = __builtin_va_arg(args, int32_t);
-					memset(tmp, 0, sizeof(tmp));
-					itoa(char_val, tmp, 10);
-                    str_size = strlen(tmp);
-                    while(padding > str_size)
-                    {
-                        current_output.putc(char_padding);
-                        --padding;
-                    }
-					current_output.puts(tmp);
-                    i += offset;
-					continue;
-                case 'u':
-                    char_val = __builtin_va_arg(args, uint32_t);
-                    memset(tmp, 0, sizeof(tmp));
-                    uitoa(char_val, tmp, 10);
-                    str_size = strlen(tmp);
-                    while(padding > str_size)
-                    {
-                        current_output.putc(char_padding);
-                        --padding;
-                    }
-                    current_output.puts(tmp);
-                    i += offset;
-					continue;
-				case 'x':
-					char_val = __builtin_va_arg(args, uint32_t);
-					memset(tmp, 0, sizeof(tmp));
-					uitoa(char_val, tmp, 16);
-                    str_size = strlen(tmp);
-                    while(padding > str_size)
-                    {
-                        current_output.putc(char_padding);
-                        --padding;
-                    }
-                    tolower(tmp);
-					current_output.puts(tmp);
-                    i += offset;
-					continue;
-                case 'X':
-                    char_val = __builtin_va_arg(args, uint32_t);
-                    memset(tmp, 0, sizeof(tmp));
-                    uitoa(char_val, tmp, 16);
-                    str_size = strlen(tmp);
-                    while(padding > str_size)
-                    {
-                        current_output.putc(char_padding);
-                        --padding;
-                    }
-                    toupper(tmp);
-                    current_output.puts(tmp);
-                    i += offset;
-					continue;
-				case 'c':
-					tmp[0] = (char)
-                        ((__builtin_va_arg(args, int32_t) & 0x000000FF));
-					current_output.putc(tmp[0]);
-                    i += offset;
-					continue;
-				default:
-                    ++i;
-                    continue;
-			}
-		}
-        else
-        {
-            padding = -1;
-			current_output.putc(str[i]);
-		}
-	}
+    formater(str, args, current_output);
 }
 
 /**
@@ -223,119 +322,12 @@ static void kprint_fmt(const char* str, __builtin_va_list args)
  */
 static void kprint_fmt_serial(const char* str, __builtin_va_list args)
 {
-    uint32_t i;
-    int32_t  char_val;
-    char*    args_value;
-    char     tmp[32];
-    int32_t  str_size;
-    uint32_t offset;
-    char     char_padding = ' ';
-    int32_t  padding = -1;
+    output_t ser_out = {
+        .putc = serial_put_char,
+        .puts = serial_put_string
+    };
 
-	for(i = 0; i < strlen(str); ++i)
-	{
-		if(str[i] == '%')
-		{
-            offset = 1;
-            /* Search for padding */
-            if((str[i + offset] >= 48 && str[i + offset] <= 57))
-            {
-                char_padding = str[i + offset];
-                ++offset;
-
-                /* Search for padding size */
-                if((str[i + offset] >= 48 && str[i + offset] <= 57))
-                {
-                    padding = str[i + offset] - 48;
-                    ++offset;
-                }
-                else
-                {
-                    padding = 0;
-                }
-            }
-
-            /* Search for format */
-			switch(str[i + offset])
-			{
-				case 's':
-					args_value = __builtin_va_arg(args, char*);
-					serial_put_string(args_value);
-                    i += offset;
-					continue;
-                case 'i':
-				case 'd':
-
-					char_val = __builtin_va_arg(args, int32_t);
-					memset(tmp, 0, sizeof(tmp));
-					itoa(char_val, tmp, 10);
-                    str_size = strlen(tmp);
-                    while(padding > str_size)
-                    {
-                        serial_put_char(char_padding);
-                        --padding;
-                    }
-					serial_put_string(tmp);
-                    i += offset;
-					continue;
-                case 'u':
-                    char_val = __builtin_va_arg(args, uint32_t);
-                    memset(tmp, 0, sizeof(tmp));
-                    uitoa(char_val, tmp, 10);
-                    str_size = strlen(tmp);
-                    while(padding > str_size)
-                    {
-                        serial_put_char(char_padding);
-                        --padding;
-                    }
-                    serial_put_string(tmp);
-                    i += offset;
-					continue;
-				case 'x':
-					char_val = __builtin_va_arg(args, uint32_t);
-					memset(tmp, 0, sizeof(tmp));
-					uitoa(char_val, tmp, 16);
-                    str_size = strlen(tmp);
-                    while(padding > str_size)
-                    {
-                        serial_put_char(char_padding);
-                        --padding;
-                    }
-                    tolower(tmp);
-					serial_put_string(tmp);
-                    i += offset;
-					continue;
-                case 'X':
-                    char_val = __builtin_va_arg(args, uint32_t);
-                    memset(tmp, 0, sizeof(tmp));
-                    uitoa(char_val, tmp, 16);
-                    str_size = strlen(tmp);
-                    while(padding > str_size)
-                    {
-                        serial_put_char(char_padding);
-                        --padding;
-                    }
-                    toupper(tmp);
-                    serial_put_string(tmp);
-                    i += offset;
-					continue;
-				case 'c':
-					tmp[0] = (char)
-                        ((__builtin_va_arg(args, int32_t) & 0x000000FF));
-					serial_put_char(tmp[0]);
-                    i += offset;
-					continue;
-				default:
-                    ++i;
-                    continue;
-			}
-		}
-        else
-        {
-            padding = -1;
-			serial_put_char(str[i]);
-		}
-	}
+    formater(str, args, ser_out);
 }
 
 /**

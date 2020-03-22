@@ -29,10 +29,10 @@
  * FUNCTIONS
  ******************************************************************************/
 
-void uitoa(uint32_t i, char* buf, uint32_t base)
+void uitoa(uint64_t i, char* buf, uint32_t base)
 {
 
-    char tmp[32];
+    char tmp[128];
 
     uint32_t pos  = 0;
  	uint32_t opos = 0;

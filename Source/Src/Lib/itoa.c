@@ -25,7 +25,7 @@
  * FUNCTIONS
  ******************************************************************************/
 
- void itoa(int32_t i, char* buf, uint32_t base)
+ void itoa(int64_t i, char* buf, uint32_t base)
  {
      /* If base is unknown just return */
      if (base > 16)
