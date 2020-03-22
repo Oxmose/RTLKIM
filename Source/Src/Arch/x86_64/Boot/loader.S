@@ -69,6 +69,8 @@ x86_64_kernel_entry_:
 
     ; Setup kernel GDT
     call cpu_setup_gdt
+  
+    jmp .loop
 
     ; Setup kernel IDT
     call cpu_setup_idt

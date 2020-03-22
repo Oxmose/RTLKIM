@@ -698,26 +698,45 @@ void cpu_setup_gdt(void)
      * KERNEL GDT ENTRIES
      ***********************************/
 
-    /* Set the kernel code descriptor */
-    uint32_t kernel_code_seg_flags = GDT_FLAG_GRANULARITY_4K |
-                                     GDT_FLAG_32_BIT_SEGMENT |
-                                     GDT_FLAG_PL0 |
-                                     GDT_FLAG_SEGMENT_PRESENT |
-                                     GDT_FLAG_CODE_TYPE;
+    /* Set the kernel 64 bits code descriptor */
+    uint32_t kernel_code_64_seg_flags = GDT_FLAG_64_BIT_SEGMENT |
+                                        GDT_FLAG_PL0 |
+                                        GDT_FLAG_SEGMENT_PRESENT |
+                                        GDT_FLAG_CODE_TYPE;
 
-    uint32_t kernel_code_seg_type =  GDT_TYPE_EXECUTABLE |
-                                     GDT_TYPE_READABLE |
-                                     GDT_TYPE_PROTECTED;
+    uint32_t kernel_code_64_seg_type =  GDT_TYPE_EXECUTABLE |
+                                        GDT_TYPE_READABLE |                            
+                                        GDT_TYPE_PROTECTED;
 
-    /* Set the kernel data descriptor */
-    uint32_t kernel_data_seg_flags = GDT_FLAG_GRANULARITY_4K |
-                                     GDT_FLAG_32_BIT_SEGMENT |
-                                     GDT_FLAG_PL0 |
-                                     GDT_FLAG_SEGMENT_PRESENT |
-                                     GDT_FLAG_DATA_TYPE;
+    /* Set the kernel 64 bits data descriptor */
+    uint32_t kernel_data_64_seg_flags = GDT_FLAG_64_BIT_SEGMENT |
+                                        GDT_FLAG_PL0 |
+                                        GDT_FLAG_SEGMENT_PRESENT |
+                                        GDT_FLAG_DATA_TYPE;
 
-    uint32_t kernel_data_seg_type =  GDT_TYPE_WRITABLE |
-                                     GDT_TYPE_GROW_DOWN;
+    uint32_t kernel_data_64_seg_type =  GDT_TYPE_WRITABLE | 
+                                        GDT_TYPE_GROW_DOWN;
+
+    /* Set the kernel 32 bits code descriptor */
+    uint32_t kernel_code_32_seg_flags = GDT_FLAG_GRANULARITY_4K |
+                                        GDT_FLAG_32_BIT_SEGMENT |
+                                        GDT_FLAG_PL0 |
+                                        GDT_FLAG_SEGMENT_PRESENT |
+                                        GDT_FLAG_CODE_TYPE;
+
+    uint32_t kernel_code_32_seg_type =  GDT_TYPE_EXECUTABLE |
+                                        GDT_TYPE_READABLE |
+                                        GDT_TYPE_PROTECTED;
+
+    /* Set the kernel 32 bits data descriptor */
+    uint32_t kernel_data_32_seg_flags = GDT_FLAG_GRANULARITY_4K |
+                                        GDT_FLAG_32_BIT_SEGMENT |
+                                        GDT_FLAG_PL0 |
+                                        GDT_FLAG_SEGMENT_PRESENT |
+                                        GDT_FLAG_DATA_TYPE;
+
+    uint32_t kernel_data_32_seg_type =  GDT_TYPE_WRITABLE |
+                                        GDT_TYPE_GROW_DOWN;
 
     /* Set the kernel 16 bits code descriptor */
     uint32_t kernel_code_16_seg_flags = GDT_FLAG_GRANULARITY_4K |
@@ -744,7 +763,7 @@ void cpu_setup_gdt(void)
      * TSS ENTRY
      ***********************************/
 
-    uint32_t tss_seg_flags = GDT_FLAG_32_BIT_SEGMENT |
+    uint32_t tss_seg_flags = GDT_FLAG_64_BIT_SEGMENT |
                              GDT_FLAG_SEGMENT_PRESENT |
                              GDT_FLAG_PL0;
 
@@ -757,11 +776,11 @@ void cpu_setup_gdt(void)
     /* Load the segments */
     format_gdt_entry(&cpu_gdt[KERNEL_CS_32 / 8],
                      KERNEL_CODE_SEGMENT_BASE_32, KERNEL_CODE_SEGMENT_LIMIT_32,
-                     kernel_code_seg_type, kernel_code_seg_flags);
+                     kernel_code_32_seg_type, kernel_code_32_seg_flags);
 
     format_gdt_entry(&cpu_gdt[KERNEL_DS_32 / 8],
                      KERNEL_DATA_SEGMENT_BASE_32, KERNEL_DATA_SEGMENT_LIMIT_32,
-                     kernel_data_seg_type, kernel_data_seg_flags);
+                     kernel_data_32_seg_type, kernel_data_32_seg_flags);
 
     format_gdt_entry(&cpu_gdt[KERNEL_CS_16 / 8],
                      KERNEL_CODE_SEGMENT_BASE_16, KERNEL_CODE_SEGMENT_LIMIT_16,
@@ -772,12 +791,12 @@ void cpu_setup_gdt(void)
                      kernel_data_16_seg_type, kernel_data_16_seg_flags);
 
     format_gdt_entry(&cpu_gdt[KERNEL_CS_64 / 8],
-                     KERNEL_DATA_SEGMENT_BASE_64, KERNEL_DATA_SEGMENT_LIMIT_64,
-                     kernel_data_16_seg_type, kernel_data_16_seg_flags);
+                     KERNEL_CODE_SEGMENT_BASE_64, KERNEL_CODE_SEGMENT_LIMIT_64,
+                     kernel_code_64_seg_type, kernel_code_64_seg_flags);
 
     format_gdt_entry(&cpu_gdt[KERNEL_DS_64 / 8],
                      KERNEL_DATA_SEGMENT_BASE_64, KERNEL_DATA_SEGMENT_LIMIT_64,
-                     kernel_data_16_seg_type, kernel_data_16_seg_flags);
+                     kernel_data_64_seg_type, kernel_data_64_seg_flags);
 
     format_gdt_entry(&cpu_gdt[TSS_SEGMENT / 8],
                      (address_t)&cpu_main_tss,
@@ -807,13 +826,12 @@ void cpu_setup_gdt(void)
                          "movw %w0,%%gs\n\t"
                          "movw %w0,%%ss\n\t" :: "r" (KERNEL_DS_64));
 
-    __asm__ __volatile__("mov  %0, %%rax\n\t"
+    __asm__ __volatile__("mov %0, %%rax\n\t"
                          "push %%rax\n\t"
-                         "xor  %%rax, %%rax\n\t"
-                         "movabs  new_gdt_seg_, %%rax\n\t"
-                         "push %%rax\n\t"
-                         "retf\n\t"
-                         "new_gdt_seg_: nop\n\t" :: "i" (KERNEL_CS_64) : "rax", "rcx");
+                         "movabs $new_gdt_seg_, %%rax\n\t"
+                         "push %%rax\n\t"                         
+                         "lretq\n\t"
+                         "new_gdt_seg_: \n\t" :: "i" (KERNEL_CS_64) : "rax");
     kernel_success("GDT Initialized at 0x%08x\n",cpu_gdt_base);
 }
 

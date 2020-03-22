@@ -32,7 +32,7 @@
  **************************/
 
 /** @brief Number of entries in the kernel's GDT. */
-#define GDT_ENTRY_COUNT (8 + MAX_CPU_COUNT)
+#define GDT_ENTRY_COUNT (7 + MAX_CPU_COUNT)
 /** @brief Kernel's 32 bits code segment descriptor. */
 #define KERNEL_CS_32 0x08
 /** @brief Kernel's 32 bits data segment descriptor. */
@@ -54,11 +54,11 @@
 /** @brief Kernel's 64 bits code segment base address. */
 #define KERNEL_CODE_SEGMENT_BASE_64  0x00000000
 /** @brief Kernel's 64 bits code segment limit address. */
-#define KERNEL_CODE_SEGMENT_LIMIT_64 0x000FFFFF
+#define KERNEL_CODE_SEGMENT_LIMIT_64 0x0000FFFF
 /** @brief Kernel's 64 bits data segment base address. */
 #define KERNEL_DATA_SEGMENT_BASE_64  0x00000000
 /** @brief Kernel's 64 bits data segment limit address. */
-#define KERNEL_DATA_SEGMENT_LIMIT_64 0x000FFFFF
+#define KERNEL_DATA_SEGMENT_LIMIT_64 0x0000FFFF
 
 /** @brief Kernel's 32 bits code segment base address. */
 #define KERNEL_CODE_SEGMENT_BASE_32  0x00000000
