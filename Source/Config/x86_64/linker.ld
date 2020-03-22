@@ -89,15 +89,15 @@ SECTIONS
     /* GDT must also be in real mode accessible memory */
     cpu_gdt      = 0x8000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0xC000 */
     cpu_gdt_size = 0xC000 + KERNEL_MEM_OFFSET; /* 16 bits */
-    cpu_gdt_base = 0xC002 + KERNEL_MEM_OFFSET; /* 32 bits */
+    cpu_gdt_base = 0xC002 + KERNEL_MEM_OFFSET; /* 64 bits */
 
     /* CPU IDT */
-    cpu_idt      = 0x0D000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0x11000 */
-    cpu_idt_size = 0x11000 + KERNEL_MEM_OFFSET; /* 16 bit */
-    cpu_idt_base = 0x11002 + KERNEL_MEM_OFFSET; /* 32 bits*/
+    cpu_idt      = 0x0D000 + KERNEL_MEM_OFFSET; /* SIZE = 32768bits, ends at 0x15000 */
+    cpu_idt_size = 0x15000 + KERNEL_MEM_OFFSET; /* 16 bit */
+    cpu_idt_base = 0x15002 + KERNEL_MEM_OFFSET; /* 64 bits*/
 
     /* Multiboot data pointer */
-    memory_map_data    = 0x12000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0x16000 */
-    multiboot_data_ptr = 0x16000 + KERNEL_MEM_OFFSET; /* 32bits */
-    memory_map_size    = 0x16002 + KERNEL_MEM_OFFSET; /* 32bits */
+    memory_map_data    = 0x16000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0x1A000 */
+    multiboot_data_ptr = 0x1A000 + KERNEL_MEM_OFFSET; /* 64bits */
+    memory_map_size    = 0x1A008 + KERNEL_MEM_OFFSET; /* 32bits */
 }

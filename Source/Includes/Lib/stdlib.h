@@ -41,7 +41,7 @@
  * @param[out] buf The buffer to receive the convertion's result.
  * @param[in] base The base of the signed integer to convert.
  */
-void itoa(int32_t value, char* buf, uint32_t base);
+void itoa(int64_t value, char* buf, uint32_t base);
 
 /** 
  * @brief Convert a unsigned integer value to a string.
@@ -53,6 +53,6 @@ void itoa(int32_t value, char* buf, uint32_t base);
  * @param[out] buf The buffer to receive the convertion's result.
  * @param[in] base The base of the unsigned integer to convert.
  */
-void uitoa(uint32_t value, char* buf, uint32_t base);
+void uitoa(uint64_t value, char* buf, uint32_t base);
 
 #endif /* __STDLIB_H_ */

@@ -59,11 +59,11 @@ void panic(cpu_state_t* cpu_state, address_t int_id, stack_state_t* stack_state)
     uint32_t      error_code;
     uint32_t      current_cpu_id;
     colorscheme_t panic_scheme;
-    uint32_t      i;
-    uint32_t      cpu_count;
+    //uint32_t      i;
+    //uint32_t      cpu_count;
 
-    const uint32_t*      cpu_ids;
-    const local_apic_t** cpu_lapics;
+    //const uint32_t*      cpu_ids;
+    //const local_apic_t** cpu_lapics;
 
     uint32_t time;
     uint32_t hours;
@@ -111,11 +111,11 @@ void panic(cpu_state_t* cpu_state, address_t int_id, stack_state_t* stack_state)
     cpu_clear_interrupt();
 
     /* Kill other CPUs */
-    cpu_ids        = acpi_get_cpu_ids();
-    cpu_lapics     = acpi_get_cpu_lapics();
-    cpu_count      = acpi_get_detected_cpu_count();
+    //cpu_ids        = acpi_get_cpu_ids();
+    //cpu_lapics     = acpi_get_cpu_lapics();
+    //cpu_count      = acpi_get_detected_cpu_count();
     nmi_panic_code = PANIC_NMI_CODE;
-
+#if 0
     for(i = 0; i < (uint32_t)cpu_count; ++i)
     {
         if(cpu_ids[i] != current_cpu_id)
@@ -131,7 +131,7 @@ void panic(cpu_state_t* cpu_state, address_t int_id, stack_state_t* stack_state)
     bios_call(BIOS_INTERRUPT_VGA, &regs);
 
     graphic_set_selected_driver(&vga_text_driver);
-
+#endif
     panic_scheme.background = BG_BLACK;
     panic_scheme.foreground = FG_CYAN;
     panic_scheme.vga_color  = 1;
@@ -247,50 +247,50 @@ void panic(cpu_state_t* cpu_state, address_t int_id, stack_state_t* stack_state)
     }
 
     kernel_printf("        INT ID: 0x%02X                 \n", int_id);
-    kernel_printf("  Instruction [RIP]: 0x%08X08X           Error code: "
+    kernel_printf("  Instruction [RIP]: 0x%P           Error code: "
                     "0x%08X       \n", stack_state->rip, error_code);
     kernel_printf("                                                            "
                     "                   \n");
     kernel_printf("---------------------------------- CPU STATE ---------------"
-                    "--------------------\n");
-    kernel_printf("  RAX: 0x%08X%08X  |  RBX: 0x%08X%08X  |  RCX: 0x%08X%08X  |  RDX: "
-                    "0x%08X%08X  \n", cpu_state->rax, cpu_state->rbx,
-                    cpu_state->rcx,  cpu_state->rdx);
-    kernel_printf("  RSI: 0x%08X%08X  |  RDI: 0x%08X%08X  |  RBP: 0x%08X%08X  |  RSP: "
-                    "0x%08X%08X  \n", cpu_state->rsi, cpu_state->rdi,
-                    cpu_state->rbp, cpu_state->rsp);
-    kernel_printf("  R8: 0x%08X%08X  |  R9: 0x%08X%08X  |  R10: 0x%08X%08X  |  R11: "
-                    "0x%08X%08X  \n", cpu_state->r8, cpu_state->r9,
-                    cpu_state->r10,  cpu_state->r11);
-    kernel_printf("  R12: 0x%08X%08X  |  R13: 0x%08X%08X  |  R14: 0x%08X%08X  |  R15: "
-                    "0x%08X%08X  \n", cpu_state->r12, cpu_state->r13,
-                    cpu_state->r14,  cpu_state->r15);
-    kernel_printf("  CR0: 0x%08X%08X |  CR2: 0x%08X%08X  |  CR3: 0x%08X%08X  |  CR4: "
-                    "0x%08X%08X  \n\n", CR0, CR2, CR3, CR4);
-    kernel_printf("  CS: 0x%04X  |  DS: 0x%04X  |  SS: 0x%04X                  "
-                    "                   \n", stack_state->cs & 0xFFFF,
-                    cpu_state->ds & 0xFFFF, cpu_state->ss & 0xFFFF);
-    kernel_printf("  ES: 0x%04X  |  FS: 0x%04X  |  GS: 0x%04X                  "
-                    "                   \n", cpu_state->es & 0xFFFF ,
-                    cpu_state->fs & 0xFFFF , cpu_state->gs & 0xFFFF);
+                    "--------------------");
+    kernel_printf("RAX: 0x%P  |  RBX: 0x%P  |  RCX: 0x%P\n", 
+                  cpu_state->rax, cpu_state->rbx, cpu_state->rcx);
+    kernel_printf("RDX: 0x%P  |  RSI: 0x%P  |  RDI: 0x%P\n", 
+                  cpu_state->rdx,  cpu_state->rsi, cpu_state->rdi);
+    kernel_printf("RBP: 0x%P  |  RSP: 0x%P  |  R8:  0x%P\n",
+                  cpu_state->rbp, cpu_state->rsp, cpu_state->r8);
+    kernel_printf("R9:  0x%P  |  R10: 0x%P  |  R11: 0x%P\n", 
+                  cpu_state->r9, cpu_state->r10,  cpu_state->r11);
+    kernel_printf("R12: 0x%P  |  R13: 0x%P  |  R14: 0x%P\n", 
+                  cpu_state->r12, cpu_state->r13, cpu_state->r14);
+    kernel_printf("R15: 0x%P\n", cpu_state->r15);
+    kernel_printf("CR0: 0x%P  |  CR2: 0x%P  |  CR3: 0x%P\n", CR0, CR2, CR3);
+    kernel_printf("CR4: 0x%P  |  EFLAGS: 0x%P\n", CR4, stack_state->rflags);
+    kernel_printf("CS: 0x%04X | DS: 0x%04X | SS: 0x%04X | ", 
+                  stack_state->cs & 0xFFFF,
+                  cpu_state->ds & 0xFFFF, 
+                  cpu_state->ss & 0xFFFF);
+    kernel_printf("ES: 0x%04X | FS: 0x%04X | GS: 0x%04X\n", 
+                  cpu_state->es & 0xFFFF ,
+                  cpu_state->fs & 0xFFFF , 
+                  cpu_state->gs & 0xFFFF);
     kernel_printf("                                                            "
                     "                   \n");
-    kernel_printf("  CF: %d  |  PF: %d  |  AF: %d  |  ZF: %d  |  SF: %d  | "
-                  " TF: %d  |  IF: %d  |  DF: %d \n", cf_f, pf_f, af_f, zf_f, 
+    kernel_printf("CF: %d | PF: %d | AF: %d | ZF: %d | SF: %d | "
+                  "TF: %d | IF: %d | DF: %d |", cf_f, pf_f, af_f, zf_f, 
                   sf_f, tf_f, if_f, df_f);
-    kernel_printf("  OF: %d  |  NT: %d  |  RF: %d  |  VM: %d  | "
-                  " AC: %d  |  VF: %d  |  VP: %d  |  " 
-                  "ID: %d\n", of_f, nt_f, rf_f, vm_f, 
+    kernel_printf(" OF: %d | NT: %d\nRF: %d | VM: %d | "
+                  "AC: %d | VF: %d | VP: %d | " 
+                  "ID: %d |", of_f, nt_f, rf_f, vm_f, 
                   ac_f, vif_f, vip_f, id_f);
-    kernel_printf("  IO: %d  |  EFLAGS: 0x%08X\n\n", (iopl0_f | iopl1_f << 1), 
-                   stack_state->rflags);
+    kernel_printf(" IO: %d\n\n", (iopl0_f | iopl1_f << 1));
     kernel_printf("------------------------------- ADDITIONAL INFO ------------"
-                    "--------------------\n");
+                    "--------------------");
     kernel_printf("  Core ID: %u  |  Thread:  %u  |  Time of panic: "
                   "%02u:%02u:%02u\n\n", current_cpu_id, sched_get_tid(), hours, 
                   minutes, seconds);
     kernel_printf("\n         THE KERNEL HAS BEEN PUT IN SLEEP MODE |" 
-                  " PLEASE RESTART MANUALLY       ");
+                  " PLEASE RESTART MANUALLY        ");
 
     /* Hide cursor */
     panic_scheme.background = BG_BLACK;

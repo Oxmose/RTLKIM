@@ -55,7 +55,7 @@ EXTRA_FLAGS = -O2
 
 CFLAGS = -std=c11 -nostdinc -fno-builtin -nostdlib -fno-stack-protector \
          -nostartfiles -nodefaultlibs -Wall -Wextra -Werror -c -fno-pie \
-		 -no-pie -MD -ffreestanding -mcmodel=large
+		 -no-pie -MD -ffreestanding -mcmodel=large -mno-red-zone
 
 ifeq ($(DEBUG), TRUE)
 CFLAGS += $(DEBUG_FLAGS)
@@ -65,7 +65,7 @@ endif
 
 ASFLAGS =  -g -f elf64 -w+gnu-elf-extensions
 LDFLAGS =  -T $(LINKER_FILE) -no-pie 
-QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 1G \
+QEMUOPTS = -cpu Nehalem -d guest_errors -rtc base=localtime -m 8G \
            -gdb tcp::1234 -smp 4 \
 		   -drive format=raw,file=../Peripherals/hdd_primary_master.img
 

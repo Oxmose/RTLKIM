@@ -71,34 +71,34 @@ OS_RETURN_E memory_map_init(void);
  * 
  * @return The usage in bytes of the kernel heap.
  */
-uint32_t meminfo_kernel_heap_usage(void);
+uint64_t meminfo_kernel_heap_usage(void);
 
 /** 
  * @brief Returns the size in bytes of the kernel heap.
  * 
  * @return The size in bytes of the kernel heap.
  */
-uint32_t meminfo_kernel_heap_size(void);
+uint64_t meminfo_kernel_heap_size(void);
 
 /** 
  * @brief Returns the usage in bytes of the memory.
  * 
  * @return The usage in bytes of the memory.
  */
-uint32_t meminfo_kernel_memory_usage(void);
+uint64_t meminfo_kernel_memory_usage(void);
 
 /** 
  * @brief Returns the size in bytes of the kernel size in memory (reserved).
  * 
  * @return The size in bytes of the kernel size in memory (reserved).
  */
-uint32_t meminfo_kernel_total_size(void);
+uint64_t meminfo_kernel_total_size(void);
 
 /** 
  * @brief Returns the size in bytes of the system's memory.
  * 
  * @return The size in bytes of the system's memory.
  */
-uint32_t meminfo_get_memory_size(void);
+uint64_t meminfo_get_memory_size(void);
 
 #endif /* __MEMINFO_H_ */

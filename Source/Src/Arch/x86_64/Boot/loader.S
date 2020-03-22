@@ -20,7 +20,7 @@ extern cpu_setup_gdt
 extern cpu_setup_idt
 extern cpu_setup_tss
 extern setup_kheap
-extern graphic_clear_screen
+extern vga_clear_screen
 extern serial_init
 extern kernel_kickstart
 
@@ -39,7 +39,7 @@ KERNEL_STACK_SIZE equ 16384     ; DO NOT FORGET TO MODIFY IN CONFIG.H
 
 section .text:
 x86_64_kernel_entry_:
-;
+
     ; Update booted CPU count
     mov rbx, 1
     mov rax, init_cpu_count
@@ -62,15 +62,13 @@ x86_64_kernel_entry_:
     mov rbp, rsp
 
     ; Clear screen
-    call graphic_clear_screen
+    call vga_clear_screen
 
     ; Init serial for debug
     call serial_init
 
     ; Setup kernel GDT
     call cpu_setup_gdt
-  
-    jmp .loop
 
     ; Setup kernel IDT
     call cpu_setup_idt

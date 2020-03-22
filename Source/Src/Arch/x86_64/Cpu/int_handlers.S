@@ -12,7 +12,7 @@
 ; Setup the stack and call the C kernel general interrupt dispatcher.
 ;
 ;-------------------------------------------------------------------------------
-[bits 32]
+[bits 64]
 extern kernel_interrupt_handler
 
 section .text:
@@ -21,8 +21,8 @@ section .text:
 
     global interrupt_handler_%1
     interrupt_handler_%1:
-        push    dword 0                     ; push 0 as dummy error code
-        push    dword %1                    ; push the interrupt number
+        push    0                ; push 0 as dummy error code
+        push    %1                    ; push the interrupt number
         jmp     generic_interrupt_handler   ; jump to the common handler
     %endmacro
 
@@ -31,53 +31,84 @@ section .text:
 
     global interrupt_handler_%1
     interrupt_handler_%1:
-        push    dword %1                    ; push the interrupt number
+        push    %1                    ; push the interrupt number
         jmp     generic_interrupt_handler   ; jump to the common handler
     %endmacro
 
     generic_interrupt_handler:               ; Generic interrupt handler
         ; Save registers before calling interrupt
 
-        push    ds
-        push    es
-        push    fs
-        push    gs
-        push    ss
+        sub     rsp, 8
+        mov     [rsp], ds 
+        sub     rsp, 8
+        mov     [rsp], es 
+        sub     rsp, 8
+        mov     [rsp], fs 
+        sub     rsp, 8
+        mov     [rsp], gs 
+        sub     rsp, 8
+        mov     [rsp], ss 
 
-        push    eax
-        push    ebx
-        push    ecx
-        push    edx
-        push    esi
-        push    edi
-        push    ebp
-        push    esp
+        push    r8
+        push    r9
+        push    r10 
+        push    r11 
+        push    r12 
+        push    r13 
+        push    r14 
+        push    r15
+
+        push    rax
+        push    rbx
+        push    rcx
+        push    rdx
+        push    rsi
+        push    rdi
+        push    rbp
+        push    rsp
+
+        ; Mov int id in RDI to follow ABI
+        mov rdi, [rsp + 168]
 
         ; call the C generic interrupt handler
         call    kernel_interrupt_handler
 
         ; Restore registers
 
-        pop     esp
-        pop     ebp
-        pop     edi
-        pop     esi
-        pop     edx
-        pop     ecx
-        pop     ebx
-        pop     eax
+        pop     rsp
+        pop     rbp
+        pop     rdi
+        pop     rsi
+        pop     rdx
+        pop     rcx
+        pop     rbx
+        pop     rax
 
-        pop     ss
-        pop     gs
-        pop     fs
-        pop     es
-        pop     ds
+        pop     r15
+        pop     r14 
+        pop     r13 
+        pop     r12 
+        pop     r11 
+        pop     r10 
+        pop     r9 
+        pop     r8
+
+        mov     ss, [rsp]
+        add     rsp, 8
+        mov     gs, [rsp]
+        add     rsp, 8
+        mov     fs, [rsp]
+        add     rsp, 8
+        mov     es, [rsp]
+        add     rsp, 8
+        mov     ds, [rsp]
+        add     rsp, 8
 
         ; Restore the esp (interrupt and error code)
-        add     esp, 8
+        add     rsp, 16
 
         ; Return from interrupt
-        iret
+        iretq
 
     ; Now create handlers for each interrupt
     err_code_interrupt_handler 8

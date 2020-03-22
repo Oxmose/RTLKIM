@@ -240,7 +240,6 @@ struct cpu_state
     uint64_t r9;
     /** @brief CPU's r8 register. */
     uint64_t r8;
-    
 
     /** @brief CPU's ss register. */
     uint64_t ss;
@@ -262,6 +261,8 @@ typedef struct cpu_state cpu_state_t;
 /** @brief Hold the stack state before the interrupt */
 struct stack_state
 {
+    /** @brief Interrupt ID */
+    uint64_t int_id;
     /** @brief Interrupt's error code. */
     uint64_t error_code;
     /** @brief RIP of the faulting instruction. */
@@ -296,8 +297,8 @@ struct cpu_tss_entry
     uint64_t ist6;
     uint64_t ist7;
     uint64_t reserved2;
-    uint16_t reserved3;
     uint16_t iomap_base;
+    uint16_t reserved3;
 } __attribute__((__packed__));
 
 /** 
@@ -305,6 +306,39 @@ struct cpu_tss_entry
  * cpu_tss_entry. 
  */
 typedef struct cpu_tss_entry cpu_tss_entry_t;
+
+/** 
+ * @brief CPU IDT entry. Describes an entry in the IDT.
+ */
+struct cpu_idt_entry
+{
+    /** @brief ISR low address. */
+    uint16_t off_low;
+
+    /** @brief Code segment selector. */
+    uint16_t c_sel;
+
+    /** @brief Entry IST number. */
+    uint8_t ist;
+
+    /** @brief Entry flags. */
+    uint8_t flags;
+
+    /** @brief ISR middle address. */
+    uint16_t off_mid;
+
+    /** @brief ISR high address. */
+    uint32_t off_hig;
+
+    /** @brief Must be zero. */
+    uint32_t reserved1;
+};
+
+/** 
+ * @brief Defines the cpu_idt_entry_t type as a shortcut for struct 
+ * cpu_idt_entry. 
+ */
+typedef struct cpu_idt_entry cpu_idt_entry_t;
 
 /*******************************************************************************
  * FUNCTIONS

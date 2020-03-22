@@ -99,7 +99,7 @@ OS_RETURN_E memory_map_init(void)
         total_memory += mmap->len;
 
         memory_map_data[i].base  = (address_t)mmap->addr;
-        memory_map_data[i].limit = (address_t)mmap->addr + mmap->len;
+        memory_map_data[i].limit = (address_t)mmap->addr + (address_t)mmap->len;
         memory_map_data[i].type  = mmap->type;
 
         /* Adds all unsusable memory after the kernel's static end as used */
@@ -114,14 +114,15 @@ OS_RETURN_E memory_map_init(void)
     }
     memory_map_size = i;
 
+
     kernel_info("Memory map: \n");
     for(i = 0; i < memory_map_size; ++i)
     {
-        kernel_info("    Base 0x%08x, Limit 0x%08x, Type %02d, Length %uKB\n",
+        kernel_info("    Base 0x%p, Limit 0x%p, Type %02d, Length %lluKB\n",
                     memory_map_data[i].base,
                     memory_map_data[i].limit,
                     memory_map_data[i].type,
-                    (memory_map_data[i].limit - memory_map_data[i].base) / 1024
+                    (address_t)(memory_map_data[i].limit - memory_map_data[i].base) >> 10
                     );
     }
     free_size   = (address_t)&kernel_heap_end - (address_t)&kernel_heap_start;
@@ -129,13 +130,13 @@ OS_RETURN_E memory_map_init(void)
     size        = (address_t)&_end - (address_t)&_start;
 
     kernel_info("Kernel memory ranges:\n");
-    kernel_info("    [STATIC:  0x%08x - 0x%08x] \n\t"
+    kernel_info("    [STATIC:  0x%p - 0x%p] \n\t"
                 "   %uKb (%uKb used, %uKb free)\n",
                 &_start, &_end, 
                 ((address_t)&kernel_heap_start - (address_t)&_start) / 1024, 
                 size / 1024,
                 static_free / 1024);
-    kernel_info("    [DYNAMIC: 0x%08x - 0x%08x] \n\t"
+    kernel_info("    [DYNAMIC: 0x%p - 0x%p] \n\t"
                 "   %uKb (%uKb used, %uKb free)\n",
                 &kernel_heap_start, &kernel_heap_end, 
                 free_size / 1024, 0, free_size / 1024);
@@ -155,27 +156,27 @@ OS_RETURN_E memory_map_init(void)
     return OS_NO_ERR;
 }
 
-uint32_t meminfo_kernel_heap_usage(void)
+uint64_t meminfo_kernel_heap_usage(void)
 {
     return kheap_mem_used;
 }
 
-uint32_t meminfo_kernel_heap_size(void)
+uint64_t meminfo_kernel_heap_size(void)
 {
     return (address_t)&kernel_heap_end - (address_t)&kernel_heap_start;
 }
 
-uint32_t meminfo_kernel_memory_usage(void)
+uint64_t meminfo_kernel_memory_usage(void)
 {
     return static_used_memory + meminfo_kernel_heap_usage();
 }
 
-uint32_t meminfo_kernel_total_size(void)
+uint64_t meminfo_kernel_total_size(void)
 {
     return (address_t)&_kernel_end - (address_t)&_start;
 }
 
-uint32_t meminfo_get_memory_size(void)
+uint64_t meminfo_get_memory_size(void)
 {
     return total_memory;
 }

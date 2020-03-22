@@ -43,7 +43,7 @@ extern address_t cpu_gdt_base;
 
 /* Kernel IDT structure */
 /** @brief CPU IDT space in memory. */
-extern uint64_t cpu_idt[IDT_ENTRY_COUNT];
+extern cpu_idt_entry_t cpu_idt[IDT_ENTRY_COUNT];
 /** @brief CPU IDT size in memory. */
 extern uint16_t cpu_idt_size;
 /** @brief CPU IDT base address. */
@@ -62,7 +62,7 @@ extern uint8_t* kernel_stack;
 cpu_tss_entry_t cpu_ap_tss[MAX_CPU_COUNT - 1] __attribute__((aligned(4096)));
 
 /** @brief Kernel stacks for APs */
-uint8_t ap_cpu_stacks[MAX_CPU_COUNT - 1][KERNEL_STACK_SIZE] __attribute__((aligned(4096)));;
+uint8_t ap_cpu_stacks[MAX_CPU_COUNT - 1][KERNEL_STACK_SIZE] __attribute__((aligned(4096)));
 
 /** @brief AP stacks size */
 uint32_t ap_cpu_stack_size = KERNEL_STACK_SIZE;
@@ -665,26 +665,22 @@ static void format_gdt_entry(uint64_t* entry,
  * @param[in] type  The type of segment for the IDT entry.
  * @param[in] flags The flags to be set for the IDT entry.
  */
-static void format_idt_entry(uint64_t* entry,
-                             const uint32_t handler,
+static void format_idt_entry(cpu_idt_entry_t* entry,
+                             const address_t handler,
                              const unsigned char type, const uint32_t flags)
 {
-    uint32_t lo_part = 0;
-    uint32_t hi_part = 0;
+    /* Set offset */
+    entry->off_low   = handler & 0x000000000000FFFF;
+    entry->off_mid   = (handler >> 16) & 0x000000000000FFFF;
+    entry->off_hig   = (handler >> 32) & 0x00000000FFFFFFFF;
 
-    /*
-     * Low part[31;0] = Selector[15;0] Handler[15;0]
-     */
-    lo_part = (KERNEL_CS_64 << 16) | (handler & 0x0000FFFF);
-
-    /*
-     * High part[7;0] = Handler[31;16] Flags[4;0] Type[4;0] ZERO[7;0]
-     */
-    hi_part = (handler & 0xFFFF0000) |
-              ((flags & 0xF0) << 8) | ((type & 0x0F) << 8);
-
-    /* Set the value of the entry */
-    *entry = lo_part | (((uint64_t) hi_part) << 32);
+    /* Set selector and flags */
+    entry->c_sel     = KERNEL_CS_64;
+    entry->flags     = (flags & 0xF0) | (type & 0x0F);
+    
+    /* Zeroise */
+    entry->ist       = 0;
+    entry->reserved1 = 0;
 }
 
 void cpu_setup_gdt(void)
@@ -763,12 +759,14 @@ void cpu_setup_gdt(void)
      * TSS ENTRY
      ***********************************/
 
-    uint32_t tss_seg_flags = GDT_FLAG_64_BIT_SEGMENT |
+    uint32_t tss_seg_flags = GDT_FLAG_GRANULARITY_4K |
+                             GDT_FLAG_64_BIT_SEGMENT |
                              GDT_FLAG_SEGMENT_PRESENT |
-                             GDT_FLAG_PL0;
+                             GDT_FLAG_PL0 |
+                             GDT_TYPE_ACCESSED |
+                             GDT_FLAG_TSS;
 
-    uint32_t tss_seg_type = GDT_TYPE_ACCESSED |
-                            GDT_TYPE_EXECUTABLE;
+    uint32_t tss_seg_type = GDT_TYPE_EXECUTABLE;
 
     /* Blank the GDT, set the NULL descriptor */
     memset(cpu_gdt, 0, sizeof(uint64_t) * GDT_ENTRY_COUNT);
@@ -832,7 +830,7 @@ void cpu_setup_gdt(void)
                          "push %%rax\n\t"                         
                          "lretq\n\t"
                          "new_gdt_seg_: \n\t" :: "i" (KERNEL_CS_64) : "rax");
-    kernel_success("GDT Initialized at 0x%08x\n",cpu_gdt_base);
+    kernel_success("GDT Initialized at 0x%P\n", cpu_gdt_base);
 }
 
 void cpu_setup_idt(void)
@@ -863,7 +861,7 @@ void cpu_setup_idt(void)
     /* Load the GDT */
     __asm__ __volatile__("lidt %0" :: "m" (cpu_idt_size), "m" (cpu_idt_base));
 
-    kernel_success("IDT Initialized at 0x%08x\n", cpu_idt_base);
+    kernel_success("IDT Initialized at 0x%P\n", cpu_idt_base);
 }
 
 void cpu_setup_tss(void)
@@ -877,9 +875,8 @@ void cpu_setup_tss(void)
     memset(&cpu_main_tss, 0, sizeof(cpu_tss_entry_t));
 
     /* Set basic values */
-	cpu_main_tss.iomap_base = sizeof(cpu_tss_entry_t);
+    cpu_main_tss.iomap_base = sizeof(cpu_tss_entry_t);
     cpu_main_tss.rsp0 = (address_t)(kernel_stack + KERNEL_STACK_SIZE);
-
 
     for(i = 0; i < MAX_CPU_COUNT - 1; ++i)
     {
@@ -887,8 +884,8 @@ void cpu_setup_tss(void)
         cpu_ap_tss[i].rsp0 = (address_t)(ap_cpu_stacks[i] + ap_cpu_stack_size);
     }
 
-    /* Load TSS */
-    __asm__ __volatile__("ltr %0" : : "rm" ((uint16_t)(TSS_SEGMENT)));
+    /* No need to laod the TSS at the moment */
+    /* __asm__ __volatile__("ltr %0" : : "rm" ((uint16_t)(TSS_SEGMENT))); */
 
-    kernel_success("TSS Initialized at 0x%08x\n", &cpu_main_tss);
+    kernel_success("TSS Initialized at 0x%P\n", &cpu_main_tss);
 }

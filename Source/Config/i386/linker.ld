@@ -98,5 +98,5 @@ SECTIONS
     /* Multiboot data pointer */
     memory_map_data    = 0x12000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0x16000 */
     multiboot_data_ptr = 0x16000 + KERNEL_MEM_OFFSET; /* 32bits */
-    memory_map_size    = 0x16002 + KERNEL_MEM_OFFSET; /* 32bits */
+    memory_map_size    = 0x16004 + KERNEL_MEM_OFFSET; /* 32bits */
 }

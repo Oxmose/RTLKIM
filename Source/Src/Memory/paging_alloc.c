@@ -57,7 +57,7 @@ static spinlock_t lock = SPINLOCK_INIT_VALUE;
  * FUNCTIONS
  ******************************************************************************/
 
-static OS_RETURN_E add_free(const uint32_t start, const uint32_t size,
+static OS_RETURN_E add_free(const address_t start, const uint64_t size,
                             mem_area_t** list)
 {
     mem_area_t* cursor;
@@ -228,7 +228,7 @@ static void remove_free(mem_area_t* node, mem_area_t** list)
     }
 }
 
-static void* get_block(mem_area_t** list, const uint32_t block_count,
+static void* get_block(mem_area_t** list, const uint64_t block_count,
                        OS_RETURN_E* err)
 {
     mem_area_t* cursor;
@@ -276,14 +276,14 @@ static void* get_block(mem_area_t** list, const uint32_t block_count,
 }
 
 static void* get_block_from(const void* page_start_address, mem_area_t** list,
-                            const uint32_t block_count,
+                            const uint64_t block_count,
                             OS_RETURN_E* err)
 {
     mem_area_t* cursor;
     mem_area_t* selected;
     address_t   address;
-    uint32_t    end_alloc;
-    uint32_t    end_block;
+    address_t   end_alloc;
+    address_t   end_block;
     /* Search for the next block with this size */
     cursor = *list;
     selected = NULL;
@@ -339,7 +339,7 @@ static void* get_block_from(const void* page_start_address, mem_area_t** list,
 OS_RETURN_E paging_alloc_init(void)
 {
     uint32_t    i;
-    address_t    start;
+    address_t   start;
     OS_RETURN_E err;
 
     kernel_free_frames = NULL;
@@ -364,8 +364,8 @@ OS_RETURN_E paging_alloc_init(void)
             }
 
             #if PAGING_KERNEL_DEBUG == 1
-            kernel_serial_debug("Added free frame area 0x%08x (%uB)\n",
-                                start, memory_map_data[i].limit - start);
+            kernel_serial_debug("Added free frame area 0x%p -> 0x%p (%luB)\n",
+                                start, memory_map_data[i].limit, memory_map_data[i].limit - start);
             #endif
         }
     }
@@ -373,12 +373,12 @@ OS_RETURN_E paging_alloc_init(void)
     /* Init the free pages */
     /* Add kernel succeding memory */
     err = add_free((address_t)&_kernel_end,
-                   0xFFFFFFFF - (address_t)&_kernel_end + 1,
+                   (address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1,
                    &kernel_free_pages);
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Added free page area 0x%08x (%uB)\n",
                          &_kernel_end,
-                         0xFFFFFFFF - (address_t)&_kernel_end + 1);
+                         (address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1);
     #endif
 
     if(err != OS_NO_ERR)
@@ -389,10 +389,10 @@ OS_RETURN_E paging_alloc_init(void)
     return OS_NO_ERR;
 }
 
-void* kernel_paging_alloc_frames(const uint32_t frame_count, OS_RETURN_E* err)
+void* kernel_paging_alloc_frames(const uint64_t frame_count, OS_RETURN_E* err)
 {
-    uint32_t  word;
-    uint32_t* address;
+    uint32_t   word;
+    address_t* address;
 
     #if MAX_CPU_COUNT > 1
     ENTER_CRITICAL(word, &lock);
@@ -412,7 +412,7 @@ void* kernel_paging_alloc_frames(const uint32_t frame_count, OS_RETURN_E* err)
 }
 
 OS_RETURN_E kernel_paging_free_frames(void* frame_addr,
-                                      const uint32_t frame_count)
+                                      const uint64_t frame_count)
 {
     OS_RETURN_E err;
     uint32_t    word;
@@ -435,10 +435,10 @@ OS_RETURN_E kernel_paging_free_frames(void* frame_addr,
     return err;
 }
 
-void* kernel_paging_alloc_pages(const uint32_t page_count, OS_RETURN_E* err)
+void* kernel_paging_alloc_pages(const uint64_t page_count, OS_RETURN_E* err)
 {
-    uint32_t  word;
-    uint32_t* address;
+    uint32_t   word;
+    address_t* address;
 
     #if MAX_CPU_COUNT > 1
     ENTER_CRITICAL(word, &lock);
@@ -457,7 +457,7 @@ void* kernel_paging_alloc_pages(const uint32_t page_count, OS_RETURN_E* err)
     return (void*)address;
 }
 
-OS_RETURN_E kernel_paging_free_pages(void* page_addr, const uint32_t page_count)
+OS_RETURN_E kernel_paging_free_pages(void* page_addr, const uint64_t page_count)
 {
     OS_RETURN_E err;
     uint32_t    word;
@@ -485,10 +485,10 @@ OS_RETURN_E kernel_paging_free_pages(void* page_addr, const uint32_t page_count)
     return err;
 }
 
-void* paging_alloc_pages(const uint32_t page_count, OS_RETURN_E* err)
+void* paging_alloc_pages(const uint64_t page_count, OS_RETURN_E* err)
 {
     uint32_t    word;
-    uint32_t*   address;
+    address_t*  address;
     mem_area_t* free_pages_table;
 
     /* Get the current's thread free page table */
@@ -512,11 +512,11 @@ void* paging_alloc_pages(const uint32_t page_count, OS_RETURN_E* err)
 }
 
 void* paging_alloc_pages_from(const void* page_start_address,
-                              const uint32_t page_count,
+                              const uint64_t page_count,
                               OS_RETURN_E* err)
 {
     uint32_t    word;
-    uint32_t*   address;
+    address_t*  address;
     mem_area_t* free_pages_table;
 
     /* Get the current's thread free page table */
@@ -540,7 +540,7 @@ void* paging_alloc_pages_from(const void* page_start_address,
     return (void*)address;
 }
 
-OS_RETURN_E paging_free_pages(void* page_addr, const uint32_t page_count)
+OS_RETURN_E paging_free_pages(void* page_addr, const uint64_t page_count)
 {
     OS_RETURN_E err;
     uint32_t    word;
@@ -586,7 +586,7 @@ const mem_area_t* paging_get_free_pages(void)
 
 
 mem_area_t* test_page;
-void testmode_paging_add_page(uint32_t start, uint32_t size)
+void testmode_paging_add_page(address_t start, uint64_t size)
 {
     add_free(start, size, &test_page);
 }

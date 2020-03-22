@@ -105,10 +105,10 @@ OS_RETURN_E paging_init(void)
 {
     uint64_t  i;
     uint32_t  j;
-    uint32_t  kernel_memory_size;
+    uint64_t  kernel_memory_size;
     uint32_t  dir_entry_count;
-    uint32_t  to_map;
-    uint32_t* page_table;
+    uint64_t  to_map;
+    uint64_t* page_table;
     void*     virt_addr;
     void*     new_frame;
     address_t pgdir_entry;
@@ -185,7 +185,7 @@ OS_RETURN_E paging_init(void)
         ++i)
     {
         /* Create a new frame for the pgdire */
-        page_table = (uint32_t*)(min_pgtable[i - KERNEL_PAGE_DIR_OFFSET]);
+        page_table = (uint64_t*)(min_pgtable[i - KERNEL_PAGE_DIR_OFFSET]);
 
         for(j = 0; j < 1024 && to_map > 0; ++j)
         {
