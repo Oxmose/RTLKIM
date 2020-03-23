@@ -301,9 +301,6 @@ void setup_kheap(void)
     first_chunk = NULL;
     last_chunk = NULL;
 
-
-    kernel_info("Start: 0x%08x, End: 0x%08x\n", mem_start, mem_end);
-
     first_chunk = (mem_chunk_t*)mem_start;
     second = first_chunk + 1;
 
@@ -328,7 +325,7 @@ void setup_kheap(void)
 
     init = 1;
 
-    kernel_success("Kernel Heap Initialized at 0x%08x\n", mem_start);
+    kernel_success("Kernel Heap Initialized at 0x%p\n", mem_start);
 }
 
 void* kmalloc(uint32_t size)

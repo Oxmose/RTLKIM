@@ -23,19 +23,16 @@ DATA32 equ 0x0010
 CODE16 equ 0x0018
 DATA16 equ 0x0020
 
-KERNEL_MEM_OFFSET    equ 0xE0000000 ; DO NOT FORGET TO MODIFY IN CONFIG.H
+KERNEL_MEM_OFFSET    equ 0xFFFFF00000000000 ; DO NOT FORGET TO MODIFY IN CONFIG.H
 KERNEL_PML4_ENTRY    equ (KERNEL_MEM_OFFSET >> 39)
 KERNEL_PDPT_ENTRY    equ (KERNEL_MEM_OFFSET >> 30)
 KERNEL_PDT_ENTRY     equ (KERNEL_MEM_OFFSET >> 21)
-
-multiboot_data_ptr_low_ equ (multiboot_data_ptr - KERNEL_MEM_OFFSET)
 
 ;-----------------------------
 ; GLOBAL FUNCTIONS
 ;-----------------------------
 
 global low_loader_
-global kernel_stack
 
 ;-----------------------------
 ; EXTERN FUNCTIONS
@@ -45,8 +42,7 @@ global kernel_stack
 ; EXTERN DATA
 ;-----------------------------
 
-extern init_cpu_count_phys
-extern multiboot_data_ptr
+extern multiboot_data_ptr_phys
 extern x86_64_kernel_entry_
 
 ;-----------------------------
@@ -77,13 +73,14 @@ multiboot_header:
 ;-----------------------------
 ; BOOT SECTION
 ;-----------------------------
+section .boostrap32
 low_loader_:
     ; Make sure interrupts are disabled and clear flags
     push  dword 0
     popfd
 
     ; Save Multiboot info to Memory
-    mov eax, multiboot_data_ptr_low_
+    mov eax, multiboot_data_ptr_phys
     mov [eax], ebx
 
     ; Set basic IDT
@@ -99,13 +96,6 @@ loader_set_segments_:
     mov fs, ax 
     mov gs, ax 
     mov ss, ax
-
-    ; Update booted CPU count
-    mov eax, 1
-    mov [init_cpu_count_phys], eax
-
-    ; Init stack pointer
-    mov  esp, kernel_stack + KERNEL_STACK_SIZE
 
 	; Set the PML4T
 	mov ebx, paging_pdpt0             ; First entry to PDPT0
@@ -215,9 +205,12 @@ x86_64_paging_init_blank_pdtk_:
 	mov cr0, eax 
 
 	; Far jump to 64 bit mode
-	jmp CODE64:x86_64_kernel_entry_
+	jmp CODE64:low_loader_64b_entry_
 
 [bits 64]
+low_loader_64b_entry_:
+	mov rax, x86_64_kernel_entry_
+	jmp rax
 low_loader_halt_lm_:
     hlt
     jmp low_loader_halt_lm_
@@ -304,12 +297,3 @@ paging_pdt0:
     times 0x1000 db 0x00
 paging_pdtk:
     times 0x1000 db 0x00
-
-section .bss
-;-----------------------
-; STACK SPACE
-;-----------------------
-
-align 32
-kernel_stack:
-    resb KERNEL_STACK_SIZE

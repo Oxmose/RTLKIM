@@ -6,6 +6,8 @@ SECTIONS
      */
     KERNEL_MEM_OFFSET = 0xE0000000;
 
+    _kernel_start_phys = . + 0x00100000;
+
     . = KERNEL_MEM_OFFSET;
     _start = .;
     . = KERNEL_MEM_OFFSET + 0x00100000;
@@ -74,7 +76,7 @@ SECTIONS
 
     /* !!! WARNING 0x7C00 to 0x8000 Are reserved for BIOS calls !!! */
 
-    /* Booted CPU count, must be accessible in real mode */
+    /* Booted CPU count, must be accessible in real mode, 32bits */
     init_cpu_count_phys = 0x1000;
     init_cpu_count      = init_cpu_count_phys + KERNEL_MEM_OFFSET;
 

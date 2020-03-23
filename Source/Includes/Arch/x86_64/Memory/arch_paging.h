@@ -61,6 +61,14 @@
 /** @brief Paging structure, global page */
 #define PG_PD_ATTR_GLOBAL             0x0000000000000100
 
+/** @brief PML4 address offset */
+#define PML4_OFFSET 39
+/** @brief PDPT address offset */
+#define PDPT_OFFSET 30
+/** @brief PDT address offset */
+#define PDT_OFFSET 21
+/** @brief PT address offset */
+#define PT_OFFSET 12
 
 /* Compatibility layer with i386 */
 #define PG_DIR_FLAG_PAGE_SIZE_4KB        PG_STRUCT_ATTR_4KB_PAGES
@@ -71,9 +79,6 @@
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/
-
-/** @brief Kernel's page directory */
-extern uint64_t kernel_pgdir[512];
 
 /*******************************************************************************
  * FUNCTIONS

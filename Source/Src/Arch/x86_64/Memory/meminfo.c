@@ -61,13 +61,13 @@ extern uint8_t kernel_heap_start;
 extern uint8_t kernel_heap_end;
 
 /** @brief Total ammount of memory in the system. */
-static uint32_t total_memory;
+static uint64_t total_memory;
 
 /** @brief Static memory used by the kernel. */
-static uint32_t static_used_memory;
+static uint64_t static_used_memory;
 
 /** @brief Kernel's heap used memory data. */
-extern uint32_t kheap_mem_used;
+extern uint64_t kheap_mem_used;
 
 /*******************************************************************************
  * FUNCTIONS
@@ -118,7 +118,7 @@ OS_RETURN_E memory_map_init(void)
     kernel_info("Memory map: \n");
     for(i = 0; i < memory_map_size; ++i)
     {
-        kernel_info("    Base 0x%p, Limit 0x%p, Type %02d, Length %lluKB\n",
+        kernel_info("Area 0x%p -> 0x%p | %02d | %17lluKB\n",
                     memory_map_data[i].base,
                     memory_map_data[i].limit,
                     memory_map_data[i].type,
@@ -131,20 +131,20 @@ OS_RETURN_E memory_map_init(void)
 
     kernel_info("Kernel memory ranges:\n");
     kernel_info("    [STATIC:  0x%p - 0x%p] \n\t"
-                "   %uKb (%uKb used, %uKb free)\n",
+                "   %lluKb (%lluKb used, %lluKb free)\n",
                 &_start, &_end, 
-                ((address_t)&kernel_heap_start - (address_t)&_start) / 1024, 
-                size / 1024,
-                static_free / 1024);
+                ((address_t)&kernel_heap_start - (address_t)&_start) >> 10, 
+                size >> 10,
+                static_free >> 10);
     kernel_info("    [DYNAMIC: 0x%p - 0x%p] \n\t"
-                "   %uKb (%uKb used, %uKb free)\n",
+                "   %lluKb (%lluKb used, %lluKb free)\n",
                 &kernel_heap_start, &kernel_heap_end, 
-                free_size / 1024, 0, free_size / 1024);
+                free_size >> 10, 0, free_size >> 10);
 
-    kernel_info("Total memory: %uKb | %uMb\n", total_memory / 1024,
-                total_memory / 1024 / 1024);
-    kernel_info("Used memory: %uKb | %uMb\n", static_used_memory / 1024,
-                static_used_memory / 1024 / 1024);
+    kernel_info("Total memory: %lluKb | %lluMb\n", total_memory >> 10,
+                total_memory >> 20);
+    kernel_info("Used memory: %lluKb | %lluMb\n", static_used_memory >> 10,
+                static_used_memory >> 20);
 
     if((address_t)&_end > (address_t)&kernel_static_limit)
     {
@@ -173,7 +173,7 @@ uint64_t meminfo_kernel_memory_usage(void)
 
 uint64_t meminfo_kernel_total_size(void)
 {
-    return (address_t)&_kernel_end - (address_t)&_start;
+    return (address_t)&_kernel_end - KERNEL_MEM_OFFSET;
 }
 
 uint64_t meminfo_get_memory_size(void)

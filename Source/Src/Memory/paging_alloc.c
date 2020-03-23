@@ -45,6 +45,9 @@ extern uint32_t    memory_map_size;
 /** @brief Memory map storage as an array of range. */
 extern mem_range_t memory_map_data[];
 
+/** @brief Kernel start address. */
+extern uint8_t     _kernel_start_phys;
+
 /** @brief Kernel end address. */
 extern uint8_t     _kernel_end;
 
@@ -364,21 +367,35 @@ OS_RETURN_E paging_alloc_init(void)
             }
 
             #if PAGING_KERNEL_DEBUG == 1
-            kernel_serial_debug("Added free frame area 0x%p -> 0x%p (%luB)\n",
-                                start, memory_map_data[i].limit, memory_map_data[i].limit - start);
+            kernel_serial_debug("Added free frame area 0x%p -> 0x%p (%luMB)\n",
+                                start, memory_map_data[i].limit, (memory_map_data[i].limit - start) >> 20);
             #endif
         }
     }
 
     /* Init the free pages */
+    err = add_free((address_t)&_kernel_start_phys,
+                   (address_t)KERNEL_MEM_OFFSET,
+                   &kernel_free_pages);
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Added free page area 0x%p -> 0x%p (%lluMB)\n",
+                         &_kernel_start_phys, KERNEL_MEM_OFFSET,
+                         KERNEL_MEM_OFFSET >> 20);
+    #endif
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+
     /* Add kernel succeding memory */
     err = add_free((address_t)&_kernel_end,
                    (address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1,
                    &kernel_free_pages);
     #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Added free page area 0x%08x (%uB)\n",
+    kernel_serial_debug("Added free page area 0x%p -> 0x%p (%lluMB)\n",
                          &_kernel_end,
-                         (address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1);
+                         0xFFFFFFFFFFFFFFFF,
+                         ((address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1) >> 20);
     #endif
 
     if(err != OS_NO_ERR)

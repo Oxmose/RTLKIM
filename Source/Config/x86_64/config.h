@@ -33,7 +33,7 @@
  *
  * @warning Must be 512MB aligned.
  */
-#define KERNEL_MEM_OFFSET 0xE0000000
+#define KERNEL_MEM_OFFSET 0xFFFFF00000000000
 
 /*******************************************************************************
  * Architecture settings

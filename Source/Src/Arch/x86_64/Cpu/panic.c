@@ -252,7 +252,7 @@ void panic(cpu_state_t* cpu_state, address_t int_id, stack_state_t* stack_state)
     kernel_printf("                                                            "
                     "                   \n");
     kernel_printf("---------------------------------- CPU STATE ---------------"
-                    "--------------------");
+                    "--------------------\n");
     kernel_printf("RAX: 0x%P  |  RBX: 0x%P  |  RCX: 0x%P\n", 
                   cpu_state->rax, cpu_state->rbx, cpu_state->rcx);
     kernel_printf("RDX: 0x%P  |  RSI: 0x%P  |  RDI: 0x%P\n", 
@@ -285,12 +285,12 @@ void panic(cpu_state_t* cpu_state, address_t int_id, stack_state_t* stack_state)
                   ac_f, vif_f, vip_f, id_f);
     kernel_printf(" IO: %d\n\n", (iopl0_f | iopl1_f << 1));
     kernel_printf("------------------------------- ADDITIONAL INFO ------------"
-                    "--------------------");
+                    "--------------------\n");
     kernel_printf("  Core ID: %u  |  Thread:  %u  |  Time of panic: "
-                  "%02u:%02u:%02u\n\n", current_cpu_id, sched_get_tid(), hours, 
+                  "%02u:%02u:%02u\n", current_cpu_id, sched_get_tid(), hours, 
                   minutes, seconds);
     kernel_printf("\n         THE KERNEL HAS BEEN PUT IN SLEEP MODE |" 
-                  " PLEASE RESTART MANUALLY        ");
+                  " PLEASE RESTART MANUALLY      ");
 
     /* Hide cursor */
     panic_scheme.background = BG_BLACK;

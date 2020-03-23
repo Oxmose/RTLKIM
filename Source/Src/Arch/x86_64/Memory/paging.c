@@ -20,6 +20,8 @@
 
 #include <Lib/stddef.h>          /* OS_RETURN_E */
 #include <Lib/stdint.h>          /* Generic int types */
+#include <Lib/string.h>          /* memset */
+#include <Cpu/panic.h>           /* kernel_panic */
 #include <Memory/meminfo.h>      /* mem_range_t */
 #include <Memory/paging_alloc.h> /* paging_alloc_init */
 #include <Boot/multiboot.h>      /* MULTIBOOT_MEMORY_AVAILABLE */
@@ -36,25 +38,37 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
+#define PG_TABLE_ENTRY_COUNT      512ULL
+#define PG_TABLE_LAST_ENTRY       (PG_TABLE_ENTRY_COUNT - 1)
+#define PG_TABLE_RECUR_ENTRY      (PG_TABLE_LAST_ENTRY - 1)
+#define PG_TABLE_RECUR_ENTRY_ADDR (0xFFFF000000000000 |       \
+                                   (PG_TABLE_LAST_ENTRY << PML4_OFFSET) |      \
+                                   (PG_TABLE_LAST_ENTRY << PDPT_OFFSET) |      \
+                                   (PG_TABLE_LAST_ENTRY << PDT_OFFSET)  |      \
+                                   (PG_TABLE_RECUR_ENTRY << PT_OFFSET))    
+
 #define KERNEL_MIN_PGTABLE_SIZE 128
-#define KERNEL_PAGE_DIR_OFFSET  (KERNEL_MEM_OFFSET / KERNEL_PAGE_SIZE / 1024)
+
+#define INVAL_PAGE(virt_addr)            \
+{                                        \
+    __asm__ __volatile__(                \
+        "invlpg (%0)": :"r"(virt_addr) : "memory"     \
+    );                                   \
+}
 
 /* Memory map data */
 extern uint32_t    memory_map_size;
 extern mem_range_t memory_map_data[];
 
-extern uint8_t kernel_current_pgdir;
-extern uint8_t kernel_current_pgtable;
-extern uint8_t kernel_swap_pgtable;
-
 /* Allocation tracking */
 static mem_range_t current_mem_range;
 static uint8_t*    next_free_frame;
 
-uint64_t kernel_pgdir[512]__attribute__((aligned(4096)));
+address_t kernel_curr_pml4[PG_TABLE_ENTRY_COUNT]__attribute__((aligned(4096)));
 
-static uint32_t min_pgtable[KERNEL_MIN_PGTABLE_SIZE][1024]
-                                                __attribute__((aligned(4096)));
+address_t secure_pages[KERNEL_MIN_PGTABLE_SIZE][PG_TABLE_ENTRY_COUNT]__attribute__((aligned(4096)));
+
+uint32_t  last_min_page = 0;
 
 static uint32_t init = 0;
 static uint32_t enabled;
@@ -72,47 +86,47 @@ __inline__ static void invalidate_tlb(void)
 	                     "mov %0, %%cr3" : "=r" (tmp));
 }
 
-static void* map_pgtable(void* pgtable_addr)
+static void* alloc_minpage()
 {
-    address_t  pgdir_entry;
-    address_t  pgtable_entry;
-    uint64_t*  current_pgdir;
-    uint64_t*  pgtable;
+    if(last_min_page > KERNEL_MIN_PGTABLE_SIZE)
+    {
+        kernel_error("Cannot allocate min page, increase " 
+                     "KERNEL_MIN_PGTABLE_SIZE\n");
+        kernel_panic(OS_ERR_NO_MORE_FREE_MEM);
+    }
+    return &secure_pages[last_min_page++];
+}
 
-    /* Get PGDIR entry */
-    pgdir_entry = (((address_t)&kernel_current_pgtable) >> 22);
-    /* Get PGTABLE entry */
-    pgtable_entry = (((address_t)&kernel_current_pgtable) >> 12) & 0x03FF;
-
-    /* This should always be mapped */
-    current_pgdir = (uint64_t*)&kernel_current_pgdir;
-    pgtable       = (uint64_t*)current_pgdir[pgdir_entry];
-
-
-    /* Update the pgtable mapping to virtual */
-    pgtable = (uint64_t*)(((address_t)pgtable + KERNEL_MEM_OFFSET) & 0xFFFFF000);
-    pgtable[pgtable_entry] = (address_t)pgtable_addr |
-                            PG_STRUCT_ATTR_KERNEL_ACCESS |
-                            PG_STRUCT_ATTR_READ_WRITE |
-                            PG_STRUCT_ATTR_PRESENT;
-
-    invalidate_tlb();
-
-    return ((void*)&kernel_current_pgtable);
+static void paging_recur_init(void)
+{
+    /* PLM4 */
+    kernel_curr_pml4[PG_TABLE_LAST_ENTRY] = 
+                        ((address_t)kernel_curr_pml4 - KERNEL_MEM_OFFSET) |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Enabled recursive paging\n");
+    #endif 
 }
 
 OS_RETURN_E paging_init(void)
 {
     uint64_t  i;
-    uint32_t  j;
-    uint64_t  kernel_memory_size;
-    uint32_t  dir_entry_count;
-    uint64_t  to_map;
-    uint64_t* page_table;
-    void*     virt_addr;
-    void*     new_frame;
-    address_t pgdir_entry;
-    address_t pgtable_entry;
+    uint64_t  kernel_page_count;
+
+    uint16_t  pml4_current_entry;
+    uint16_t  pdpt_current_entry;
+    uint16_t  pdt_current_entry;
+    uint16_t  pt_current_entry;
+
+    uint64_t*  pdpt_current_entry_addr;
+    uint64_t*  pdt_current_entry_addr;
+    uint64_t*  pt_current_entry_addr;
+
+    address_t  current_addr;
 
     OS_RETURN_E err;
 
@@ -142,132 +156,228 @@ OS_RETURN_E paging_init(void)
         return err;
     }
 
-    kernel_memory_size = meminfo_kernel_total_size() / KERNEL_PAGE_SIZE;
+    kernel_page_count = meminfo_kernel_total_size() / KERNEL_PAGE_SIZE;
     if(meminfo_kernel_total_size() % KERNEL_PAGE_SIZE != 0)
     {
-        ++kernel_memory_size;
+        ++kernel_page_count;
     }
 
     #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Kernel memory size: %u (%u pages)\n",
-                        meminfo_kernel_total_size(),
-                        kernel_memory_size);
+    kernel_serial_debug("Kernel memory size: %lluKB (%lu pages)\n",
+                        meminfo_kernel_total_size() >> 10,
+                        kernel_page_count);
     kernel_serial_debug("Selected free memory range: \n");
-    kernel_serial_debug("\tBase 0x%08x, Limit 0x%08x, Length %uKB, Type %d\n",
+    kernel_serial_debug("\tBase 0x%p, Limit 0x%p, Length %lluKB, Type %d\n",
                 current_mem_range.base,
                 current_mem_range.limit,
                 (current_mem_range.limit - current_mem_range.base) / 1024,
                 current_mem_range.type);
     #endif
 
-    for(i = 0; i < 512; ++i)
+    /* Init the PML4 */
+    for(i = 0; i < PG_TABLE_ENTRY_COUNT; ++i)
     {
-        kernel_pgdir[i] =
-                      PG_STRUCT_ATTR_KERNEL_ACCESS |
-                      PG_STRUCT_ATTR_READ_ONLY |
-                      PG_STRUCT_ATTR_NOT_PRESENT;
+        kernel_curr_pml4[i] = PG_STRUCT_ATTR_KERNEL_ACCESS |
+                          PG_STRUCT_ATTR_READ_ONLY |
+                          PG_STRUCT_ATTR_NOT_PRESENT;
     }
 
-    /* Map the  kernel */
-    dir_entry_count = kernel_memory_size / 1024;
-    to_map = kernel_memory_size;
-    if(kernel_memory_size % 1024 != 0)
+    /* Get the first entry of the kernel */
+    pml4_current_entry = ((address_t)KERNEL_MEM_OFFSET >> PML4_OFFSET) & 0x1FF;
+    pdpt_current_entry = ((address_t)KERNEL_MEM_OFFSET >> PDPT_OFFSET) & 0x1FF;
+    pdt_current_entry  = ((address_t)KERNEL_MEM_OFFSET >> PDT_OFFSET) & 0x1FF;
+    pt_current_entry   = ((address_t)KERNEL_MEM_OFFSET >> PT_OFFSET) & 0x1FF;
+
+    /* Create the first link */
+    pdpt_current_entry_addr  = alloc_minpage();
+    if(pdpt_current_entry_addr == NULL)
     {
-        ++dir_entry_count;
+        kernel_error("Could not allocate PDPT\n");
+        kernel_panic(OS_ERR_MALLOC);
+    }
+    pdt_current_entry_addr  = alloc_minpage();
+    if(pdt_current_entry_addr == NULL)
+    {
+        kernel_error("Could not allocate PDT\n");
+        kernel_panic(OS_ERR_MALLOC);
+    }
+    pt_current_entry_addr   = alloc_minpage();
+    if(pt_current_entry_addr == NULL)
+    {
+        kernel_error("Could not allocate PT\n");
+        kernel_panic(OS_ERR_MALLOC);
+    }
+    kernel_curr_pml4[pml4_current_entry] = 
+                        ((address_t)pdpt_current_entry_addr - KERNEL_MEM_OFFSET) |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+    pdpt_current_entry_addr[pdpt_current_entry] = 
+                        ((address_t)pdt_current_entry_addr - KERNEL_MEM_OFFSET) |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+    pdt_current_entry_addr[pdt_current_entry] = 
+                        ((address_t)pt_current_entry_addr - KERNEL_MEM_OFFSET) |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+
+    current_addr = 0;
+
+    /* Map the kernel */
+    while(kernel_page_count > 0)
+    {
+        /* Check if we have to create a new page table */
+        if(pt_current_entry > PG_TABLE_LAST_ENTRY)
+        {
+            /* Check if we have to create a new page directory table */
+            if(pdt_current_entry > PG_TABLE_LAST_ENTRY)
+            {
+                /* Check if we have to create a new page directory 
+                 * pointer table */
+                if(pdpt_current_entry > PG_TABLE_LAST_ENTRY)
+                {
+                    /* Allocated new entry */
+                    pdpt_current_entry = 0;
+                    pdpt_current_entry_addr = alloc_minpage();
+
+                    if(pdpt_current_entry_addr == NULL)
+                    {
+                        kernel_error("Could not allocate PDPT\n");
+                        kernel_panic(OS_ERR_MALLOC);
+                    }
+
+                    /* Init new entry */
+                    memset(pdpt_current_entry_addr, 0, KERNEL_PAGE_SIZE);
+
+                    /* Update the entry in PML4 */
+                    ++pml4_current_entry;
+                    kernel_curr_pml4[pml4_current_entry] = 
+                        ((address_t)pdpt_current_entry_addr - KERNEL_MEM_OFFSET) |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+                }
+                else 
+                {
+                    ++pdpt_current_entry;
+                }
+
+                /* Allocated new entry */
+                pdt_current_entry = 0;
+                pdt_current_entry_addr = alloc_minpage();
+
+                if(pdt_current_entry_addr == NULL)
+                {
+                    kernel_error("Could not allocate PDT\n");
+                    kernel_panic(OS_ERR_MALLOC);
+                }
+
+                /* Init new entry */
+                memset(pdt_current_entry_addr, 0, KERNEL_PAGE_SIZE); 
+
+                /* Update the entry in PDPT */  
+                pdpt_current_entry_addr[pdpt_current_entry] = 
+                    ((address_t)pdt_current_entry_addr - KERNEL_MEM_OFFSET) |
+                    PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                    PG_STRUCT_ATTR_READ_WRITE |
+                    PG_STRUCT_ATTR_ENABLED_CACHE |
+                    PG_STRUCT_ATTR_WB_CACHE |
+                    PG_STRUCT_ATTR_PRESENT;
+            }
+            else 
+            {
+                ++pdt_current_entry;
+            }
+
+            /* Allocated new entry */
+            pt_current_entry = 0;
+            pt_current_entry_addr = alloc_minpage();
+
+            if(pt_current_entry_addr == NULL)
+            {
+                kernel_error("Could not allocate PT\n");
+                kernel_panic(OS_ERR_MALLOC);
+            }
+
+            /* Init new entry */
+            memset(pt_current_entry_addr, 0, KERNEL_PAGE_SIZE); 
+
+            /* Update the entry in PDT */  
+            pdt_current_entry_addr[pdt_current_entry] = 
+                ((address_t)pt_current_entry_addr - KERNEL_MEM_OFFSET) |
+                PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                PG_STRUCT_ATTR_READ_WRITE |
+                PG_STRUCT_ATTR_ENABLED_CACHE |
+                PG_STRUCT_ATTR_WB_CACHE |
+                PG_STRUCT_ATTR_PRESENT;
+        }
+
+        /* Map the page in the table */
+        pt_current_entry_addr[pt_current_entry] = 
+            current_addr |
+            PG_STRUCT_ATTR_4KB_PAGES |
+            PG_STRUCT_ATTR_KERNEL_ACCESS | 
+            PG_STRUCT_ATTR_READ_WRITE |
+            PG_STRUCT_ATTR_ENABLED_CACHE |
+            PG_STRUCT_ATTR_WB_CACHE |
+            PG_STRUCT_ATTR_PRESENT;
+
+        ++pt_current_entry;
+        --kernel_page_count;
+        current_addr += KERNEL_PAGE_SIZE;                                                 
     }
 
     #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Using %u directory entries\n", dir_entry_count);
-    #endif
-    for(i = KERNEL_PAGE_DIR_OFFSET;
-        i < MIN(KERNEL_MIN_PGTABLE_SIZE + KERNEL_PAGE_DIR_OFFSET, 
-                dir_entry_count + KERNEL_PAGE_DIR_OFFSET);
-        ++i)
-    {
-        /* Create a new frame for the pgdire */
-        page_table = (uint64_t*)(min_pgtable[i - KERNEL_PAGE_DIR_OFFSET]);
+    kernel_serial_debug("Mapped the kernel in secure paging area\n");
+    #endif 
 
-        for(j = 0; j < 1024 && to_map > 0; ++j)
-        {
-            page_table[j] = ((((i * 1024) + j) * 0x1000) -
-                            KERNEL_MEM_OFFSET) |
-                            PG_STRUCT_ATTR_KERNEL_ACCESS |
-                            PG_STRUCT_ATTR_READ_WRITE |
-                            PG_STRUCT_ATTR_PRESENT;
-            --to_map;
-   
-        }
-        kernel_pgdir[i % 512] = ((address_t)page_table  - KERNEL_MEM_OFFSET) |
-                      PG_STRUCT_ATTR_4KB_PAGES |
-                      PG_STRUCT_ATTR_KERNEL_ACCESS |
-                      PG_STRUCT_ATTR_READ_WRITE |
-                      PG_STRUCT_ATTR_PRESENT;
-        
-    }
-
-    /* Map the current page dir */
-    /* Get PGDIR entry */
-    pgdir_entry = (((address_t)&kernel_current_pgdir) >> 22);
-    /* Get PGTABLE entry */
-    pgtable_entry = (((address_t)&kernel_current_pgdir) >> 12) & 0x03FF;
-
-    /* This should always be mapped */
-    min_pgtable[pgdir_entry - KERNEL_PAGE_DIR_OFFSET][pgtable_entry] =
-                            ((address_t)kernel_pgdir - KERNEL_MEM_OFFSET) |
-                            PG_STRUCT_ATTR_KERNEL_ACCESS |
-                            PG_STRUCT_ATTR_READ_WRITE |
-                            PG_STRUCT_ATTR_PRESENT;
+    /* Init recursive paging */
+    paging_recur_init();
 
     /* Init next free frame */
-    next_free_frame = (uint8_t*)(address_t)((kernel_memory_size) * 0x1000);
-
-    /* Check bounds */
+    kernel_page_count = meminfo_kernel_total_size() / KERNEL_PAGE_SIZE;
+    if(meminfo_kernel_total_size() % KERNEL_PAGE_SIZE != 0)
+    {
+        ++kernel_page_count;
+    }
+    next_free_frame = (uint8_t*)((kernel_page_count) * 0x1000);
     if((address_t)next_free_frame < current_mem_range.base ||
        (address_t)next_free_frame >= current_mem_range.limit)
     {
-        kernel_error("Paging Out of Bounds: request=0x%08x, base=0x%08x, "
-                     "limit=0x%08x\n",
+        kernel_error("Paging Out of Bounds: request=0x%p, base=0x%p, "
+                     "limit=0x%p\n",
                      next_free_frame, current_mem_range.base,
                      current_mem_range.limit);
         return OS_ERR_NO_MORE_FREE_MEM;
     }
 
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Next free frame at 0x%p\n", next_free_frame);
+    #endif
+
     /* Set CR3 register */
-    __asm__ __volatile__("mov %%eax, %%cr3": :"a"((address_t)kernel_pgdir -
+    __asm__ __volatile__("mov %%rax, %%cr3": :"a"((address_t)kernel_curr_pml4 -
                                                   KERNEL_MEM_OFFSET));
 
     #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("CR3 Set to 0x%08x \n", kernel_pgdir);
+    kernel_serial_debug("CR3 Set to 0x%p \n", kernel_curr_pml4-
+                                                  KERNEL_MEM_OFFSET);
     #endif
 
     enabled = 0;
     init = 1;
 
     err = paging_enable();
-    if(err != OS_NO_ERR)
-    {
-        return err;
-    }
-
-     /* Map null pointer */
-    new_frame = kernel_paging_alloc_frames(1, &err);
-    if(new_frame == NULL)
-    {
-        return err;
-    }
-
-    virt_addr = map_pgtable(new_frame);
-
-    ((uint32_t*)virt_addr)[0] = PG_STRUCT_ATTR_KERNEL_ACCESS |
-                                PG_STRUCT_ATTR_READ_WRITE |
-                                PG_STRUCT_ATTR_NOT_PRESENT;
-
-    kernel_pgdir[0] = (address_t)new_frame |
-                      PG_STRUCT_ATTR_4KB_PAGES |
-                      PG_STRUCT_ATTR_KERNEL_ACCESS |
-                      PG_STRUCT_ATTR_READ_WRITE |
-                      PG_STRUCT_ATTR_PRESENT;
-
     return err;
 }
 
@@ -313,6 +423,7 @@ OS_RETURN_E paging_disable(void)
     __asm__ __volatile__("mov %%cr0, %%eax\n\t"
                          "and $0x7FF7FFFF, %%eax\n\t"
                          "mov %%eax, %%cr0" : : : "eax");
+
     #if PAGING_KERNEL_DEBUG == 1
     kernel_serial_debug("Paging disabled\n");
     #endif
@@ -327,122 +438,241 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
                                const uint16_t flags,
                                const uint16_t allow_remap)
 {
-    uint64_t    pgdir_entry;
-    uint64_t    pgtable_entry;
-    uint32_t*   page_table;
-    uint32_t*   page_entry;
-    uint32_t    end_map;
-    uint32_t    i;
-    uint32_t*   current_pgdir;
-    uint32_t*   new_frame;
-    OS_RETURN_E err;
+    uint16_t  pml4_current_entry;
+    uint16_t  pdpt_current_entry;
+    uint16_t  pdt_current_entry;
+    uint16_t  pt_current_entry;
 
-    #if PAGING_KERNEL_DEBUG == 1
-    uint32_t virt_save;
-    #endif
+    uint64_t* new_pdpt;
+    uint64_t* new_pdt;
+    uint64_t* new_pt;
+
+    uint64_t* recur_entry_addr;
+    
+    uint64_t recur_entry_val;
+
+    address_t curr_virt_addr = (address_t)virt_addr;
+    address_t curr_phys_addr = (address_t)phys_addr;
+
+    uint32_t to_map;
+
+    OS_RETURN_E err;
 
     if(init == 0)
     {
         return OS_ERR_PAGING_NOT_INIT;
     }
 
-    current_pgdir = (uint32_t*)&kernel_current_pgdir;
 
-    /* Get end mapping addr */
-    end_map = (address_t)virt_addr + mapping_size;
+    recur_entry_addr = (uint64_t*)PG_TABLE_RECUR_ENTRY_ADDR;
 
-    #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mapping (before align) 0x%08x, to 0x%08x (%d bytes)\n",
-                        virt_addr, phys_addr, mapping_size);
-    #endif
+    /* Save the recursion entry value */
+    recur_entry_val = kernel_curr_pml4[PG_TABLE_RECUR_ENTRY];
 
-    /* Align addr */
-    virt_addr = (uint8_t*)((address_t)virt_addr & 0xFFFFF000);
-    phys_addr = (uint8_t*)((address_t)phys_addr & 0xFFFFF000);
-
-    #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mapping (after align) 0x%08x, to 0x%08x (%d bytes)\n",
-                        virt_addr, phys_addr, mapping_size);
-    virt_save = (address_t)virt_addr;
-    #endif
-
-    /* Map all pages needed */
-    while((address_t)virt_addr < end_map)
+    to_map = mapping_size & 0xFFFFF000;
+    if(mapping_size % 0x1000 != 0)
     {
-        /* Get PGDIR entry */
-        pgdir_entry = (((address_t)virt_addr) >> 22);
-        /* Get PGTABLE entry */
-        pgtable_entry = (((address_t)virt_addr) >> 12) & 0x03FF;
+        to_map += 0x1000;
+    }
 
-        /* If page table not present create it */
-        if((current_pgdir[pgdir_entry] & PG_STRUCT_ATTR_PRESENT) !=
-           PG_STRUCT_ATTR_PRESENT)
+    while(to_map)
+    {
+        /* Get table entries */
+        pml4_current_entry = ((address_t)curr_virt_addr >> PML4_OFFSET) & 0x1FF;
+        pdpt_current_entry = ((address_t)curr_virt_addr >> PDPT_OFFSET) & 0x1FF;
+        pdt_current_entry  = ((address_t)curr_virt_addr >> PDT_OFFSET) & 0x1FF;
+        pt_current_entry   = ((address_t)curr_virt_addr >> PT_OFFSET) & 0x1FF;
+
+        #if PAGING_KERNEL_DEBUG == 1
+        kernel_serial_debug("Mapping 0x%p to 0x%p "
+                            "(PML %d, PDPT %d, PDT %d, PT %d)\n",
+                            curr_virt_addr, curr_phys_addr,
+                            pml4_current_entry, pdpt_current_entry,
+                            pdt_current_entry, pt_current_entry);
+        #endif 
+
+        /* Check for mapping in PML4 */
+        if((kernel_curr_pml4[pml4_current_entry] & PG_STRUCT_ATTR_PRESENT) != 
+        PG_STRUCT_ATTR_PRESENT)
         {
-            new_frame = kernel_paging_alloc_frames(1, &err);
-
-            if(new_frame == NULL)
+            /* Get a new frame for the PDPT */
+            new_pdpt = kernel_paging_alloc_frames(1, &err);
+            if(err != OS_NO_ERR)
             {
-                break;
+                return err;
             }
 
-            page_table = map_pgtable(new_frame);
-
-            for(i = 0; i < 1024; ++i)
-            {
-                page_table[i] = PG_STRUCT_ATTR_KERNEL_ACCESS |
-                                PG_STRUCT_ATTR_READ_ONLY |
-                                PG_STRUCT_ATTR_NOT_PRESENT;
-            }
-
-            current_pgdir[pgdir_entry] = (address_t)new_frame |
-                                         PG_STRUCT_ATTR_4KB_PAGES |
-                                         PG_STRUCT_ATTR_KERNEL_ACCESS |
-                                         PG_STRUCT_ATTR_READ_WRITE |
-                                         PG_STRUCT_ATTR_PRESENT;
+            /* Create new mapping */
+            kernel_curr_pml4[pml4_current_entry] = 
+                        (address_t)new_pdpt |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+        }
+        else 
+        {
+            new_pdpt = (uint64_t*)(kernel_curr_pml4[pml4_current_entry] & 
+                                0xFFFFFFFFFFFFF000);
         }
 
-        /* Map the address */
-        page_table = (uint32_t*)
-                     ((address_t)current_pgdir[pgdir_entry] & 0xFFFFF000);
-        page_table = map_pgtable(page_table);
-        page_entry = &page_table[pgtable_entry];
+        /* Recursive map the entry */
+        kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = 
+                        (address_t)new_pdpt |
+                        PG_STRUCT_ATTR_4KB_PAGES |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+        INVAL_PAGE(recur_entry_addr);
 
-        /* Check if already mapped */
-        if((*page_entry & PG_STRUCT_ATTR_PRESENT) == PG_STRUCT_ATTR_PRESENT &&
-           allow_remap == 0)
+        /* Check for mapping in PDPT */
+        if((recur_entry_addr[pdpt_current_entry] & PG_STRUCT_ATTR_PRESENT) != 
+        PG_STRUCT_ATTR_PRESENT)
         {
+            /* Get a new frame for the PDT */
+            new_pdt = kernel_paging_alloc_frames(1, &err);
+            if(err != OS_NO_ERR)
+            {
+                /* Restore initial recursion value */
+                kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = recur_entry_val;
+
+                /* Free frames */
+                kernel_paging_free_frames(new_pdt, 1);
+
+                INVAL_PAGE(recur_entry_addr);
+
+                return err;
+            }
+
+            /* Create new mapping */
+            recur_entry_addr[pdpt_current_entry] = 
+                        (address_t)new_pdt |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+        }
+        else 
+        {
+            new_pdt = (uint64_t*)(recur_entry_addr[pdpt_current_entry] & 
+                                0xFFFFFFFFFFFFF000);
+        }
+
+        /* Recursive map the entry */
+        kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = 
+                        (address_t)new_pdt |
+                        PG_STRUCT_ATTR_4KB_PAGES |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+        INVAL_PAGE(recur_entry_addr);
+
+        /* Check for mapping in PDT */
+        if((recur_entry_addr[pdt_current_entry] & PG_STRUCT_ATTR_PRESENT) != 
+        PG_STRUCT_ATTR_PRESENT)
+        {
+            /* Get a new frame for the PT */
+            new_pt = kernel_paging_alloc_frames(1, &err);
+            if(err != OS_NO_ERR)
+            {
+                /* Restore initial recursion value */
+                kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = recur_entry_val;
+
+                /* Free frames */
+                kernel_paging_free_frames(new_pdpt, 1);
+                kernel_paging_free_frames(new_pdt, 1);
+
+                INVAL_PAGE(recur_entry_addr);
+
+                return err;
+            }
+
+            /* Create new mapping */
+            recur_entry_addr[pdt_current_entry] = 
+                        (address_t)new_pt |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+        }
+        else 
+        {
+            new_pt = (uint64_t*)(recur_entry_addr[pdt_current_entry] & 
+                                0xFFFFFFFFFFFFF000);
+        }
+
+        /* Recursive map the entry */
+        kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = 
+                        (address_t)new_pt |
+                        PG_STRUCT_ATTR_4KB_PAGES |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+        INVAL_PAGE(recur_entry_addr);
+        /* Now our page table is recursively mapped, map the address */
+
+        /* Check if we are remapping an entry */
+        if(!allow_remap &&
+        (recur_entry_addr[pt_current_entry] & PG_STRUCT_ATTR_PRESENT) == 
+        PG_STRUCT_ATTR_PRESENT)
+        {
+            /* Restore initial recursion value */
+            kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = recur_entry_val;
+
+            /* Free frames */
+            kernel_paging_free_frames(new_pdpt, 1);
+            kernel_paging_free_frames(new_pdt, 1);
+            kernel_paging_free_frames(new_pt, 1);
+
+            INVAL_PAGE(recur_entry_addr);
+
             #if PAGING_KERNEL_DEBUG == 1
-            kernel_serial_debug("Mapping (after align) 0x%08x, to 0x%08x "
-                                "(%d bytes) Already mapped)\n",
-                                virt_addr, phys_addr, mapping_size);
-            virt_save = (address_t)virt_addr;
-            #endif
+            kernel_serial_debug("Mapping laready exists 0x%p to 0x%p "
+                                "(PML %d, PDPT %d, PDT %d, PT %d)\n",
+                                curr_virt_addr, curr_phys_addr,
+                                pml4_current_entry, pdpt_current_entry,
+                                pdt_current_entry, pt_current_entry);
+            #endif 
 
             return OS_ERR_MAPPING_ALREADY_EXISTS;
         }
+    
 
-        *page_entry = (address_t)phys_addr |
-                      flags |
-                      PG_STRUCT_ATTR_PRESENT;
+        /* Map page */
+        recur_entry_addr[pt_current_entry] = 
+                        (address_t) curr_phys_addr |
+                        flags |
+                        PG_STRUCT_ATTR_PRESENT;
+        INVAL_PAGE(curr_virt_addr);
+
         #if PAGING_KERNEL_DEBUG == 1
-        kernel_serial_debug("Mapped 0x%08x -> 0x%08x\n", virt_addr, phys_addr);
-        #endif
-        virt_addr = (uint8_t*)virt_addr + KERNEL_PAGE_SIZE;
-        phys_addr = (uint8_t*)phys_addr + KERNEL_PAGE_SIZE;
+        kernel_serial_debug("Mapped 0x%p to 0x%p "
+                            "(PML %d, PDPT %d, PDT %d, PT %d)\n",
+                            curr_virt_addr, curr_phys_addr,
+                            pml4_current_entry, pdpt_current_entry,
+                            pdt_current_entry, pt_current_entry);
+        #endif 
 
+        curr_phys_addr += KERNEL_PAGE_SIZE;
+        curr_virt_addr += KERNEL_PAGE_SIZE;
 
+        to_map -= KERNEL_PAGE_SIZE;
     }
 
-    #if PAGING_KERNEL_DEBUG == 1
-    /* Get PGDIR entry */
-    pgdir_entry = (((address_t)virt_save) >> 22);
-    /* Get PGTABLE entry */
-    pgtable_entry = (((address_t)virt_save) >> 12) & 0x03FF;
+    /* Restore initial recursion value */
+    kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = recur_entry_val;
 
-
-    #endif
-
-    invalidate_tlb();
+    INVAL_PAGE(recur_entry_addr);
+    INVAL_PAGE(virt_addr);
 
     return OS_NO_ERR;
 }
@@ -454,10 +684,6 @@ OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
     uint64_t    virt_save;
     void*       phys_addr;
     OS_RETURN_E err;
-
-    #if PAGING_KERNEL_DEBUG == 1
-
-    #endif
 
     if(init == 0)
     {
@@ -537,7 +763,7 @@ OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size)
         return OS_ERR_PAGING_NOT_INIT;
     }
 
-    current_pgdir = (uint32_t*)&kernel_current_pgdir;
+    current_pgdir = (uint32_t*)&kernel_curr_pml4;
 
     /* Get end mapping addr */
     end_map = (address_t)virt_addr + mapping_size;
@@ -572,9 +798,9 @@ OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size)
         }
 
         /* Get the address */
+        pgtable_mapped= NULL;
         page_table = (uint32_t*)
                      ((address_t)current_pgdir[pgdir_entry] & 0xFFFFF000);
-        pgtable_mapped = map_pgtable(page_table);
         page_entry = &pgtable_mapped[pgtable_entry];
 
         if((*page_entry & PG_STRUCT_ATTR_PRESENT) !=
@@ -642,7 +868,7 @@ void* paging_get_phys_address(const void* virt_addr)
     page_id = (address_t)virt_addr & 0xFFFFF000;
     offset  = (address_t)virt_addr & 0x00000FFF;
 
-    current_pgdir = (uint64_t*)&kernel_current_pgdir;
+    current_pgdir = (uint64_t*)&kernel_curr_pml4;
 
     /* Get PGDIR entry */
     pgdir_entry = (((address_t)page_id) >> 22);

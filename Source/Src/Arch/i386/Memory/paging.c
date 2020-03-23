@@ -219,9 +219,6 @@ OS_RETURN_E paging_init(void)
                             PAGE_FLAG_READ_WRITE |
                             PAGE_FLAG_PRESENT;
 
-    /* Init next free frame */
-    next_free_frame = (uint8_t*)((kernel_memory_size) * 0x1000);
-
     /* Check bounds */
     if((address_t)next_free_frame < current_mem_range.base ||
        (address_t)next_free_frame >= current_mem_range.limit)

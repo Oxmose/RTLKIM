@@ -32,12 +32,14 @@
 #include <Cpu/panic.h>      /* kernel_panic() */
 #include <Memory/meminfo.h>       /* memory_map_init() */
 #include <Memory/paging.h>        /* paging_init() */
+#include <Memory/paging_alloc.h>        /* paging_init() */
 #include <Drivers/vga_text.h>     /* vga_text_driver */
 #include <Drivers/vesa.h>         /* init_vesa(), vesa_text_vga_to_vesa() */
 #include <Drivers/keyboard.h>     /* keyboard_init() */
 #include <Drivers/ata_pio.h>      /* ata_pio_init() */
 #include <Lib/string.h>           /* strlen() */
 #include <Core/scheduler.h>       /* sched_init() */
+
 
 /* UTK configuration file */
 #include <config.h>
@@ -125,6 +127,25 @@ void kernel_kickstart(void)
     #if TEST_MODE_ENABLED == 1
     paging_alloc_test();
     #endif
+
+    kernel_direct_mmap((void*)0xCCCCE0000000, (void*)0x100000000,
+                       0x1500,
+                       PG_DIR_FLAG_PAGE_SIZE_4KB |
+                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                       PG_DIR_FLAG_PAGE_READ_WRITE,
+                       1);
+    kernel_direct_mmap((void*)0xCCCCE0000000, (void*)0x100000000,
+                       0x1500,
+                       PG_DIR_FLAG_PAGE_SIZE_4KB |
+                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                       PG_DIR_FLAG_PAGE_READ_WRITE,
+                       1);
+    kernel_direct_mmap((void*)0xCCCCE0000000, (void*)0x100000000,
+                       0x1500,
+                       PG_DIR_FLAG_PAGE_SIZE_4KB |
+                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                       PG_DIR_FLAG_PAGE_READ_WRITE,
+                       0);
 
     /* Init VESA */
     #if ((DISPLAY_TYPE == DISPLAY_VESA || DISPLAY_TYPE == DISPLAY_VESA_BUF) && \

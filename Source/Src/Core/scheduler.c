@@ -1944,9 +1944,5 @@ address_t sched_get_thread_phys_pgdir(void)
         cpu_id = 0;
     }
 
-    if(first_sched[cpu_id] == 1)
-    {
-        return (address_t)kernel_pgdir - KERNEL_MEM_OFFSET;
-    }
     return cpu_get_current_pgdir();
 }

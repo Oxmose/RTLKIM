@@ -168,6 +168,10 @@ static void formater(const char* str, __builtin_va_list args,
             {
                 continue;
             }
+            else 
+            {
+                used_output.putc(str[pos]);
+            }
         }
         else if(modifier)
         {

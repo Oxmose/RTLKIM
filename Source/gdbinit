@@ -1,4 +1,4 @@
 tar rem:1234
-b kernel_interrupt_handler
+b kernel_kickstart
 layout split
 c

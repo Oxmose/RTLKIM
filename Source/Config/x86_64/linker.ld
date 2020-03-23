@@ -5,14 +5,20 @@ SECTIONS
      * Add the offset DO NOT FORGET TO CHANGE IT IN CONFIG.h AND LOADER.S
      * MUST BE 512 MB aligned
      */
-    KERNEL_MEM_OFFSET = 0xE0000000;
+    KERNEL_MEM_OFFSET = 0xFFFFF00000000000;
 
     . = 0x100000;
+
+    _kernel_start_phys = .;
 
     /* Put the multiboot header */
     .multiboot ALIGN(4K) : AT(ADDR(.multiboot))
     {
         *(.multiboot)
+    }
+    .boostrap32 ALIGN(4K) : AT(ADDR(.boostrap32))
+    {
+        Build/Arch/x86_64/Boot/loader_grub.o
     }
 
     . += KERNEL_MEM_OFFSET;
@@ -50,12 +56,6 @@ SECTIONS
     _end = .;
 
     kernel_static_limit = 0x00500000 + KERNEL_MEM_OFFSET;
-
-    /* SIZE = 4096bits, ends at kernel_static_limit + 0x1000 */
-    kernel_current_pgdir = kernel_static_limit;
-
-    /* SIZE = 4096bits, ends at kernel_current_pgdir + 0x1000 */
-    kernel_current_pgtable = kernel_current_pgdir + 0x1000;
 
     /* Beginning of kernel memory heap */
     kernel_heap_start = 0x01000000 + KERNEL_MEM_OFFSET;
@@ -97,7 +97,8 @@ SECTIONS
     cpu_idt_base = 0x15002 + KERNEL_MEM_OFFSET; /* 64 bits*/
 
     /* Multiboot data pointer */
-    memory_map_data    = 0x16000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0x1A000 */
-    multiboot_data_ptr = 0x1A000 + KERNEL_MEM_OFFSET; /* 64bits */
-    memory_map_size    = 0x1A008 + KERNEL_MEM_OFFSET; /* 32bits */
+    memory_map_data         = 0x16000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0x1A000 */
+    multiboot_data_ptr      = 0x1A000 + KERNEL_MEM_OFFSET; /* 64bits */
+    multiboot_data_ptr_phys = multiboot_data_ptr - KERNEL_MEM_OFFSET;
+    memory_map_size         = 0x1A008 + KERNEL_MEM_OFFSET; /* 32bits */
 }
