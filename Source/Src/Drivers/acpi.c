@@ -133,7 +133,7 @@ static OS_RETURN_E acpi_parse_apic(acpi_madt_t* madt_ptr)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing MADT at 0x%08x\n", (address_t)madt_ptr);
+    kernel_serial_debug("Parsing MADT at 0x%p\n", (address_t)madt_ptr);
     #endif
 
     /* Verify checksum */
@@ -195,7 +195,7 @@ static OS_RETURN_E acpi_parse_apic(acpi_madt_t* madt_ptr)
         else if(type == APIC_TYPE_IO_APIC)
         {
             #if ACPI_KERNEL_DEBUG == 1
-            kernel_serial_debug("Found IO-APIC ADDR #%08x | ID #%d | GSIB %x\n",
+            kernel_serial_debug("Found IO-APIC ADDR #%p | ID #%d | GSIB %x\n",
                                 ((io_apic_t*)madt_entry)->io_apic_addr,
                                 ((io_apic_t*)madt_entry)->apic_id,
                                 ((io_apic_t*)madt_entry)->
@@ -264,7 +264,7 @@ static OS_RETURN_E acpi_parse_facs(acpi_facs_t* facs_ptr)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing FACS at 0x%08x\n", (address_t)facs_ptr);
+    kernel_serial_debug("Parsing FACS at 0x%p\n", (address_t)facs_ptr);
     #endif
 
     if(*((uint32_t*)facs_ptr->header.signature) != ACPI_FACS_SIG)
@@ -311,7 +311,7 @@ static OS_RETURN_E acpi_parse_dsdt(acpi_dsdt_t* dsdt_ptr)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing DSDT at 0x%08x\n", (address_t)dsdt_ptr);
+    kernel_serial_debug("Parsing DSDT at 0x%p\n", (address_t)dsdt_ptr);
     #endif
 
     /* Verify checksum */
@@ -322,7 +322,7 @@ static OS_RETURN_E acpi_parse_dsdt(acpi_dsdt_t* dsdt_ptr)
                       PG_DIR_FLAG_PAGE_SIZE_4KB |
                       PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                       PG_DIR_FLAG_PAGE_READ_ONLY,
-                      1);
+                      0);
 
     if(err != OS_NO_ERR && err != OS_ERR_MAPPING_ALREADY_EXISTS)
     {
@@ -339,7 +339,7 @@ static OS_RETURN_E acpi_parse_dsdt(acpi_dsdt_t* dsdt_ptr)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing END DSDT at 0x%08x\n", (address_t)dsdt_ptr);
+    kernel_serial_debug("Parsing END DSDT at 0x%p\n", (address_t)dsdt_ptr);
     #endif
 
     if((sum & 0xFF) != 0)
@@ -355,7 +355,7 @@ static OS_RETURN_E acpi_parse_dsdt(acpi_dsdt_t* dsdt_ptr)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing END DSDT at 0x%08x\n", (address_t)dsdt_ptr);
+    kernel_serial_debug("Parsing END DSDT at 0x%p\n", (address_t)dsdt_ptr);
     #endif
 
     return OS_NO_ERR;
@@ -397,7 +397,7 @@ static OS_RETURN_E acpi_parse_fadt(acpi_fadt_t* fadt_ptr)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing FADT at 0x%08x\n", (address_t)fadt_ptr);
+    kernel_serial_debug("Parsing FADT at 0x%p\n", (address_t)fadt_ptr);
     #endif
 
     /* Verify checksum */
@@ -486,7 +486,7 @@ static OS_RETURN_E acpi_parse_dt(acpi_header_t* header)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing SDT at 0x%08x\n", (address_t)header);
+    kernel_serial_debug("Parsing SDT at 0x%p\n", (address_t)header);
     #endif
 
     memcpy(sig_str, header->signature, 4);
@@ -560,7 +560,7 @@ static OS_RETURN_E acpi_parse_rsdt(rsdt_descriptor_t* rsdt_ptr)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing RSDT at 0x%08x and %d\n", (address_t)rsdt_ptr, *(address_t*)rsdt_ptr);
+    kernel_serial_debug("Parsing RSDT at 0x%p and 0x%p\n", (address_t)rsdt_ptr, *(address_t*)rsdt_ptr);
     #endif
 
     /* Verify checksum */
@@ -592,7 +592,7 @@ static OS_RETURN_E acpi_parse_rsdt(rsdt_descriptor_t* rsdt_ptr)
         volatile address_t address = *range_begin;
 
         #if ACPI_KERNEL_DEBUG == 1
-        kernel_serial_debug("Parsing SDT at 0x%08x\n", (address_t)address);
+        kernel_serial_debug("Parsing SDT at 0x%p\n", (address_t)address);
         #endif
 
         err = acpi_parse_dt((acpi_header_t*)address);
@@ -647,7 +647,7 @@ static OS_RETURN_E acpi_parse_xsdt(xsdt_descriptor_t* xsdt_ptr)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing XSDT at 0x%08x\n", (address_t)xsdt_ptr);
+    kernel_serial_debug("Parsing XSDT at 0x%p\n", (address_t)xsdt_ptr);
     #endif
 
     /* Verify checksum */
@@ -679,7 +679,7 @@ static OS_RETURN_E acpi_parse_xsdt(xsdt_descriptor_t* xsdt_ptr)
         address_t address = (address_t)*range_begin;
 
         #if ACPI_KERNEL_DEBUG == 1
-        kernel_serial_debug("Parsing SDT at 0x%08x\n", address);
+        kernel_serial_debug("Parsing SDT at 0x%p\n", address);
         #endif
 
         err = acpi_parse_dt((acpi_header_t*)address);
@@ -732,7 +732,7 @@ static OS_RETURN_E acpi_parse_rsdp(rsdp_descriptor_t* rsdp_desc)
     }
 
     #if ACPI_KERNEL_DEBUG == 1
-    kernel_serial_debug("Parsing RSDP at 0x%08x\n", (address_t)rsdp_desc);
+    kernel_serial_debug("Parsing RSDP at 0x%p\n", (address_t)rsdp_desc);
     #endif
 
     /* Verify checksum */
@@ -870,7 +870,7 @@ OS_RETURN_E acpi_init(void)
         if(signature == ACPI_RSDP_SIG)
         {
             #if ACPI_KERNEL_DEBUG == 1
-            kernel_serial_debug("ACPI RSDP found at 0x%08x\n",
+            kernel_serial_debug("ACPI RSDP found at 0x%p\n",
                                 (address_t)range_begin);
             #endif
 

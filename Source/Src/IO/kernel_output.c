@@ -97,27 +97,33 @@ static void tolower(char* string)
     }
 }
 
-static uint64_t get_seq_val(__builtin_va_list args, uint8_t length_mod)
-{
-    /* Harmonize length */
-    if(length_mod > 8)
-    {
-        length_mod = 8;
-    }
-
-    switch(length_mod)
-    {
-        case 1:
-            return (__builtin_va_arg(args, uint32_t) & 0xFF);
-        case 2:
-            return (__builtin_va_arg(args, uint32_t) & 0xFFFF);
-        case 4:
-            return __builtin_va_arg(args, uint32_t);
-        case 8:
-            return __builtin_va_arg(args, uint64_t);
-        default:
-            return __builtin_va_arg(args, uint32_t);            
-    }
+#define get_seq_val(val, args, length_mod) \
+{                                     \
+                                      \
+    /* Harmonize length */            \
+    if(length_mod > 8)                \
+    {            \
+        length_mod = 8; \
+    } \
+ \
+    switch(length_mod) \
+    { \
+        case 1: \
+            val = (__builtin_va_arg(args, uint32_t) & 0xFF); \
+            break; \
+        case 2: \
+            val = (__builtin_va_arg(args, uint32_t) & 0xFFFF); \
+            break; \
+        case 4: \
+            val = __builtin_va_arg(args, uint32_t); \
+            break; \
+        case 8: \
+            val =  __builtin_va_arg(args, uint64_t); \
+            break; \
+        default: \
+            val = __builtin_va_arg(args, uint32_t);     \
+    } \
+ \
 }
 
 
@@ -148,6 +154,8 @@ static void formater(const char* str, __builtin_va_list args,
     char     pad_char_mod;
 
     char tmp_seq[128];
+
+    char* args_value;
 
     modifier     = 0;
     length_mod   = 4;
@@ -186,16 +194,20 @@ static void formater(const char* str, __builtin_va_list args,
                     continue;
 
                 /* Specifier mods */
+                case 's':
+					args_value = __builtin_va_arg(args, char*);
+					current_output.puts(args_value);
+                    break;
                 case 'd':
                 case 'i':
-                    seq_val = get_seq_val(args, length_mod);
+                    get_seq_val(seq_val, args, length_mod);
 					memset(tmp_seq, 0, sizeof(tmp_seq));
 					itoa(seq_val, tmp_seq, 10);
                     PAD_SEQ
 					used_output.puts(tmp_seq);
                     break;
                 case 'u':
-                    seq_val = get_seq_val(args, length_mod);
+                    get_seq_val(seq_val, args, length_mod);
 					memset(tmp_seq, 0, sizeof(tmp_seq));
 					uitoa(seq_val, tmp_seq, 10);
                     PAD_SEQ
@@ -205,7 +217,7 @@ static void formater(const char* str, __builtin_va_list args,
                     upper_mod = 1;
                     __attribute__ ((fallthrough));
                 case 'x':
-                    seq_val = get_seq_val(args, length_mod);
+                    get_seq_val(seq_val, args, length_mod);
 					memset(tmp_seq, 0, sizeof(tmp_seq));
 					uitoa(seq_val, tmp_seq, 16);
                     PAD_SEQ
@@ -225,7 +237,8 @@ static void formater(const char* str, __builtin_va_list args,
                 case 'p':
                     padding_mod  = 2 * sizeof(address_t);
                     pad_char_mod = '0';
-                    seq_val = get_seq_val(args, sizeof(address_t));
+                    length_mod = sizeof(address_t);
+                    get_seq_val(seq_val, args, length_mod);
 					memset(tmp_seq, 0, sizeof(tmp_seq));
 					uitoa(seq_val, tmp_seq, 16);
                     PAD_SEQ
@@ -240,7 +253,8 @@ static void formater(const char* str, __builtin_va_list args,
 					used_output.puts(tmp_seq);
                     break;
                 case 'c':
-                    tmp_seq[0] = (char)get_seq_val(args, sizeof(char));
+                    length_mod = sizeof(char);
+                    get_seq_val(tmp_seq[0], args, length_mod);
 					used_output.putc(tmp_seq[0]);
                     break;
 

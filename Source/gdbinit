@@ -1,4 +1,4 @@
 tar rem:1234
-b kernel_kickstart
+b acpi_parse_rsdp
 layout split
 c

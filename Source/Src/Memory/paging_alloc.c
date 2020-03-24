@@ -367,7 +367,7 @@ OS_RETURN_E paging_alloc_init(void)
             }
 
             #if PAGING_KERNEL_DEBUG == 1
-            kernel_serial_debug("Added free frame area 0x%p -> 0x%p (%luMB)\n",
+            kernel_serial_debug("Added free frame area 0x%p -> 0x%p (%uMB)\n",
                                 start, memory_map_data[i].limit, (memory_map_data[i].limit - start) >> 20);
             #endif
         }
@@ -378,7 +378,7 @@ OS_RETURN_E paging_alloc_init(void)
                    (address_t)KERNEL_MEM_OFFSET,
                    &kernel_free_pages);
     #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Added free page area 0x%p -> 0x%p (%lluMB)\n",
+    kernel_serial_debug("Added free page area 0x%p -> 0x%p (%uMB)\n",
                          &_kernel_start_phys, KERNEL_MEM_OFFSET,
                          KERNEL_MEM_OFFSET >> 20);
     #endif
@@ -392,10 +392,10 @@ OS_RETURN_E paging_alloc_init(void)
                    (address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1,
                    &kernel_free_pages);
     #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Added free page area 0x%p -> 0x%p (%lluMB)\n",
+    kernel_serial_debug("Added free page area 0x%p -> 0x%p (%uMB)\n",
                          &_kernel_end,
-                         0xFFFFFFFFFFFFFFFF,
-                         ((address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1) >> 20);
+                         (address_t)0xFFFFFFFFFFFFFFFF,
+                         (address_t)((address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1) >> 20);
     #endif
 
     if(err != OS_NO_ERR)

@@ -219,6 +219,9 @@ OS_RETURN_E paging_init(void)
                             PAGE_FLAG_READ_WRITE |
                             PAGE_FLAG_PRESENT;
 
+    /* Init next free frame */
+    next_free_frame = (uint8_t*)((kernel_memory_size) * 0x1000);
+
     /* Check bounds */
     if((address_t)next_free_frame < current_mem_range.base ||
        (address_t)next_free_frame >= current_mem_range.limit)
@@ -423,7 +426,7 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
                       flags |
                       PAGE_FLAG_PRESENT;
         #if PAGING_KERNEL_DEBUG == 1
-        kernel_serial_debug("Mapped 0x%08x -> 0x%08x\n", virt_addr, phys_addr);
+        //kernel_serial_debug("Mapped 0x%08x -> 0x%08x\n", virt_addr, phys_addr);
         #endif
         virt_addr = (uint8_t*)virt_addr + KERNEL_PAGE_SIZE;
         phys_addr = (uint8_t*)phys_addr + KERNEL_PAGE_SIZE;

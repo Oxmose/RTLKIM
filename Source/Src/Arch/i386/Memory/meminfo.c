@@ -161,27 +161,27 @@ OS_RETURN_E memory_map_init(void)
     return OS_NO_ERR;
 }
 
-uint32_t meminfo_kernel_heap_usage(void)
+address_t meminfo_kernel_heap_usage(void)
 {
     return kheap_mem_used;
 }
 
-uint32_t meminfo_kernel_heap_size(void)
+address_t meminfo_kernel_heap_size(void)
 {
     return (address_t)&kernel_heap_end - (address_t)&kernel_heap_start;
 }
 
-uint32_t meminfo_kernel_memory_usage(void)
+address_t meminfo_kernel_memory_usage(void)
 {
     return static_used_memory + meminfo_kernel_heap_usage();
 }
 
-uint32_t meminfo_kernel_total_size(void)
+address_t meminfo_kernel_total_size(void)
 {
     return (address_t)&_kernel_end - (address_t)&_start;
 }
 
-uint32_t meminfo_get_memory_size(void)
+address_t meminfo_get_memory_size(void)
 {
     return total_memory;
 }

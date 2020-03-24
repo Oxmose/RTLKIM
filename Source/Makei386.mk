@@ -48,7 +48,7 @@ LINKER_FILE = $(CONFIG_DIR)/linker.ld
 AS = nasm
 LD = ld
 OBJCOPY = objcopy
-QEMU = qemu-system-i386
+QEMU = qemu-system-x86_64
 
 DEBUG_FLAGS = -O0 -g
 EXTRA_FLAGS = -O2
@@ -133,7 +133,7 @@ qemu-test-mode:
 
 debug:
 	@echo "\e[1m\e[94m============ Running on Qemu DEBUG MODE ============\e[22m\e[39m"
-	@$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -S
+	@$(QEMU) $(QEMUOPTS) $(BIN_DIR)/$(KERNEL) -S -serial stdio
 
 ######################### Tests
 test:

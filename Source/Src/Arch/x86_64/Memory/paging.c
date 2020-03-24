@@ -112,6 +112,150 @@ static void paging_recur_init(void)
     #endif 
 }
 
+static uint8_t is_mapped(const void* virt_addr,
+                         const uint32_t mapping_size)
+{
+    uint16_t  pml4_current_entry;
+    uint16_t  pdpt_current_entry;
+    uint16_t  pdt_current_entry;
+    uint16_t  pt_current_entry;
+
+    uint64_t* new_pdpt;
+    uint64_t* new_pdt;
+    uint64_t* new_pt;
+
+    uint64_t* recur_entry_addr;
+    uint64_t recur_entry_val;
+
+    uint64_t to_map;
+    uint8_t is_mapped_ret;
+
+    address_t curr_virt_addr = (address_t)virt_addr & 0xFFFFFFFFFFFFF000;
+
+    to_map = mapping_size;
+    is_mapped_ret = 0;
+    recur_entry_addr = (uint64_t*)PG_TABLE_RECUR_ENTRY_ADDR;
+
+    /* Save the recursion entry value */
+    recur_entry_val = kernel_curr_pml4[PG_TABLE_RECUR_ENTRY];
+
+    while(to_map)
+    {
+        /* Get table entries */
+        pml4_current_entry = ((address_t)curr_virt_addr >> PML4_OFFSET) & 0x1FF;
+        pdpt_current_entry = ((address_t)curr_virt_addr >> PDPT_OFFSET) & 0x1FF;
+        pdt_current_entry  = ((address_t)curr_virt_addr >> PDT_OFFSET) & 0x1FF;
+        pt_current_entry   = ((address_t)curr_virt_addr >> PT_OFFSET) & 0x1FF;
+
+        #if PAGING_KERNEL_DEBUG == 1
+        kernel_serial_debug("Check Mapping 0x%p to 0x%p "
+                            "(PML %d, PDPT %d, PDT %d, PT %d)\n",
+                            curr_virt_addr, curr_virt_addr + to_map,
+                            pml4_current_entry, pdpt_current_entry,
+                            pdt_current_entry, pt_current_entry);
+        #endif 
+
+        /* Check for mapping in PML4 */
+        if((kernel_curr_pml4[pml4_current_entry] & PG_STRUCT_ATTR_PRESENT) != 
+        PG_STRUCT_ATTR_PRESENT)
+        {
+            to_map -= MIN(to_map, ((address_t)1 << PML4_OFFSET));
+            curr_virt_addr += ((address_t)1 << PML4_OFFSET);
+            continue;
+        }
+        else 
+        {
+            new_pdpt = (uint64_t*)(kernel_curr_pml4[pml4_current_entry] & 
+                                0xFFFFFFFFFFFFF000);
+        }
+
+        /* Recursive map the entry */
+        kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = 
+                        (address_t)new_pdpt |
+                        PG_STRUCT_ATTR_4KB_PAGES |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+        INVAL_PAGE(recur_entry_addr);
+
+        /* Check for mapping in PDPT */
+        if((recur_entry_addr[pdpt_current_entry] & PG_STRUCT_ATTR_PRESENT) != 
+        PG_STRUCT_ATTR_PRESENT)
+        {
+            to_map -= MIN(to_map, ((address_t)1 << PDPT_OFFSET));
+            curr_virt_addr += ((address_t)1 << PDPT_OFFSET);
+            continue;
+        }
+        else 
+        {
+            new_pdt = (uint64_t*)(recur_entry_addr[pdpt_current_entry] & 
+                                0xFFFFFFFFFFFFF000);
+        }
+
+        /* Recursive map the entry */
+        kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = 
+                        (address_t)new_pdt |
+                        PG_STRUCT_ATTR_4KB_PAGES |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+        INVAL_PAGE(recur_entry_addr);
+
+        /* Check for mapping in PDT */
+        if((recur_entry_addr[pdt_current_entry] & PG_STRUCT_ATTR_PRESENT) != 
+        PG_STRUCT_ATTR_PRESENT)
+        {
+            to_map -= MIN(to_map, ((address_t)1 << PDT_OFFSET));
+            curr_virt_addr += ((address_t)1 << PDT_OFFSET);
+            continue;
+        }
+        else 
+        {
+            new_pt = (uint64_t*)(recur_entry_addr[pdt_current_entry] & 
+                                0xFFFFFFFFFFFFF000);
+        }
+
+        /* Recursive map the entry */
+        kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = 
+                        (address_t)new_pt |
+                        PG_STRUCT_ATTR_4KB_PAGES |
+                        PG_STRUCT_ATTR_KERNEL_ACCESS | 
+                        PG_STRUCT_ATTR_READ_WRITE |
+                        PG_STRUCT_ATTR_ENABLED_CACHE |
+                        PG_STRUCT_ATTR_WB_CACHE |
+                        PG_STRUCT_ATTR_PRESENT;
+        INVAL_PAGE(recur_entry_addr);
+        
+        /* Check for mapping in PT */
+        if((recur_entry_addr[pt_current_entry] & PG_STRUCT_ATTR_PRESENT) != 
+        PG_STRUCT_ATTR_PRESENT)
+        {
+            to_map -= MIN(to_map, ((address_t)1 << PT_OFFSET));
+            curr_virt_addr += ((address_t)1 << PT_OFFSET);
+            continue;
+        }
+
+        is_mapped_ret = 1;
+        to_map = 0;
+    }
+
+    /* Restore initial recursion value */
+    kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = recur_entry_val;
+
+    INVAL_PAGE(recur_entry_addr);
+
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Check Mapping 0x%p: %d\n",
+                        curr_virt_addr, is_mapped_ret);
+    #endif 
+
+    return is_mapped_ret;
+}
+
 OS_RETURN_E paging_init(void)
 {
     uint64_t  i;
@@ -451,10 +595,12 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
     
     uint64_t recur_entry_val;
 
-    address_t curr_virt_addr = (address_t)virt_addr;
-    address_t curr_phys_addr = (address_t)phys_addr;
+    address_t curr_virt_addr = (address_t)virt_addr & 0xFFFFFFFFFFFFF000;
+    address_t curr_phys_addr = (address_t)phys_addr & 0xFFFFFFFFFFFFF000;
 
     uint32_t to_map;
+
+    uint8_t is_alread_mapped;
 
     OS_RETURN_E err;
 
@@ -462,7 +608,6 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
     {
         return OS_ERR_PAGING_NOT_INIT;
     }
-
 
     recur_entry_addr = (uint64_t*)PG_TABLE_RECUR_ENTRY_ADDR;
 
@@ -477,6 +622,18 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
 
     while(to_map)
     {
+        /* Check if we are remapping an entry */
+        is_alread_mapped = is_mapped((void*)curr_virt_addr, KERNEL_PAGE_SIZE);
+        if(!allow_remap && is_alread_mapped)
+        {
+            curr_phys_addr += KERNEL_PAGE_SIZE;
+            curr_virt_addr += KERNEL_PAGE_SIZE;
+
+            to_map -= KERNEL_PAGE_SIZE;
+            continue;
+        }
+        /* TODO If already mapped, unmap properly */
+
         /* Get table entries */
         pml4_current_entry = ((address_t)curr_virt_addr >> PML4_OFFSET) & 0x1FF;
         pdpt_current_entry = ((address_t)curr_virt_addr >> PDPT_OFFSET) & 0x1FF;
@@ -619,32 +776,6 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
                         PG_STRUCT_ATTR_PRESENT;
         INVAL_PAGE(recur_entry_addr);
         /* Now our page table is recursively mapped, map the address */
-
-        /* Check if we are remapping an entry */
-        if(!allow_remap &&
-        (recur_entry_addr[pt_current_entry] & PG_STRUCT_ATTR_PRESENT) == 
-        PG_STRUCT_ATTR_PRESENT)
-        {
-            /* Restore initial recursion value */
-            kernel_curr_pml4[PG_TABLE_RECUR_ENTRY] = recur_entry_val;
-
-            /* Free frames */
-            kernel_paging_free_frames(new_pdpt, 1);
-            kernel_paging_free_frames(new_pdt, 1);
-            kernel_paging_free_frames(new_pt, 1);
-
-            INVAL_PAGE(recur_entry_addr);
-
-            #if PAGING_KERNEL_DEBUG == 1
-            kernel_serial_debug("Mapping laready exists 0x%p to 0x%p "
-                                "(PML %d, PDPT %d, PDT %d, PT %d)\n",
-                                curr_virt_addr, curr_phys_addr,
-                                pml4_current_entry, pdpt_current_entry,
-                                pdt_current_entry, pt_current_entry);
-            #endif 
-
-            return OS_ERR_MAPPING_ALREADY_EXISTS;
-        }
     
 
         /* Map page */

@@ -33,13 +33,13 @@
  ******************************************************************************/
 
 /** @brief ATA primary port PIO id. */
-#define ATA_PIO_PRIMARY_PORT_ADDRESS   0x1F0
+#define ATA_PIO_PRIMARY_PORT_ADDRESS   0x000001F0
 /** @brief ATA secondary port PIO id. */
-#define ATA_PIO_SECONDARY_PORT_ADDRESS 0x170
+#define ATA_PIO_SECONDARY_PORT_ADDRESS 0x00000170
 /** @brief ATA third port PIO id. */
-#define ATA_PIO_THIRD_PORT_ADDRESS     0x1E8
+#define ATA_PIO_THIRD_PORT_ADDRESS     0x000001E8
 /** @brief ATA fourth port PIO id. */
-#define ATA_PIO_FOURTH_PORT_ADDRESS    0x168
+#define ATA_PIO_FOURTH_PORT_ADDRESS    0x00000168
 
 /** @brief ATA data port offset. */
 #define ATA_PIO_DATA_PORT_OFFSET    0x000
