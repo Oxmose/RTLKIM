@@ -20,6 +20,10 @@ SECTIONS
     {
         Build/Arch/x86_64/Boot/loader_grub.o
     }
+    .boostrap16 ALIGN(4K) : AT(ADDR(.boostrap16))
+    {
+        Build/Arch/x86_64/Boot/ap_boot.o
+    }
 
     . += KERNEL_MEM_OFFSET;
     _start = .;
@@ -84,7 +88,7 @@ SECTIONS
     vbe_mode_info_base = 0x3000 + KERNEL_MEM_OFFSET; /* SIZE = 2048bits, ends at 0x3800 */
 
     /* Init AP relocated code */
-    init_ap_code = 0x4000 + KERNEL_MEM_OFFSET; /* SIZE = 2048bits, ends at 0x4800 */
+    init_ap_code = 0x4000; /* SIZE = 8Kbits, ends at 0x6000 */
 
     /* GDT must also be in real mode accessible memory */
     cpu_gdt      = 0x8000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0xC000 */
@@ -101,4 +105,6 @@ SECTIONS
     multiboot_data_ptr      = 0x1A000 + KERNEL_MEM_OFFSET; /* 64bits */
     multiboot_data_ptr_phys = multiboot_data_ptr - KERNEL_MEM_OFFSET;
     memory_map_size         = 0x1A008 + KERNEL_MEM_OFFSET; /* 32bits */
+
+    
 }

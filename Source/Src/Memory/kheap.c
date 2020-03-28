@@ -41,9 +41,9 @@ static uint32_t init = 0;
 
 /* Heap position in memory */
 /** @brief Start address of the kernel's heap. */
-extern uint8_t kernel_heap_start;
+extern uint8_t _kernel_heap_start;
 /** @brief End address of the kernel's heap. */
-extern uint8_t kernel_heap_end;
+extern uint8_t _kernel_heap_end;
 
 /* Heap data */
 /** @brief Kernel's heap free memory chunks. */
@@ -290,8 +290,8 @@ void setup_kheap(void)
     uint32_t len;
     int32_t  n;
 
-    void* mem = &kernel_heap_start;
-    uint32_t size = &kernel_heap_end - &kernel_heap_start;
+    void* mem = &_kernel_heap_start;
+    uint32_t size = &_kernel_heap_end - &_kernel_heap_start;
     int8_t* mem_start = (int8_t*)(((address_t)mem + ALIGN - 1) & (~(ALIGN - 1)));
     int8_t* mem_end = (int8_t*)(((address_t)mem + size) & (~(ALIGN - 1)));
 

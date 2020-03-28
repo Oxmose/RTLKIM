@@ -9,9 +9,8 @@ SECTIONS
     _kernel_start_phys = . + 0x00100000;
 
     . = KERNEL_MEM_OFFSET;
-    _start = .;
-    . = KERNEL_MEM_OFFSET + 0x00100000;
-
+    _kernel_start = .;
+    . = KERNEL_MEM_OFFSET + _kernel_start_phys;
 
     /* Put the multiboot header */
     .multiboot ALIGN(4K) : AT(ADDR(.multiboot) - KERNEL_MEM_OFFSET)
@@ -22,83 +21,65 @@ SECTIONS
     /* Executable code */
     .text ALIGN(4K) : AT(ADDR(.text) - KERNEL_MEM_OFFSET)
     {
-        *(.text)
+        _kernel_code_start = .;
+        *(.text*)
+        _kernel_code_end = .;
     }
 
     /* Read-only data. */
     .rodata ALIGN(4K) : AT(ADDR(.rodata) - KERNEL_MEM_OFFSET)
     {
-        *(.rodata)
+        _kernel_rodata_start = .;
+        *(.eh_frame)
+        *(.rodata*)
+        _kernel_rodata_end = .;
     }
 
     /* Read-write data */
     .data ALIGN(4K) : AT(ADDR(.data) - KERNEL_MEM_OFFSET)
     {
+        _kernel_data_start = .;
         *(.data)
+        _kernel_data_end = .;
     }
-    _edata = .;
-    /* FROM HERE EVERYTHING IS ZEROED */
 
-    /* Read-write data and stack */
+    /* Read-write bss */
     .bss ALIGN(4K) : AT(ADDR(.bss) - KERNEL_MEM_OFFSET)
     {
-        __bss_start = .;
+        _kernel_bss_start = .;
         *(COMMON)
         *(.bss)
-        __bss_end = .;
+        _kernel_bss_end = .;
     }
 
-    _end = .;
+    /* Kernel configuration structures */
+    .kernel_struct ALIGN(4K) : AT(ADDR(.kernel_struct) - KERNEL_MEM_OFFSET)
+    {
+        _kernel_struct_start = .;
+        _kernel_struct_end = .;
+    }
+    _kernel_static_limit = .;
 
-    kernel_static_limit = 0x00500000 + KERNEL_MEM_OFFSET;
-
-    /* SIZE = 4096bits, ends at kernel_static_limit + 0x1000 */
-    kernel_current_pgdir = kernel_static_limit;
-
-    /* SIZE = 4096bits, ends at kernel_current_pgdir + 0x1000 */
-    kernel_current_pgtable = kernel_current_pgdir + 0x1000;
-
+    /* Kernel heap */
+    . = ALIGN(4K);
     /* Beginning of kernel memory heap */
-    kernel_heap_start = 0x01000000 + KERNEL_MEM_OFFSET;
-
+    _kernel_heap_start = .;
     /* End of kernel memory heap */
-    kernel_heap_end = 0x05000000 + KERNEL_MEM_OFFSET;
-
-    . = kernel_heap_end;
-
+    _kernel_heap_end = _kernel_heap_start + 0x05000000;
+    . = _kernel_heap_end;
     _kernel_end = .;
-
-    /* END OF ZEROING ZONE */
 
     /**********************************************
      * SPECIFIC DATA STRUCTURES BASE ADDRESS
      *********************************************/
 
-    /* !!! WARNING 0x7C00 to 0x8000 Are reserved for BIOS calls !!! */
-
-    /* Booted CPU count, must be accessible in real mode, 32bits */
-    init_cpu_count_phys = 0x1000;
-    init_cpu_count      = init_cpu_count_phys + KERNEL_MEM_OFFSET;
-
     /* VESA Structures, must be placed in lower memory */
-    vbe_info_base      = 0x2000 + KERNEL_MEM_OFFSET; /* SIZE = 4096bits, ends at 0x3000 */
-    vbe_mode_info_base = 0x3000 + KERNEL_MEM_OFFSET; /* SIZE = 2048bits, ends at 0x3800 */
+    vbe_info_base      = 0x2000; /* SIZE = 4096bits, ends at 0x3000 */
+    vbe_mode_info_base = 0x3000; /* SIZE = 2048bits, ends at 0x3800 */
 
     /* Init AP relocated code */
-    init_ap_code = 0x4000 + KERNEL_MEM_OFFSET; /* SIZE = 2048bits, ends at 0x4800 */
+    init_ap_code = 0x4000; /* SIZE = 2048bits, ends at 0x4800 */
 
-    /* GDT must also be in real mode accessible memory */
-    cpu_gdt      = 0x8000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0xC000 */
-    cpu_gdt_size = 0xC000 + KERNEL_MEM_OFFSET; /* 16 bits */
-    cpu_gdt_base = 0xC002 + KERNEL_MEM_OFFSET; /* 32 bits */
-
-    /* CPU IDT */
-    cpu_idt      = 0x0D000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0x11000 */
-    cpu_idt_size = 0x11000 + KERNEL_MEM_OFFSET; /* 16 bit */
-    cpu_idt_base = 0x11002 + KERNEL_MEM_OFFSET; /* 32 bits*/
-
-    /* Multiboot data pointer */
-    memory_map_data    = 0x12000 + KERNEL_MEM_OFFSET; /* SIZE = 16384bits, ends at 0x16000 */
-    multiboot_data_ptr = 0x16000 + KERNEL_MEM_OFFSET; /* 32bits */
-    memory_map_size    = 0x16004 + KERNEL_MEM_OFFSET; /* 32bits */
+    /* Bios calls */
+    bios_call_memory = 0x7000; /* 4096bits, ends at 0x8000 */
 }

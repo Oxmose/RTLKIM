@@ -28,6 +28,18 @@
 /** @brief Kernel's page size in Bytes. */
 #define KERNEL_PAGE_SIZE 4096
 
+/** @brief Kernel page mask. */
+#define PG_ENTRY_MASK 0xFFFFF000
+
+/** @brief Kernel page directory entry offset. */
+#define PG_DIR_OFFSET   22
+
+/** @brief Kernel page table offset. */
+#define PG_TABLE_OFFSET 12
+
+/** @brief Architecture maximal address. */
+#define ARCH_MAX_ADDRESS 0xFFFFFFFF
+
 /** @brief Page directory flag: 4Kb page size. */
 #define PG_DIR_FLAG_PAGE_SIZE_4KB       0x00000000
 /** @brief Page directory flag: 4Mb page size. */

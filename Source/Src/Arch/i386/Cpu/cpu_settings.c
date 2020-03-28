@@ -32,22 +32,17 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-/* Kernel GDT structure */
 
 /** @brief CPU GDT space in memory. */
-extern uint64_t cpu_gdt[GDT_ENTRY_COUNT];
-/** @brief CPU GDT size in memory. */
-extern uint16_t cpu_gdt_size;
-/** @brief CPU GDT base address. */
-extern address_t cpu_gdt_base;
+uint64_t cpu_gdt[GDT_ENTRY_COUNT] __attribute__((aligned(16)));
+/** @brief Kernel GDT structure */
+gdt_ptr_t cpu_gdt_ptr __attribute__((aligned(16)));
 
 /* Kernel IDT structure */
 /** @brief CPU IDT space in memory. */
-extern uint64_t cpu_idt[IDT_ENTRY_COUNT];
-/** @brief CPU IDT size in memory. */
-extern uint16_t cpu_idt_size;
-/** @brief CPU IDT base address. */
-extern address_t cpu_idt_base;
+uint64_t cpu_idt[IDT_ENTRY_COUNT] __attribute__((aligned(16)));
+/** @brief Kernel IDT structure */
+idt_ptr_t cpu_idt_ptr;
 
 /** @brief Kernel main TSS structure */
 static cpu_tss_entry_t cpu_main_tss __attribute__((aligned(4096)));
@@ -786,11 +781,11 @@ void cpu_setup_gdt(void)
     }
 
     /* Set the GDT descriptor */
-    cpu_gdt_size = ((sizeof(uint64_t) * GDT_ENTRY_COUNT) - 1);
-    cpu_gdt_base = (address_t)&cpu_gdt;
+    cpu_gdt_ptr.size = ((sizeof(uint64_t) * GDT_ENTRY_COUNT) - 1);
+    cpu_gdt_ptr.base = (address_t)&cpu_gdt;
 
     /* Load the GDT */
-    __asm__ __volatile__("lgdt %0" :: "m" (cpu_gdt_size), "m" (cpu_gdt_base));
+    __asm__ __volatile__("lgdt %0" :: "m" (cpu_gdt_ptr.size), "m" (cpu_gdt_ptr.base));
 
     /* Load segment selectors with a far jump for CS*/
     __asm__ __volatile__("movw %w0,%%ds\n\t"
@@ -800,7 +795,7 @@ void cpu_setup_gdt(void)
                          "movw %w0,%%ss\n\t" :: "r" (KERNEL_DS_32));
     __asm__ __volatile__("ljmp %0, $flab \n\t flab: \n\t" :: "i" (KERNEL_CS_32));
 
-    kernel_success("GDT Initialized at 0x%08x\n",cpu_gdt_base);
+    kernel_success("GDT Initialized at 0x%p\n", cpu_gdt_ptr.base);
 }
 
 void cpu_setup_idt(void)
@@ -825,13 +820,13 @@ void cpu_setup_idt(void)
     }
 
     /* Set the GDT descriptor */
-    cpu_idt_size = ((sizeof(uint64_t) * IDT_ENTRY_COUNT) - 1);
-    cpu_idt_base = (address_t)&cpu_idt;
+    cpu_idt_ptr.size = ((sizeof(uint64_t) * IDT_ENTRY_COUNT) - 1);
+    cpu_idt_ptr.base = (address_t)&cpu_idt;
 
     /* Load the GDT */
-    __asm__ __volatile__("lidt %0" :: "m" (cpu_idt_size), "m" (cpu_idt_base));
+    __asm__ __volatile__("lidt %0" :: "m" (cpu_idt_ptr.size), "m" (cpu_idt_ptr.base));
 
-    kernel_success("IDT Initialized at 0x%08x\n", cpu_idt_base);
+    kernel_success("IDT Initialized at 0x%08x\n", cpu_idt_ptr.base);
 }
 
 void cpu_setup_tss(void)

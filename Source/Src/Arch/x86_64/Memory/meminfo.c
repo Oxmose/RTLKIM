@@ -40,7 +40,7 @@ extern uint32_t          memory_map_size;
 extern mem_range_t       memory_map_data[];
 
 /** @brief Multiboot memory pointer, fileld by the bootloader. */
-extern multiboot_info_t* multiboot_data_ptr;
+multiboot_info_t* multiboot_data_ptr;
 
 /** @brief Kernel's static start symbol. */
 extern uint8_t _start;

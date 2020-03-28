@@ -7,7 +7,7 @@
  *
  * @date 25/01/2018
  *
- * @version 1.0
+ * @version 2.0
  *
  * @brief Kernel memory detector.
  *
@@ -20,7 +20,7 @@
 #include <Lib/stddef.h>       /* OS_RETURN_E */
 #include <Boot/multiboot.h>   /* MULTIBOOT_MEMORY_AVAILABLE */
 #include <IO/kernel_output.h> /* kernel_info */
-#include <Cpu/panic.h>  /* kernel_panic.h */
+#include <Cpu/panic.h>        /* kernel_panic.h */
 
 /* UTK configuration file */
 #include <config.h>
@@ -32,42 +32,71 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
-/* Memory map data */
 /** @brief Memory map structure's size. */
-extern uint32_t          memory_map_size;
+uint32_t          memory_map_size;
 
 /** @brief Memory map storage as an array of range. */
-extern mem_range_t       memory_map_data[];
+mem_range_t       memory_map_data[100];
 
 /** @brief Multiboot memory pointer, fileld by the bootloader. */
-extern multiboot_info_t* multiboot_data_ptr;
+multiboot_info_t* multiboot_data_ptr;
 
-/** @brief Kernel's static start symbol. */
-extern uint8_t _start;
+/** @brief Kernel memory start (physical). */
+extern uint8_t _kernel_start_phys;
 
-/** @brief Kernel's static end symbol. */
-extern uint8_t _end;
+/** @brief Kernel memory start (virtual). */
+extern uint8_t _kernel_start;
 
-/** @brief Kernel's static memory limit. */
-extern uint8_t kernel_static_limit;
+/** @brief Kernel code start (virtual). */
+extern uint8_t _kernel_code_start;
 
-/** @brief Kernel's limit adderss. */
+/** @brief Kernel code end (virtual). */
+extern uint8_t _kernel_code_end;
+
+/** @brief Kernel read only data start (virtual). */
+extern uint8_t _kernel_rodata_start;
+
+/** @brief Kernel read only data end (virtual). */
+extern uint8_t _kernel_rodata_end;
+
+/** @brief Kernel data start (virtual). */
+extern uint8_t _kernel_data_start;
+
+/** @brief Kernel data end (virtual). */
+extern uint8_t _kernel_data_end;
+
+/** @brief Kernel bss start (virtual). */
+extern uint8_t _kernel_bss_start;
+
+/** @brief Kernel bss end (virtual). */
+extern uint8_t _kernel_bss_end;
+
+/** @brief Kernel structures start (virtual). */
+extern uint8_t _kernel_struct_start;
+
+/** @brief Kernel structures end (virtual). */
+extern uint8_t _kernel_struct_end;
+
+/** @brief Kernel static memory end (virtual). */
+extern uint8_t _kernel_static_limit;
+
+/** @brief Kernel heap start (virtual). */
+extern uint8_t _kernel_heap_start;
+
+/** @brief Kernel heap end (virtual). */
+extern uint8_t _kernel_heap_end;
+
+/** @brief Kernel memory end (virtual). */
 extern uint8_t _kernel_end;
 
-/* Heap position in memory */
-/** @brief Kernel's heap start address. */
-extern uint8_t kernel_heap_start;
-/** @brief Kernel's heap limit adderss. */
-extern uint8_t kernel_heap_end;
-
 /** @brief Total ammount of memory in the system. */
-static uint32_t total_memory;
+static uint64_t total_memory;
 
 /** @brief Static memory used by the kernel. */
-static uint32_t static_used_memory;
+static uint64_t static_used_memory;
 
 /** @brief Kernel's heap used memory data. */
-extern uint32_t kheap_mem_used;
+extern uint64_t kheap_mem_used;
 
 /*******************************************************************************
  * FUNCTIONS
@@ -78,23 +107,17 @@ OS_RETURN_E memory_map_init(void)
     multiboot_memory_map_t* mmap;
     multiboot_memory_map_t* mmap_end;
     uint32_t i;
-    uint32_t free_size;
-    uint32_t static_free;
-    uint32_t size;
 
     /* Update memory poisition */
     multiboot_data_ptr = (multiboot_info_t*)
                             ((uint8_t*)multiboot_data_ptr + KERNEL_MEM_OFFSET);
 
     /* Copy multiboot data in upper memory */
-    mmap = (multiboot_memory_map_t*)(multiboot_data_ptr->mmap_addr +
+    mmap = (multiboot_memory_map_t*)(address_t)(multiboot_data_ptr->mmap_addr +
                                      KERNEL_MEM_OFFSET);
     mmap_end = (multiboot_memory_map_t*)((address_t)mmap +
                                          multiboot_data_ptr->mmap_length);
     i = 0;
-    total_memory = 0;
-    /* Mark all static used memory as used */
-    static_used_memory = (address_t)&_end - (address_t)&_start;
     while(mmap < mmap_end)
     {
         /* Everything over the 4G limit is not registered */
@@ -102,17 +125,12 @@ OS_RETURN_E memory_map_init(void)
         {
             break;
         }
+
         total_memory += mmap->len;
 
         memory_map_data[i].base  = (address_t)mmap->addr;
-        memory_map_data[i].limit = (address_t)mmap->addr + mmap->len;
+        memory_map_data[i].limit = (address_t)mmap->addr + (address_t)mmap->len;
         memory_map_data[i].type  = mmap->type;
-
-        /* Adds all unsusable memory after the kernel's static end as used */
-        if(mmap->type != 1 && (address_t)mmap->addr > (address_t)&_end)
-        {
-            static_used_memory += mmap->len;
-        }
 
         ++i;
         mmap = (multiboot_memory_map_t*)
@@ -120,68 +138,76 @@ OS_RETURN_E memory_map_init(void)
     }
     memory_map_size = i;
 
+
     kernel_info("Memory map: \n");
     for(i = 0; i < memory_map_size; ++i)
     {
-        kernel_info("    Base 0x%08x, Limit 0x%08x, Type %02d, Length %uKB\n",
+        kernel_info("Area 0x%p -> 0x%p | %02d | %17lluKB\n",
                     memory_map_data[i].base,
                     memory_map_data[i].limit,
                     memory_map_data[i].type,
-                    (memory_map_data[i].limit - memory_map_data[i].base) / 1024
+                    (address_t)(memory_map_data[i].limit - 
+                                memory_map_data[i].base) >> 10
                     );
     }
-    free_size   = (address_t)&kernel_heap_end - (address_t)&kernel_heap_start;
-    static_free = (address_t)&kernel_heap_start - (address_t)&_end;
-    size        = (address_t)&_end - (address_t)&_start;
 
     kernel_info("Kernel memory ranges:\n");
-    kernel_info("    [STATIC:  0x%08x - 0x%08x] \n\t"
-                "   %uKb (%uKb used, %uKb free)\n",
-                &_start, &_end, 
-                ((address_t)&kernel_heap_start - (address_t)&_start) / 1024, 
-                size / 1024,
-                static_free / 1024);
-    kernel_info("    [DYNAMIC: 0x%08x - 0x%08x] \n\t"
-                "   %uKb (%uKb used, %uKb free)\n",
-                &kernel_heap_start, &kernel_heap_end, 
-                free_size / 1024, 0, free_size / 1024);
+    kernel_info("Code    0x%p -> 0x%p | %17uKB\n",
+                    &_kernel_code_start,
+                    &_kernel_code_end,
+                    ((address_t)&_kernel_code_end - 
+                    (address_t)&_kernel_code_start) >> 10);
+    kernel_info("RO-Data 0x%p -> 0x%p | %17uKB\n",
+                    &_kernel_rodata_start,
+                    &_kernel_rodata_end,
+                    ((address_t)&_kernel_rodata_end - 
+                    (address_t)&_kernel_rodata_start) >> 10);
+    kernel_info("Data    0x%p -> 0x%p | %17uKB\n",
+                    &_kernel_data_start,
+                    &_kernel_data_end,
+                    ((address_t)&_kernel_data_end - 
+                    (address_t)&_kernel_data_start) >> 10);
+    kernel_info("BSS     0x%p -> 0x%p | %17uKB\n",
+                    &_kernel_bss_start,
+                    &_kernel_bss_end,
+                    ((address_t)&_kernel_bss_end - 
+                    (address_t)&_kernel_bss_start) >> 10);
+    kernel_info("Config  0x%p -> 0x%p | %17uKB\n",
+                    &_kernel_struct_start,
+                    &_kernel_struct_end,
+                    ((address_t)&_kernel_struct_end - 
+                    (address_t)&_kernel_struct_start) >> 10);
+    kernel_info("Heap    0x%p -> 0x%p | %17uKB\n",
+                    &_kernel_heap_start,
+                    &_kernel_heap_end,
+                    ((address_t)&_kernel_heap_end - 
+                    (address_t)&_kernel_heap_start) >> 10);
 
-    kernel_info("Total memory: %uKb | %uMb\n", total_memory / 1024,
-                total_memory / 1024 / 1024);
-    kernel_info("Used memory: %uKb | %uMb\n", static_used_memory / 1024,
-                static_used_memory / 1024 / 1024);
-
-    if((address_t)&_end > (address_t)&kernel_static_limit)
-    {
-        kernel_error("Error, kernel size if too big (%u), consider modifying "
-                     "the configuration file.\n", &_end );
-        kernel_panic(OS_ERR_UNAUTHORIZED_ACTION);
-    }
 
     return OS_NO_ERR;
 }
 
-address_t meminfo_kernel_heap_usage(void)
+uint64_t meminfo_kernel_heap_usage(void)
 {
     return kheap_mem_used;
 }
 
-address_t meminfo_kernel_heap_size(void)
+uint64_t meminfo_kernel_heap_size(void)
 {
-    return (address_t)&kernel_heap_end - (address_t)&kernel_heap_start;
+    return (address_t)&_kernel_heap_end - (address_t)&_kernel_heap_start;
 }
 
-address_t meminfo_kernel_memory_usage(void)
+uint64_t meminfo_kernel_memory_usage(void)
 {
     return static_used_memory + meminfo_kernel_heap_usage();
 }
 
-address_t meminfo_kernel_total_size(void)
+uint64_t meminfo_kernel_total_size(void)
 {
-    return (address_t)&_kernel_end - (address_t)&_start;
+    return (address_t)&_kernel_end - KERNEL_MEM_OFFSET;
 }
 
-address_t meminfo_get_memory_size(void)
+uint64_t meminfo_get_memory_size(void)
 {
     return total_memory;
 }

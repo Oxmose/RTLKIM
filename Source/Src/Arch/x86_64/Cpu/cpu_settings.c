@@ -65,7 +65,7 @@ cpu_tss_entry_t cpu_ap_tss[MAX_CPU_COUNT - 1] __attribute__((aligned(4096)));
 uint8_t ap_cpu_stacks[MAX_CPU_COUNT - 1][KERNEL_STACK_SIZE] __attribute__((aligned(4096)));
 
 /** @brief AP stacks size */
-uint32_t ap_cpu_stack_size = KERNEL_STACK_SIZE;
+uint64_t ap_cpu_stack_size = KERNEL_STACK_SIZE;
 
 /*******************************************************************************
  * FUNCTIONS

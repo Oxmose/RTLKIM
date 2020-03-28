@@ -37,7 +37,7 @@ global kernel_stack
 ;-----------------------------
 KERNEL_STACK_SIZE equ 16384     ; DO NOT FORGET TO MODIFY IN CONFIG.H
 
-section .text:
+section .text
 x86_64_kernel_entry_:
 
     ; Init stack pointer
@@ -45,9 +45,9 @@ x86_64_kernel_entry_:
     mov rsp, rbp
 
     ; Update booted CPU count
-    mov ebx, 1
+    mov rbx, 1
     mov rax, init_cpu_count
-    mov [rax], ebx
+    mov [rax], rbx
 
     ; Blank all uninitialized memory
     mov  rdi, (__bss_start)

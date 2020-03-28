@@ -16,7 +16,7 @@
 
 global pause_spinlock
 
-section .text:
+section .text
 
 ;-----------------
 ; Pause Spinlock

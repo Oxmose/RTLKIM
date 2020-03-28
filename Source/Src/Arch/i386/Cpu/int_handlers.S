@@ -15,7 +15,7 @@
 
 extern kernel_interrupt_handler
 
-section .text:
+section .text
     %macro noerr_code_interrupt_handler 1 ; Interrupt that do not come with an
                                           ; err code.
 

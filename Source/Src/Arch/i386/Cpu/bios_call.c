@@ -31,6 +31,9 @@
  * GLOBAL VARIABLES
  ******************************************************************************/
 
+/** @brief BIOS call memory region */
+extern uint8_t bios_call_memory;
+
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
@@ -55,7 +58,8 @@ void bios_call(uint32_t intnum, bios_int_regs_t* regs)
     #endif
 
 	/* Map the RM core */
-	err = kernel_direct_mmap((void*)0x0000, (void*)0x0000, 0x1000 * 1024,
+	err = kernel_direct_mmap((void*)&bios_call_memory, (void*)&bios_call_memory,
+	                         0x1000,
 	                         PG_DIR_FLAG_PAGE_SIZE_4KB |
                              PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                              PG_DIR_FLAG_PAGE_READ_WRITE,

@@ -343,10 +343,14 @@ OS_RETURN_E paging_alloc_init(void)
 {
     uint32_t    i;
     address_t   start;
+    address_t   next_limit;
+    address_t   next_start;
     OS_RETURN_E err;
 
     kernel_free_frames = NULL;
     kernel_free_pages  = NULL;
+
+    next_start = 0;
 
     /* Init the free memory linked list */
     for(i = 0; i < memory_map_size; ++i)
@@ -373,34 +377,62 @@ OS_RETURN_E paging_alloc_init(void)
         }
     }
 
-    /* Init the free pages */
-    err = add_free((address_t)&_kernel_start_phys,
-                   (address_t)KERNEL_MEM_OFFSET,
-                   &kernel_free_pages);
-    #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Added free page area 0x%p -> 0x%p (%uMB)\n",
-                         &_kernel_start_phys, KERNEL_MEM_OFFSET,
-                         KERNEL_MEM_OFFSET >> 20);
-    #endif
-    if(err != OS_NO_ERR)
+    /* Map pages, peripherals are not available, they are to be mapped 1:1 */
+    start = (address_t)&_kernel_start_phys;
+    while(start)
     {
-        return err;
-    }
+        /* Search for next limit */
+        for(i = 0; i < memory_map_size; ++i)
+        {
+            /* Check if free */
+            if(memory_map_data[i].type != 1 &&
+               memory_map_data[i].base > start)
+            {
+                next_limit = memory_map_data[i].base;
+                break;
+            }
+        }
 
-    /* Add kernel succeding memory */
-    err = add_free((address_t)&_kernel_end,
-                   (address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1,
-                   &kernel_free_pages);
-    #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Added free page area 0x%p -> 0x%p (%uMB)\n",
-                         &_kernel_end,
-                         (address_t)0xFFFFFFFFFFFFFFFF,
-                         (address_t)((address_t)0xFFFFFFFFFFFFFFFF - (address_t)&_kernel_end + 1) >> 20);
-    #endif
+        if(i == memory_map_size)
+        {
+            next_limit = ARCH_MAX_ADDRESS;
+        }
 
-    if(err != OS_NO_ERR)
-    {
-        return err;
+        /* Search for next start */
+        for(i = 0; i < memory_map_size; ++i)
+        {
+            /* Check if free */
+            if(memory_map_data[i].type == 1 &&
+               memory_map_data[i].base > next_limit)
+            {
+                next_start = memory_map_data[i].base;
+                break;
+            }
+        }
+
+        err = add_free(start, next_limit - start, &kernel_free_pages);        
+        if(err != OS_NO_ERR)
+        {
+            return err;
+        }
+        #if PAGING_KERNEL_DEBUG == 1
+        kernel_serial_debug("Added free page area 0x%p -> 0x%p (%uMB)\n",
+                            start, next_limit, (next_limit - start) >> 20);
+        #endif
+
+        #if PAGING_KERNEL_DEBUG == 1
+        kernel_serial_debug("Next free page range: 0x%p\n",
+                            start);
+        #endif
+
+        if(next_limit == ARCH_MAX_ADDRESS)
+        {
+            start = 0;
+        }
+        else 
+        {
+            start = next_start;
+        }
     }
 
     return OS_NO_ERR;
@@ -418,6 +450,10 @@ void* kernel_paging_alloc_frames(const uint64_t frame_count, OS_RETURN_E* err)
     #endif
 
     address = get_block(&kernel_free_frames, frame_count, err);
+
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Allocated %llu frames, at 0x%p \n", frame_count, address);
+    #endif
 
     #if MAX_CPU_COUNT > 1
     EXIT_CRITICAL(word, &lock);
@@ -443,6 +479,10 @@ OS_RETURN_E kernel_paging_free_frames(void* frame_addr,
     err = add_free((address_t)frame_addr, frame_count * KERNEL_PAGE_SIZE,
                     &kernel_free_frames);
 
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Deallocated %llu frames, at 0x%p \n", frame_count, frame_addr);
+    #endif
+
     #if MAX_CPU_COUNT > 1
     EXIT_CRITICAL(word, &lock);
     #else
@@ -464,6 +504,11 @@ void* kernel_paging_alloc_pages(const uint64_t page_count, OS_RETURN_E* err)
     #endif
 
     address = get_block(&kernel_free_pages, page_count, err);
+
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Allocated %llu pages, at 0x%p \n", page_count, address);
+    #endif
+
 
     #if MAX_CPU_COUNT > 1
     EXIT_CRITICAL(word, &lock);
@@ -492,6 +537,11 @@ OS_RETURN_E kernel_paging_free_pages(void* page_addr, const uint64_t page_count)
 
     err = add_free((address_t)page_addr, page_count * KERNEL_PAGE_SIZE,
                    &kernel_free_pages);
+
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Deallocated %llu pages, at 0x%p \n", page_count, page_addr);
+    #endif
+
 
     #if MAX_CPU_COUNT > 1
     EXIT_CRITICAL(word, &lock);

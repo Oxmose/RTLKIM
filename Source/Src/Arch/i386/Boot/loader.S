@@ -19,13 +19,15 @@ extern cpu_setup_idt
 extern cpu_setup_tss
 extern setup_kheap
 extern graphic_clear_screen
-extern init_cpu_count_phys
+extern init_cpu_count
 
 extern serial_init
 
 extern kernel_kickstart
 
-extern __bss_start
+extern _kernel_bss_start
+extern _kernel_bss_end
+
 extern kernel_heap_end
 
 extern multiboot_data_ptr
@@ -69,7 +71,7 @@ section .multiboot
   mov eax, low_loader
   jmp eax
 
-section .text:
+section .text
 
   align 4
   loader:
@@ -77,17 +79,13 @@ section .text:
     push  dword 0
     popfd
 
-    ; Update booted CPU count
-    mov eax, 1
-    mov [init_cpu_count_phys], eax
-
     ; Blank all uninitialized memory
-    mov  edi, (__bss_start - KERNEL_MEM_OFFSET)
+    mov  edi, (_kernel_bss_start - KERNEL_MEM_OFFSET)
     xor  eax, eax
     blank_mem:
         mov  [edi], eax
         add  edi, 4
-        cmp  edi, (kernel_heap_end - KERNEL_MEM_OFFSET)
+        cmp  edi, (_kernel_bss_end - KERNEL_MEM_OFFSET)
         jl  blank_mem
 
     ; Map the first 4M of the kernel 1:1
@@ -153,6 +151,10 @@ section .text:
 
     ; Setup the kernel heap
     call setup_kheap
+
+    ; Update booted CPU count
+    mov eax, 1
+    mov [init_cpu_count], eax
 
     ; Kickstart the kernel, we should never return from here.
     call kernel_kickstart

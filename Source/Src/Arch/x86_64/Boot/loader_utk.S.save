@@ -71,7 +71,7 @@ section .multiboot
   mov eax, low_loader
   jmp eax
 
-section .text:
+section .text
 
   
 

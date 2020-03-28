@@ -38,7 +38,7 @@ static uint32_t main_core_id;
 static const uint32_t* cpu_ids;
 static const local_apic_t** cpu_lapics;
 
-extern volatile uint32_t init_cpu_count;
+extern volatile uint64_t init_cpu_count;
 static volatile uint32_t init_seq_end;
 
 /* Kernel IDT structure */
@@ -52,6 +52,7 @@ extern uint32_t cpu_idt_base;
 
 /* Init entry point for AP */
 extern void ap_boot_loader_init(void);
+
 
 OS_RETURN_E smp_init(void)
 {
@@ -80,7 +81,18 @@ OS_RETURN_E smp_init(void)
     cpu_lapics = acpi_get_cpu_lapics();
 
     /* Map needed memory */
-    err = kernel_direct_mmap((void*)0x4000, (void*)0x4000, 0x1,
+    err = kernel_direct_mmap((void*)0x4000, (void*)0x4000, 0x3000,
+                             PG_DIR_FLAG_PAGE_SIZE_4KB |
+                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                             PG_DIR_FLAG_PAGE_READ_WRITE,
+                             1);
+
+    if(OS_NO_ERR != err)
+    {
+        return err;
+    }
+
+    err = kernel_direct_mmap(ap_boot_loader_init, ap_boot_loader_init, 0x1000,
                              PG_DIR_FLAG_PAGE_SIZE_4KB |
                              PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                              PG_DIR_FLAG_PAGE_READ_WRITE,
@@ -171,8 +183,6 @@ void smp_ap_core_init(void)
                      err, cpu_id);
         kernel_panic(err);
     }
-
-
 
     ++init_cpu_count;
 

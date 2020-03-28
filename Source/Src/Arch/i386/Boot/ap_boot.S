@@ -15,9 +15,8 @@
 ; EXTERN FUNCTIONS
 ;-----------------------------------------
 extern init_cpu_count
-extern init_cpu_count_phys
-extern cpu_gdt_size
-extern cpu_idt_size
+extern cpu_gdt_ptr
+extern cpu_idt_ptr
 extern ap_cpu_stacks
 extern ap_cpu_stack_size
 extern smp_ap_core_init
@@ -43,6 +42,10 @@ use32
 section .text
     align 4
     ap_boot_loader_init:
+        push esi 
+        push edi 
+        push ecx 
+
         ; RELOCATE THE CODE TO LOW MEMORY SPACE
 
         mov  esi, ap_boot_loader           ; Source address
@@ -51,6 +54,10 @@ section .text
 
         cld                                ; Clear direction flag
         rep  movsb                         ; Copy the code to low memory space
+        
+        pop ecx 
+        pop esi 
+        pop edi        
         ret
 
   ap_boot_loader:
@@ -95,7 +102,6 @@ section .text
       ; Get stack index
       mov ebx, [init_cpu_count]
       mov ecx, init_cpu_count
-      dec ebx
 
       ; Now set the cpu stack
       mov eax, [ap_cpu_stack_size]
@@ -110,10 +116,10 @@ section .text
       mov ebp, esp
 
       ; Init CPU IDT
-      lidt [cpu_idt_size]
+      lidt [cpu_idt_ptr]
 
       ; Init CPU GDT
-      lgdt [cpu_gdt_size]
+      lgdt [cpu_gdt_ptr]
 
       mov eax, smp_ap_core_init
       call eax
