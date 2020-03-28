@@ -93,6 +93,7 @@ OS_RETURN_E paging_register_fault_handler(void (*handler)(const address_t),
     {
         /* Search for the range */
         cursor = handler_list;
+        cursor_pre = cursor;
         while(cursor && cursor->start <= range_start)
         {
             cursor_pre = cursor;

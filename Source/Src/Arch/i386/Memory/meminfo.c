@@ -142,7 +142,7 @@ OS_RETURN_E memory_map_init(void)
     kernel_info("Memory map: \n");
     for(i = 0; i < memory_map_size; ++i)
     {
-        kernel_info("Area 0x%p -> 0x%p | %02d | %17lluKB\n",
+        kernel_info("Area 0x%p -> 0x%p | %02d | %17uKB\n",
                     memory_map_data[i].base,
                     memory_map_data[i].limit,
                     memory_map_data[i].type,

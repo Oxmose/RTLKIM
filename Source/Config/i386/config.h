@@ -78,7 +78,7 @@
 #define ENABLE_LAPIC_TIMER 1
 
 /** @brief Enables support for graphic drivers. */
-#define DISPLAY_TYPE       DISPLAY_VGA
+#define DISPLAY_TYPE       DISPLAY_VESA
 
 /** @brief Enables ATA drivers support. */
 #define ENABLE_ATA         1
@@ -181,7 +181,7 @@
 #define KHEAP_KERNEL_DEBUG 0
 
 /** @brief Enables kernel acpi debuging feature. */
-#define ACPI_KERNEL_DEBUG 1
+#define ACPI_KERNEL_DEBUG 0
 
 /** @brief Enables kernel io apic debuging feature. */
 #define IOAPIC_KERNEL_DEBUG 0

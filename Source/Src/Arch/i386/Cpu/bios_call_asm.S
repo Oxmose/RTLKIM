@@ -33,7 +33,7 @@ endstruc
 ;-----------------------------------------------------------
 ; CODE REALOCATION
 ;-----------------------------------------------------------
-%define CODE_LOCATION      0x7C00
+%define CODE_LOCATION      0x7100 ; Lease space for stack
 %define OFFSET_ADDR(addr)  (((addr) - low_mem) + CODE_LOCATION)
 
 ;-----------------------------------------------------------
@@ -258,6 +258,6 @@ section .text
 
     gdt16_ptr:                                 ; GDT pointer for 16bit access
         dw gdt16_ptr - gdt16 - 1               ; GDT limit
-        dd gdt16                               ; GDT base address
+        dd OFFSET_ADDR(gdt16)                               ; GDT base address
 
     bios_call_end:

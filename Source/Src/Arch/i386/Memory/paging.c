@@ -134,7 +134,6 @@ static void* map_pgtable(void* pgtable_addr)
     return ((void*)&kernel_dyn_pgtable);
 }
 
-
 static void map_kernel_section(const void* start_addr, uint32_t size,
                                const uint8_t read_only)
 {

@@ -20,6 +20,7 @@
 #include <Lib/stdint.h>    /* Generic int types */
 #include <Sync/critical.h> /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h> /* kernel_mmap */
+#include <Cpu/panic.h>     /* Kernel panic */
 /* UTK configuration file */
 #include <config.h>
 
@@ -59,9 +60,9 @@ void bios_call(uint32_t intnum, bios_int_regs_t* regs)
 
 	/* Map the RM core */
 	err = kernel_direct_mmap((void*)&bios_call_memory, 0x1000, 0, 1);
-	if(err != OS_NO_ERR)
+	if(err != OS_NO_ERR && err != OS_ERR_MAPPING_ALREADY_EXISTS)
 	{
-		return;
+		kernel_panic(err);
 	}
 
 	_bios_call(intnum, regs);

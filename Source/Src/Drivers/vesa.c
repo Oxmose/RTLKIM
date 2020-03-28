@@ -431,6 +431,8 @@ OS_RETURN_E vesa_init(void)
     uint16_t*       modes;
     vesa_mode_t*    new_mode;
 
+    OS_RETURN_E err;
+
     #if VESA_KERNEL_DEBUG == 1
     kernel_serial_debug("VESA Initialization start\n");
     #endif
@@ -447,6 +449,18 @@ OS_RETURN_E vesa_init(void)
     screen_scheme.foreground = 0xFFFFFFFF;
     screen_scheme.background = 0xFF000000;
     screen_scheme.vga_color  = 0;
+
+    /* Mapp memory */
+    err = kernel_direct_mmap(&vbe_info_base, 0x1000, 0, 0);
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
+    err = kernel_direct_mmap(&vbe_mode_info_base, 0x1000, 0, 0); 
+    if(err != OS_NO_ERR)
+    {
+        return err;
+    }
 
     /* Init structure */
     strncpy(vbe_info_base.signature, "VBE2", 4);

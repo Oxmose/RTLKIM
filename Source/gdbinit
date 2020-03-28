@@ -1,4 +1,6 @@
 tar rem:1234
 layout split
 b kernel_kickstart
-b paging_test
+b *0xe011a0e3
+b *0x7172
+b *0x71d6
