@@ -24,6 +24,7 @@
 #include <Cpu/cpu.h>        /* outb */
 #include <Drivers/serial.h> /* serial_write */
 #include <Sync/critical.h>  /* ENTER_CRITICAL, EXIT_CRITICAL */
+#include <Memory/paging.h>  /* Memory management */
 
 /* UTK configuration file */
 #include <config.h>
@@ -81,6 +82,17 @@ static  spinlock_t lock = SPINLOCK_INIT_VALUE;
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
+
+static void vga_pagefault_handler(address_t fault_addr)
+{
+    (void) fault_addr;
+    /* Ask for the kernel to map the buffer */
+    kernel_direct_mmap(
+        (void*)VGA_TEXT_FRAMEBUFFER, 
+        sizeof(uint16_t) * 
+        VGA_TEXT_SCREEN_COL_SIZE * VGA_TEXT_SCREEN_LINE_SIZE, 
+        0, 0);
+}
 
 /**
  * @brief Prints a character to the selected coordinates.
@@ -262,12 +274,26 @@ uint16_t* vga_get_framebuffer(const uint32_t line, const uint32_t column)
     if(line > VGA_TEXT_SCREEN_LINE_SIZE - 1 ||
        column > VGA_TEXT_SCREEN_COL_SIZE -1)
     {
-        return (uint16_t*)(VGA_TEXT_FRAMEBUFFER + KERNEL_MEM_OFFSET);
+        return (uint16_t*)(VGA_TEXT_FRAMEBUFFER);
     }
 
     /* Returns the mem adress of the coordinates */
-    return (uint16_t*)(address_t)(VGA_TEXT_FRAMEBUFFER + KERNEL_MEM_OFFSET + 2 *
+    return (uint16_t*)(address_t)(VGA_TEXT_FRAMEBUFFER + 2 *
            (column + line * VGA_TEXT_SCREEN_COL_SIZE));
+}
+
+OS_RETURN_E vga_init(void)
+{
+    OS_RETURN_E err; 
+
+    /* Init page fault handler */
+    err = paging_register_fault_handler(
+        vga_pagefault_handler, 
+        VGA_TEXT_FRAMEBUFFER, 
+        VGA_TEXT_FRAMEBUFFER + 2 * 
+        VGA_TEXT_SCREEN_COL_SIZE * VGA_TEXT_SCREEN_LINE_SIZE);
+
+    return err;
 }
 
 void vga_clear_screen(void)

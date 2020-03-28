@@ -22,9 +22,12 @@
 #include <Lib/stdint.h>          /* Generic int types */
 #include <Memory/meminfo.h>      /* mem_range_t */
 #include <Memory/paging_alloc.h> /* paging_alloc_init */
+#include <Memory/paging.h>       /* page fault handler */
 #include <Boot/multiboot.h>      /* MULTIBOOT_MEMORY_AVAILABLE */
 #include <Core/scheduler.h>      /* sched_get_thread_pgdir */
 #include <Memory/arch_paging.h>  /* Paging information */
+#include <Interrupt/exceptions.h> /* Exception management */
+#include <Cpu/panic.h>            /* Kernel panic */
 
 /* UTK configuration file */
 #include <config.h>
@@ -183,6 +186,179 @@ static void map_kernel_section(const void* start_addr, uint32_t size,
     #endif
 }
 
+ /**
+ * @brief Handle a page fault exception.
+ *
+ * @details Handle a page fault exception raised by the cpu. The corresponding
+ * registered handler will be called. If no handler is available, a panic is
+ * raised.
+ *
+ * @param cpu_state The cpu registers structure.
+ * @param int_id The exception number.
+ * @param stack_state The stack state before the exception that contain cs, eip,
+ * error code and the eflags register value.
+ */
+static void paging_fault_general_handler(cpu_state_t* cpu_state, address_t int_id,
+                                         stack_state_t* stack_state)
+{
+    const mem_handler_t* cursor;
+    address_t      fault_address;
+
+
+    (void)cpu_state;
+
+    __asm__ __volatile__ (
+        "mov %%cr2, %%eax\n\t"
+        "mov %%eax, %0\n\t"
+    : "=m" (fault_address)
+    : /* no input */
+    : "%eax"
+    );
+
+    /* If the exception line is not right */
+    if(int_id != PAGE_FAULT_LINE)
+    {
+        kernel_error("Divide by zero handler in wrong exception line.\n");
+        panic(cpu_state, int_id, stack_state);
+    }
+
+    /* Search for handler */
+    cursor = paging_get_handler_list();
+    while(cursor)
+    {
+        if(cursor->start <= fault_address && cursor->end > fault_address)
+        {
+            break;
+        }
+        cursor = cursor->next;
+    }
+
+    /* Check handler availability */
+    if(cursor == NULL)
+    {
+        panic(cpu_state, int_id, stack_state);
+    }
+
+    /* Call handler */
+    cursor->handler(fault_address);    
+}
+
+static OS_RETURN_E kernel_mmap_internal(const void* virt_addr,
+                                const void* phys_addr,
+                                const uint32_t mapping_size,
+                                const uint8_t read_only,
+                                const uint8_t exec)
+{
+    uint32_t    pgdir_entry;
+    uint32_t    pgtable_entry;
+    uint32_t*   page_table;
+    uint32_t*   page_entry;
+    uint32_t    end_map;
+    uint32_t    i;
+    uint32_t*   new_frame = NULL;
+    OS_RETURN_E err;
+
+    (void)exec;
+
+    if(init == 0)
+    {
+        return OS_ERR_PAGING_NOT_INIT;
+    }
+
+    /* Get end mapping addr */
+    end_map = (address_t)virt_addr + mapping_size;
+
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Mapping (before align) 0x%08x, to 0x%08x (%d bytes)\n",
+                        virt_addr, phys_addr, mapping_size);
+    #endif
+
+    /* Align addr */
+    virt_addr = (uint8_t*)((address_t)virt_addr & 0xFFFFF000);
+    phys_addr = (uint8_t*)((address_t)phys_addr & 0xFFFFF000);
+
+    #if PAGING_KERNEL_DEBUG == 1
+    kernel_serial_debug("Mapping (after align) 0x%08x, to 0x%08x (%d bytes)\n",
+                        virt_addr, phys_addr, mapping_size);
+    #endif
+
+    /* Map all pages needed */
+    while((address_t)virt_addr < end_map)
+    {
+        /* Get PGDIR entry */
+        pgdir_entry = (((address_t)virt_addr) >> 22);
+        /* Get PGTABLE entry */
+        pgtable_entry = (((address_t)virt_addr) >> 12) & 0x03FF;
+
+        /* If page table not present create it */
+        if((kernel_pgdir[pgdir_entry] & PG_DIR_FLAG_PAGE_PRESENT) !=
+           PG_DIR_FLAG_PAGE_PRESENT)
+        {
+            new_frame = kernel_paging_alloc_frames(1, &err);
+
+            if(new_frame == NULL)
+            {
+                break;
+            }
+
+            page_table = map_pgtable(new_frame);
+
+            for(i = 0; i < 1024; ++i)
+            {
+                page_table[i] = PAGE_FLAG_SUPER_ACCESS |
+                                PAGE_FLAG_READ_ONLY |
+                                PAGE_FLAG_NOT_PRESENT;
+            }
+
+            kernel_pgdir[pgdir_entry] = (address_t)new_frame |
+                                         PG_DIR_FLAG_PAGE_SIZE_4KB |
+                                         PG_DIR_FLAG_PAGE_SUPER_ACCESS |
+                                         PG_DIR_FLAG_PAGE_READ_WRITE |
+                                         PG_DIR_FLAG_PAGE_PRESENT;
+        }
+
+        /* Map the address */
+        page_table = (uint32_t*)
+                     ((address_t)kernel_pgdir[pgdir_entry] & 0xFFFFF000);
+        page_table = map_pgtable(page_table);
+        page_entry = &page_table[pgtable_entry];
+
+        /* Check if already mapped */
+        if((*page_entry & PAGE_FLAG_PRESENT) == PAGE_FLAG_PRESENT)
+        {
+            #if PAGING_KERNEL_DEBUG == 1
+            kernel_serial_debug("Mapping (after align) 0x%08x, to 0x%08x "
+                                "(%d bytes) already mapped)\n",
+                                virt_addr, virt_addr, mapping_size);
+            #endif
+            
+            /* Unmap */
+            if(new_frame != NULL)
+            {
+                kernel_paging_free_frames(new_frame, 1);
+                kernel_pgdir[pgdir_entry] = 0;
+            }
+            return OS_ERR_MAPPING_ALREADY_EXISTS;
+        }
+
+        new_frame = NULL;
+
+        *page_entry = (address_t)phys_addr |
+                      PAGE_FLAG_SUPER_ACCESS |
+                      (read_only ? PAGE_FLAG_READ_ONLY : PAGE_FLAG_READ_WRITE) |
+                      PAGE_FLAG_PRESENT;
+
+
+        virt_addr = (uint8_t*)virt_addr + KERNEL_PAGE_SIZE;
+        phys_addr = (uint8_t*)phys_addr + KERNEL_PAGE_SIZE;
+    }
+
+    invalidate_tlb();
+
+    return OS_NO_ERR;
+}
+
+
 OS_RETURN_E paging_init(void)
 {
     uint32_t  i;
@@ -293,6 +469,10 @@ OS_RETURN_E paging_init(void)
                       PG_DIR_FLAG_PAGE_READ_WRITE |
                       PG_DIR_FLAG_PAGE_PRESENT;
 
+    /* Add page fault exception */
+    err = kernel_exception_register_handler(PAGE_FAULT_LINE,
+                                            paging_fault_general_handler);
+
     return err;
 }
 
@@ -347,130 +527,19 @@ OS_RETURN_E paging_disable(void)
     return OS_NO_ERR;
 }
 
-OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
+OS_RETURN_E kernel_direct_mmap(const void* virt_addr,
                                const uint32_t mapping_size,
-                               const uint16_t flags,
-                               const uint16_t allow_remap)
+                               const uint8_t read_only,
+                               const uint8_t exec)
 {
-    uint32_t    pgdir_entry;
-    uint32_t    pgtable_entry;
-    uint32_t*   page_table;
-    uint32_t*   page_entry;
-    uint32_t    end_map;
-    uint32_t    i;
-    uint32_t*   new_frame;
-    OS_RETURN_E err;
-
-    #if PAGING_KERNEL_DEBUG == 1
-    uint32_t virt_save;
-    #endif
-
-    if(init == 0)
-    {
-        return OS_ERR_PAGING_NOT_INIT;
-    }
-
-    /* Get end mapping addr */
-    end_map = (address_t)virt_addr + mapping_size;
-
-    #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mapping (before align) 0x%08x, to 0x%08x (%d bytes)\n",
-                        virt_addr, phys_addr, mapping_size);
-    #endif
-
-    /* Align addr */
-    virt_addr = (uint8_t*)((address_t)virt_addr & 0xFFFFF000);
-    phys_addr = (uint8_t*)((address_t)phys_addr & 0xFFFFF000);
-
-    #if PAGING_KERNEL_DEBUG == 1
-    kernel_serial_debug("Mapping (after align) 0x%08x, to 0x%08x (%d bytes)\n",
-                        virt_addr, phys_addr, mapping_size);
-    virt_save = (address_t)virt_addr;
-    #endif
-
-    /* Map all pages needed */
-    while((address_t)virt_addr < end_map)
-    {
-        /* Get PGDIR entry */
-        pgdir_entry = (((address_t)virt_addr) >> 22);
-        /* Get PGTABLE entry */
-        pgtable_entry = (((address_t)virt_addr) >> 12) & 0x03FF;
-
-        /* If page table not present create it */
-        if((kernel_pgdir[pgdir_entry] & PG_DIR_FLAG_PAGE_PRESENT) !=
-           PG_DIR_FLAG_PAGE_PRESENT)
-        {
-            new_frame = kernel_paging_alloc_frames(1, &err);
-
-            if(new_frame == NULL)
-            {
-                break;
-            }
-
-            page_table = map_pgtable(new_frame);
-
-            for(i = 0; i < 1024; ++i)
-            {
-                page_table[i] = PAGE_FLAG_SUPER_ACCESS |
-                                PAGE_FLAG_READ_ONLY |
-                                PAGE_FLAG_NOT_PRESENT;
-            }
-
-            kernel_pgdir[pgdir_entry] = (address_t)new_frame |
-                                         PG_DIR_FLAG_PAGE_SIZE_4KB |
-                                         PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                                         PG_DIR_FLAG_PAGE_READ_WRITE |
-                                         PG_DIR_FLAG_PAGE_PRESENT;
-        }
-
-        /* Map the address */
-        page_table = (uint32_t*)
-                     ((address_t)kernel_pgdir[pgdir_entry] & 0xFFFFF000);
-        page_table = map_pgtable(page_table);
-        page_entry = &page_table[pgtable_entry];
-
-        /* Check if already mapped */
-        if((*page_entry & PAGE_FLAG_PRESENT) == PAGE_FLAG_PRESENT &&
-           allow_remap == 0)
-        {
-            #if PAGING_KERNEL_DEBUG == 1
-            kernel_serial_debug("Mapping (after align) 0x%08x, to 0x%08x "
-                                "(%d bytes) Already mapped)\n",
-                                virt_addr, phys_addr, mapping_size);
-            virt_save = (address_t)virt_addr;
-            #endif
-
-            return OS_ERR_MAPPING_ALREADY_EXISTS;
-        }
-
-        *page_entry = (address_t)phys_addr |
-                      flags |
-                      PAGE_FLAG_PRESENT;
-        #if PAGING_KERNEL_DEBUG == 1
-        //kernel_serial_debug("Mapped 0x%08x -> 0x%08x\n", virt_addr, phys_addr);
-        #endif
-        virt_addr = (uint8_t*)virt_addr + KERNEL_PAGE_SIZE;
-        phys_addr = (uint8_t*)phys_addr + KERNEL_PAGE_SIZE;
-
-
-    }
-
-    #if PAGING_KERNEL_DEBUG == 1
-    /* Get PGDIR entry */
-    pgdir_entry = (((address_t)virt_save) >> 22);
-    /* Get PGTABLE entry */
-    pgtable_entry = (((address_t)virt_save) >> 12) & 0x03FF;
-
-
-    #endif
-
-    invalidate_tlb();
-
-    return OS_NO_ERR;
+    return kernel_mmap_internal(virt_addr, virt_addr, 
+                                mapping_size, read_only, exec);
 }
 
-OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
-                        const uint16_t flags, const uint16_t allow_remap)
+OS_RETURN_E kernel_mmap(const void* virt_addr, 
+                        const uint32_t mapping_size,
+                        const uint8_t read_only,
+                        const uint8_t exec)
 {
     uint32_t    end_map;
     uint32_t    virt_save;
@@ -515,7 +584,7 @@ OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
             break;
         }
 
-        err = kernel_direct_mmap(virt_addr, phys_addr, 1, flags, allow_remap);
+        err = kernel_mmap_internal(virt_addr, phys_addr, 0x1000, read_only, exec);
         if(err != OS_NO_ERR)
         {
             break;

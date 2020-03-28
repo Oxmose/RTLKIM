@@ -92,7 +92,7 @@ OS_RETURN_E smp_init(void)
         return err;
     }
 
-    err = kernel_direct_mmap(ap_boot_loader_init, ap_boot_loader_init, 0x1000,
+    err = kernel_direct_mmap(ap_boot_loader_init, 0x1000,
                              PG_DIR_FLAG_PAGE_SIZE_4KB |
                              PG_DIR_FLAG_PAGE_SUPER_ACCESS |
                              PG_DIR_FLAG_PAGE_READ_WRITE,

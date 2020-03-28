@@ -41,6 +41,9 @@
 /** @brief Device not found exception. */
 #define DEVICE_NOT_FOUND_LINE 7
 
+/** @brief Page fault exception */
+#define PAGE_FAULT_LINE 14
+
 /*******************************************************************************
  * STRUCTURES
  ******************************************************************************/

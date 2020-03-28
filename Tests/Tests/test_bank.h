@@ -52,6 +52,7 @@
 #define MUTEX_MC_TEST 0
 #define SPINLOCK_TEST 0
 #define SSE_TEST 0
+#define PAGING_TEST 1
 
 /* Put tests declarations here */
 void loader_ok_test(void);
@@ -90,5 +91,6 @@ void paging_alloc_test(void);
 void mutex_mc_test(void);
 void spinlock_test(void);
 void sse_test(void);
+void paging_test(void);
 
 #endif /* __TEST_BANK_H_ */

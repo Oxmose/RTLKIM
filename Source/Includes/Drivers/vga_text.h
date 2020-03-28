@@ -78,6 +78,18 @@ extern kernel_graphic_driver_t vga_text_driver;
 uint16_t* vga_get_framebuffer(const uint32_t line, const uint32_t column);
 
 /**
+ * @brief Initializes the VGA driver.
+ * 
+ * @details Initializes the VGA driver by enabling VGA related exceptions
+ * and memory management.
+ * 
+ * @returns @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - An error is returned otherwise, refer to the error list.
+ */
+OS_RETURN_E vga_init(void);
+
+/**
  * @brief Clears the screen by printing space character on black background.
  */
 void vga_clear_screen(void);

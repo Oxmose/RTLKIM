@@ -32,12 +32,14 @@
 #include <Cpu/panic.h>      /* kernel_panic() */
 #include <Memory/meminfo.h>       /* memory_map_init() */
 #include <Memory/paging.h>        /* paging_init() */
+#include <Memory/paging_alloc.h>        /* paging_init() */
 #include <Drivers/vga_text.h>     /* vga_text_driver */
 #include <Drivers/vesa.h>         /* init_vesa(), vesa_text_vga_to_vesa() */
 #include <Drivers/keyboard.h>     /* keyboard_init() */
 #include <Drivers/ata_pio.h>      /* ata_pio_init() */
 #include <Lib/string.h>           /* strlen() */
 #include <Core/scheduler.h>       /* sched_init() */
+
 
 /* UTK configuration file */
 #include <config.h>
@@ -107,6 +109,42 @@ void kernel_kickstart(void)
     #endif
     err = cpu_detect(1);
     INIT_MSG("CPU Detected\n", "Error while detecting CPU: %d. HALTING\n",err, 1);
+
+    /* Init kernel's interrupt manager */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing the kernel interrupt manager\n");
+    #endif
+    err = kernel_interrupt_init();
+    INIT_MSG("Kernel Interrupt Manager Initialized\n",
+             "Error while initializing Kernel Interrupt Manager: %d. HALTING\n",
+            err, 1);
+    #if TEST_MODE_ENABLED
+    interrupt_ok_test();
+    panic_test();
+    #endif
+    
+    /* Init kernel's exception manager */
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing the kernel exception manager\n");
+    #endif
+    err = kernel_exception_init();
+    INIT_MSG("Kernel Exception Manager Initialized\n",
+             "Error while initializing Kernel Exception Manager: %d. HALTING\n",
+            err, 1);
+    #if TEST_MODE_ENABLED
+    exception_ok_test();
+    #endif
+
+    #if KERNEL_DEBUG == 1
+    kernel_serial_debug("Initializing VGA driver\n");
+    #endif
+    err = vga_init();
+    INIT_MSG("VGA Driver Initialized\n",
+             "Error while initializing VGA Driver: %d. HALTING\n",
+            err, 1);
+    #if TEST_MODE_ENABLED
+    exception_ok_test();
+    #endif
     
     /* Detect memory */
     #if KERNEL_DEBUG == 1
@@ -123,6 +161,7 @@ void kernel_kickstart(void)
     INIT_MSG("Paging enabled\n", "Error while enabling paging: %d. HALTING\n",err, 1);
 
     #if TEST_MODE_ENABLED == 1
+    paging_test();
     paging_alloc_test();
     #endif
 
@@ -178,6 +217,13 @@ void kernel_kickstart(void)
     io_apic_driver_test();
     #endif
 
+    #if ENABLE_IO_APIC !=  0
+    err = kernel_interrupt_set_driver(&io_apic_driver);
+    err |= pic_disable();
+    #else
+    err = kernel_interrupt_set_driver(&pic_driver);
+    #endif
+
     /* Init LAPIC driver */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing LAPIC driver\n");
@@ -189,36 +235,6 @@ void kernel_kickstart(void)
     #if TEST_MODE_ENABLED
     lapic_driver_test();
     #endif
-    #endif
-
-    /* Init kernel's interrupt manager */
-    #if KERNEL_DEBUG == 1
-    kernel_serial_debug("Initializing the kernel interrupt manager\n");
-    #endif
-    #if ENABLE_IO_APIC !=  0
-    err = kernel_interrupt_init(&io_apic_driver);
-    err |= pic_disable();
-    #else
-    err = kernel_interrupt_init(&pic_driver);
-    #endif
-    INIT_MSG("Kernel Interrupt Manager Initialized\n",
-             "Error while initializing Kernel Interrupt Manager: %d. HALTING\n",
-            err, 1);
-    #if TEST_MODE_ENABLED
-    interrupt_ok_test();
-    panic_test();
-    #endif
-
-    /* Init kernel's exception manager */
-    #if KERNEL_DEBUG == 1
-    kernel_serial_debug("Initializing the kernel exception manager\n");
-    #endif
-    err = kernel_exception_init();
-    INIT_MSG("Kernel Exception Manager Initialized\n",
-             "Error while initializing Kernel Exception Manager: %d. HALTING\n",
-            err, 1);
-    #if TEST_MODE_ENABLED
-    exception_ok_test();
     #endif
 
     /* Enable SSE support */

@@ -139,9 +139,6 @@ struct vesa_mode
     /** @brief The mode's id. */
     uint16_t mode_id;
 
-    /** @brief Start address of the mode's framebuffer. */
-    void* framebuffer;
-
     /** @brief Start of the physical address of the mode's framebuffer. */
     void* framebuffer_phy;
 

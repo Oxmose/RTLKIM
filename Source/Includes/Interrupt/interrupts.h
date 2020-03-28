@@ -143,14 +143,10 @@ typedef struct interrupt_driver interrupt_driver_t;
  * @details Blanks the handlers memory, initializes panic and spurious interrupt 
  * lines handlers.
  * 
- * @param[in] driver The driver structure to be used by the interrupt manager.
- * 
  * @return The success state or the error code. 
  * - OS_NO_ERR is returned if no error is encountered. 
- * - OS_ERR_NULL_POINTER is returned if one of the driver's function pointers 
- * is NULL or the driver's pointer is NULL.
  */
-OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver);
+OS_RETURN_E kernel_interrupt_init(void);
 
 /** 
  * @brief Set the driver to be used by the kernel to manage interrupts.

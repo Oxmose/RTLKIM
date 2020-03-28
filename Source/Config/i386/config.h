@@ -181,7 +181,7 @@
 #define KHEAP_KERNEL_DEBUG 0
 
 /** @brief Enables kernel acpi debuging feature. */
-#define ACPI_KERNEL_DEBUG 0
+#define ACPI_KERNEL_DEBUG 1
 
 /** @brief Enables kernel io apic debuging feature. */
 #define IOAPIC_KERNEL_DEBUG 0

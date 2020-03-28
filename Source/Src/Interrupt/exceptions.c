@@ -78,7 +78,6 @@ static void div_by_zero_handler(cpu_state_t* cpu_state, address_t int_id,
     
 }
 
-
 OS_RETURN_E kernel_exception_init(void)
 {
     OS_RETURN_E err;

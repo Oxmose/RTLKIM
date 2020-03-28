@@ -30,7 +30,6 @@
 #include <Drivers/pic.h>              /* PIC_MAX_IRQ_LINE */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h>        /* kernel_mmap */
-#include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
 
 /* UTK configuration file */
 #include <config.h>
@@ -118,21 +117,12 @@ OS_RETURN_E io_apic_init(void)
     io_apic_phy_addr = acpi_get_io_apic_address(0);
 
     /* Get a free page */
-    io_apic_base_addr = kernel_paging_alloc_pages(1, &err);
-    if(io_apic_base_addr == NULL)
-    {
-        return err;
-    }
+    io_apic_base_addr = io_apic_phy_addr;
 
     /* Map the IO-APIC */
-    err = kernel_direct_mmap(io_apic_base_addr, io_apic_phy_addr, 1,
-                             PG_DIR_FLAG_PAGE_SIZE_4KB |
-                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                             PG_DIR_FLAG_PAGE_READ_WRITE,
-                             1);
+    err = kernel_direct_mmap(io_apic_phy_addr, 0x1000, 0, 0);
     if(err != OS_NO_ERR)
     {
-        kernel_paging_free_pages((void*)io_apic_base_addr, 1);
         return err;
     }
 
@@ -156,7 +146,6 @@ OS_RETURN_E io_apic_init(void)
         err = io_apic_set_irq_mask(i, 0);
         if(err != OS_NO_ERR)
         {
-            kernel_paging_free_pages((void*)io_apic_base_addr, 1);
             return err;
         }
     }

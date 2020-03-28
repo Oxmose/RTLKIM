@@ -82,11 +82,7 @@ OS_RETURN_E smp_init(void)
     cpu_lapics = acpi_get_cpu_lapics();
 
     /* Map needed memory */
-    err = kernel_direct_mmap((void*)&init_ap_code, (void*)&init_ap_code, 0x800,
-                             PG_DIR_FLAG_PAGE_SIZE_4KB |
-                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                             PG_DIR_FLAG_PAGE_READ_WRITE,
-                             1);
+    err = kernel_direct_mmap((void*)&init_ap_code, 0x800, 0, 1);
 
     if(OS_NO_ERR != err)
     {

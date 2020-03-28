@@ -35,7 +35,18 @@
  * STRUCTURES
  ******************************************************************************/
 
-/* None */
+struct mem_handler
+{
+    address_t start;
+
+    address_t end;
+
+    void (*handler)(address_t fault_address);
+
+    struct mem_handler* next;
+};
+
+typedef struct mem_handler mem_handler_t;
 
 /*******************************************************************************
  * FUNCTIONS
@@ -93,22 +104,19 @@ OS_RETURN_E paging_disable(void);
  * to page boundaries.
  *
  * @param[in] virt_addr The virtual address to map.
- * @param[in] phys_addr  The physical address to be mapped.
  * @param[in] mapping_size The size of the region to map.
- * @param[in] flags The flags to be set to the pages created.
- * @param[in] allow_remap If set to 1, if the page is already mapped, this
- * mapping will  be replaced. If set to 0, if the page is already mapped, an
- * error is returned.
+ * @param[in] read_only Sets the read only flag.
+ * @param[in] exec Sets the executable flag.
  *
  * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_PAGING_NOT_INIT is returned if paging has not been initialized.
  * - OS_ERR_MAPPING_ALREADY_EXISTS is returned if the page is already mapped.
  */
-OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
+OS_RETURN_E kernel_direct_mmap(const void* virt_addr,
                                const uint32_t mapping_size,
-                               const uint16_t flags,
-                               const uint16_t allow_remap);
+                               const uint8_t read_only,
+                               const uint8_t exec);
 
 /**
  * @brief Maps a kernel virtual memory region to a free physical region.
@@ -120,18 +128,19 @@ OS_RETURN_E kernel_direct_mmap(const void* virt_addr, const void* phys_addr,
  *
  * @param[in] virt_addr The virtual address to map.
  * @param[in] mapping_size The size of the region to map.
- * @param[in] flags The flags to be set to the pages created.
- * @param[in] allow_remap If set to 1, if the page is already mapped, this
- * mapping will  be replaced. If set to 0, if the page is already mapped, an
- * error is returned.
+ * @param[in] read_only Sets the read only flag.
+ * @param[in] exec Sets the executable flag.
  *
  * @return The success state or the error code.
  * - OS_NO_ERR is returned if no error is encountered.
  * - OS_ERR_PAGING_NOT_INIT is returned if paging has not been initialized.
  * - OS_ERR_MAPPING_ALREADY_EXISTS is returned if the page is already mapped.
  */
-OS_RETURN_E kernel_mmap(const void* virt_addr, const uint32_t mapping_size,
-                        const uint16_t flags, const uint16_t allow_remap);
+OS_RETURN_E kernel_mmap(const void* virt_addr, 
+                        const uint32_t mapping_size,
+                        const uint8_t read_only,
+                        const uint8_t exec);
+
 /**
  * @brief Un-maps a kernel virtual memory region from a corresponding physical
  * region.
@@ -164,5 +173,37 @@ OS_RETURN_E kernel_munmap(const void* virt_addr, const uint32_t mapping_size);
  * given virtual address. NULL is returned if the address is not mapped.
  */
 void* paging_get_phys_address(const void* virt_addr);
+
+/**
+ * @brief Registers a page fault handler for the required address range.
+ * 
+ * @details Registers a page fault handler for the required address range.
+ * The handler will be called when a page fault occurs in this range.
+ * 
+ * @param[in] handler The handler to call on page fault.
+ * @param[in] range_start The range base address to consider.
+ * @param[in] range_end The range end address to consider.
+ * 
+ * @return The success state or the error code.
+ * - OS_NO_ERR is returned if no error is encountered.
+ * - OS_ERR_HANDLER_ALREADY_EXISTS is returned if an handler already exists
+ * in the specified range.
+ * - OS_ERR_NULL_POINTER is returned if the handler is NULL.
+ * - OS_ERR_UNAUTHORIZED_ACTION if the start address is greater or equal to
+ * the end address.
+ * - OS_ERR_MALLOC if an error occurs while allocating memory.
+ */
+OS_RETURN_E paging_register_fault_handler(void (*handler)(const address_t),
+                                          const address_t range_start,
+                                          const address_t range_end);
+
+/**
+ * @brief Returns the page fault handlers list.
+ * 
+ * @details Returns the page fault handlers list.
+ * 
+ * @return The page fault handlers list is returned.
+ */
+const mem_handler_t* paging_get_handler_list(void);
 
 #endif /* __PAGING_H_ */

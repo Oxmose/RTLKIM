@@ -734,18 +734,6 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
         ++page_count;
     }
 
-    /* Get a new pages */
-    cursor->framebuffer = kernel_paging_alloc_pages(page_count, &err);
-    if(cursor->framebuffer == 0 || err != OS_NO_ERR)
-    {
-        #if MAX_CPU_COUNT > 1
-        EXIT_CRITICAL(word, &lock);
-        #else
-        EXIT_CRITICAL(word);
-        #endif
-        return err;
-    }
-
 #if DISPLAY_TYPE == DISPLAY_VESA_BUF
     /* Dealocate old virtual buffer */
     if(virt_buffer != NULL)
@@ -758,23 +746,18 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     virt_buffer = kmalloc(buffer_size + 16);
     if(virt_buffer == NULL)
     {
-        err = kernel_munmap((void*)current_mode->framebuffer, buffer_size);
         return OS_ERR_MALLOC;
     }
     virt_buffer_align = (uint8_t*)(((uint32_t)virt_buffer & 0xFFFFFFF0) + 16);
 #else 
-    virt_buffer = (uint8_t*)cursor->framebuffer;
-    virt_buffer_align = (uint8_t*)cursor->framebuffer;
+    virt_buffer = (uint8_t*)cursor->framebuffer_phy;
+    virt_buffer_align = (uint8_t*)cursor->framebuffer_phy;
 #endif 
 
     /* Mmap the new buffer */
-    err = kernel_direct_mmap((void*)cursor->framebuffer,
-                             (void*)cursor->framebuffer_phy,
+    err = kernel_direct_mmap((void*)cursor->framebuffer_phy,
                              cursor->width * cursor->height * (cursor->bpp / 4),
-                             PG_DIR_FLAG_PAGE_SIZE_4KB |
-                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                             PG_DIR_FLAG_PAGE_READ_WRITE,
-                             1);
+                             0, 0);
     if(err != OS_NO_ERR)
     {
         #if MAX_CPU_COUNT > 1
@@ -788,8 +771,6 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
 #endif
         return err;
     }
-
-    cursor->framebuffer += ((address_t)cursor->framebuffer_phy & 0xFFF);
 
     /* Set the last collumn array */
     last_columns_size = sizeof(uint32_t) * cursor->height / font_height;
@@ -836,23 +817,6 @@ OS_RETURN_E vesa_set_vesa_mode(const vesa_mode_info_t mode)
     }
     /* Tell generic driver we loaded a VESA mode, ID mapped */
     graphic_set_selected_driver(&vesa_driver);
-
-    /* Unmap the old buffer if it exists */
-    if(current_mode != NULL)
-    {
-        buffer_size = current_mode->width *
-                  current_mode->height *
-                  (current_mode->bpp / 4);
-        page_count  = buffer_size / KERNEL_PAGE_SIZE;
-        if(buffer_size % KERNEL_PAGE_SIZE != 0)
-        {
-            ++page_count;
-        }
-
-        err = kernel_munmap((void*)current_mode->framebuffer, buffer_size);
-        err |= kernel_paging_free_pages((void*)current_mode->framebuffer,
-                                        page_count);
-    }
 
     current_mode = cursor;
 
@@ -1465,7 +1429,7 @@ void vesa_flush_buffer(void)
     uint32_t* hw_buffer;
 
     buffer = (uint32_t*)virt_buffer_align;
-    hw_buffer = (uint32_t*)current_mode->framebuffer;
+    hw_buffer = (uint32_t*)current_mode->framebuffer_phy;
 
     fast_memcpy(hw_buffer, buffer,
            current_mode->width *

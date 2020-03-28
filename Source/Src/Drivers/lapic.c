@@ -33,7 +33,6 @@
 #include <Time/time_management.h> /* kernel_timer_t */
 #include <Sync/critical.h>        /* ENTER_CRITICAL, EXIT_CRITICAL */
 #include <Memory/paging.h>        /* kernel_mmap */
-#include <Memory/paging_alloc.h>  /* kernel_paging_alloc_page */
 
 /* UTK configuration file */
 #include <config.h>
@@ -154,8 +153,6 @@ OS_RETURN_E lapic_init(void)
     uint32_t    i;
     #endif
 
-    const void* lapic_phys_addr;
-
     #if LAPIC_KERNEL_DEBUG == 1
     kernel_serial_debug("LAPIC Initialization\n");
     #endif
@@ -176,30 +173,14 @@ OS_RETURN_E lapic_init(void)
     #endif
 
     /* Get Local APIC base address */
-    lapic_phys_addr = acpi_get_lapic_addr();
-
-    /* Get a free page */
-    lapic_base_addr = kernel_paging_alloc_pages(1, &err);
-    if(lapic_base_addr == NULL)
-    {
-        return err;
-    }
+    lapic_base_addr = acpi_get_lapic_addr();
 
     /* Map the LAPIC */
-    err = kernel_direct_mmap(lapic_base_addr, lapic_phys_addr, 1,
-                             PG_DIR_FLAG_PAGE_SIZE_4KB |
-                             PG_DIR_FLAG_PAGE_SUPER_ACCESS |
-                             PG_DIR_FLAG_PAGE_READ_WRITE,
-                             1);
-    if(err != OS_NO_ERR)
+    err = kernel_direct_mmap(lapic_base_addr, 0x1000, 0, 0);
+    if(err != OS_NO_ERR && err != OS_ERR_MAPPING_ALREADY_EXISTS)
     {
-        kernel_paging_free_pages((void*)lapic_base_addr, 1);
         return err;
     }
-
-    /* Add offset */
-    lapic_base_addr = (void*)((address_t)lapic_base_addr +
-                             ((address_t)lapic_phys_addr & 0xFFF));
 
     /* Enable all interrupts */
     lapic_write(LAPIC_TPR, 0);

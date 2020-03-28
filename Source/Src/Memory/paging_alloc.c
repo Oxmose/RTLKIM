@@ -639,6 +639,8 @@ OS_RETURN_E paging_free_pages(void* page_addr, const uint64_t page_count)
     return err;
 }
 
+
+
 /* Test Mode */
 #if TEST_MODE_ENABLED == 1
 const mem_area_t* paging_get_free_frames(void)

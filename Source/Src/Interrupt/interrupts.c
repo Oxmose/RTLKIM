@@ -56,6 +56,32 @@ static spinlock_t lock  = SPINLOCK_INIT_VALUE;
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
+
+
+static OS_RETURN_E init_driver_set_irq_mask(const uint32_t irq_number, 
+                                        const uint32_t enabled)
+{
+    (void)irq_number;
+    (void)enabled;
+
+    return OS_NO_ERR;
+}
+static OS_RETURN_E init_driver_set_irq_eoi(const uint32_t irq_number)
+{
+    (void)irq_number;
+    return OS_NO_ERR;
+}
+static INTERRUPT_TYPE_E init_driver_handle_spurious(const uint32_t int_number)
+{   
+    (void) int_number;
+    return INTERRUPT_TYPE_REGULAR;
+}
+static int32_t init_driver_get_irq_int_line(const uint32_t irq_number)
+{
+    (void)irq_number;
+    return 0;
+}
+
 /**
  * @brief Kernel's spurious interrupt handler.
  *
@@ -146,17 +172,8 @@ void kernel_interrupt_handler(cpu_state_t cpu_state,
     handler(&cpu_state, int_id, &stack_state);
 }
 
-OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)
+OS_RETURN_E kernel_interrupt_init(void)
 {
-    if(driver == NULL ||
-       driver->driver_set_irq_eoi == NULL ||
-       driver->driver_set_irq_mask == NULL ||
-       driver->driver_handle_spurious == NULL ||
-       driver->driver_get_irq_int_line == NULL)
-    {
-        return OS_ERR_NULL_POINTER;
-    }
-
     /* Blank custom interrupt handlers */
     memset(kernel_interrupt_handlers, 0,
            sizeof(custom_handler_t) * INT_ENTRY_COUNT);
@@ -169,8 +186,11 @@ OS_RETURN_E kernel_interrupt_init(const interrupt_driver_t* driver)
     kernel_interrupt_disable();
     spurious_interrupt = 0;
 
-    /* Set interrupt driver */
-    interrupt_driver = *driver;
+    /* Init driver */ 
+    interrupt_driver.driver_get_irq_int_line = init_driver_get_irq_int_line;
+    interrupt_driver.driver_handle_spurious  = init_driver_handle_spurious;
+    interrupt_driver.driver_set_irq_eoi      = init_driver_set_irq_eoi;
+    interrupt_driver.driver_set_irq_mask     = init_driver_set_irq_mask;
 
      #if INTERRUPT_KERNEL_DEBUG == 1
     kernel_serial_debug("Initialized interrupt manager.\n");

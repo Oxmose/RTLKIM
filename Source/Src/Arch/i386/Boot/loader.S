@@ -107,10 +107,6 @@ section .text
     jmp ecx
 
   high_loader:
-    ; Unmap the first 4M
-    mov dword [pgdir_boot], 0
-    invlpg [0]
-
     ; Save Multiboot info to Memory
     mov edi, multiboot_data_ptr
     mov [edi], ebx
