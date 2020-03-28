@@ -52,7 +52,7 @@
 #define MUTEX_MC_TEST 0
 #define SPINLOCK_TEST 0
 #define SSE_TEST 0
-#define PAGING_TEST 1
+#define PAGING_TEST 0
 
 /* Put tests declarations here */
 void loader_ok_test(void);

@@ -116,11 +116,14 @@ void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
     cpu_count      = acpi_get_detected_cpu_count();
     nmi_panic_code = PANIC_NMI_CODE;
 
-    for(i = 0; i < (uint32_t)cpu_count; ++i)
+    if(cpu_count <= MAX_CPU_COUNT)
     {
-        if(cpu_ids[i] != current_cpu_id)
+        for(i = 0; i < (uint32_t)cpu_count; ++i)
         {
-            lapic_send_ipi(cpu_lapics[i]->apic_id, PANIC_INT_LINE);
+            if(cpu_ids[i] != current_cpu_id)
+            {
+                lapic_send_ipi(cpu_lapics[i]->apic_id, PANIC_INT_LINE);
+            }
         }
     }
 

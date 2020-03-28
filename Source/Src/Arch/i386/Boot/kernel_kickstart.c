@@ -120,9 +120,8 @@ void kernel_kickstart(void)
             err, 1);
     #if TEST_MODE_ENABLED
     interrupt_ok_test();
-    panic_test();
     #endif
-    
+
     /* Init kernel's exception manager */
     #if KERNEL_DEBUG == 1
     kernel_serial_debug("Initializing the kernel exception manager\n");
@@ -235,6 +234,10 @@ void kernel_kickstart(void)
     #if TEST_MODE_ENABLED
     lapic_driver_test();
     #endif
+    #endif
+
+    #if TEST_MODE_ENABLED
+    panic_test();
     #endif
 
     /* Enable SSE support */
