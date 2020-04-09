@@ -38,7 +38,6 @@
 #define TIME_TEST 0
 #define PANIC_TEST 0
 #define BIOS_CALL_TEST 0
-#define VESA_TEXT_TEST 0
 #define ATA_PIO_TEST 0
 #define CPU_SMP_TEST 0
 #define SSE_TEST 0
@@ -46,7 +45,7 @@
 #define DIV_BY_ZERO_TEST 0
 #define KERNEL_QUEUE_TEST 0
 #define SCHEDULER_LOAD_TEST 0
-#define SCHEDULER_LOAD_MC_TEST 0
+#define SCHEDULER_LOAD_MC_TEST 1
 #define SCHEDULER_PREEMT_TEST 0
 #define SCHEDULER_SLEEP_TEST 0
 #define SCHEDULER_SLEEP_MC_TEST 0
@@ -82,7 +81,6 @@ void lapic_timer_test(void);
 void time_test(void);
 void panic_test(void);
 void bios_call_test(void);
-void vesa_text_test(void);
 void ata_pio_test(void);
 void cpu_smp_test(void);
 void sse_test(void);

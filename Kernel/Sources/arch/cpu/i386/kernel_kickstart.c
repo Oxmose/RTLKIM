@@ -165,8 +165,7 @@ void kernel_kickstart(void)
     kernel_queue_test();
 #endif
 
-#if ((DISPLAY_TYPE == DISPLAY_VESA || DISPLAY_TYPE == DISPLAY_VESA_BUF) || \
-     (TEST_MODE_ENABLED == 1 && VESA_TEXT_TEST == 1))
+#if (DISPLAY_TYPE == DISPLAY_VESA || DISPLAY_TYPE == DISPLAY_VESA_BUF)
     err = vesa_init();
     INIT_MSG("VESA driver initialized\n",
              "Could not initialize VESA driver [%u]\n",
@@ -176,10 +175,6 @@ void kernel_kickstart(void)
     INIT_MSG("",
              "Could not switch to VESA driver [%u]\n",
              err, 1);
-
-#if TEST_MODE_ENABLED
-    vesa_text_test();
-#endif
 #endif
 
     err = acpi_init();
