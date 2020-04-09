@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd Tests
+cd Kernel/Tests
 chmod +x ./unit_tests_i386.sh
 ./unit_tests_i386.sh
 val=$?

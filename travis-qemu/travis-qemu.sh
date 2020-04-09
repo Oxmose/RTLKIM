@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-VERSION=${QEMU_VERSION:=3.1.0}
+VERSION=${QEMU_VERSION:=4.2.0}
 ARCHES=${QEMU_ARCHES:=i386}
 TARGETS=${QEMU_TARGETS:=$(echo $ARCHES | sed 's#$# #;s#\([^ ]*\) #\1-softmmu \1-linux-user #g')}
 
@@ -23,15 +23,7 @@ cd "qemu-$VERSION"
 
 ./configure \
   --prefix="$HOME/qemu" \
-  --target-list="$TARGETS" \
-  --disable-docs \
-  --disable-sdl \
-  --disable-gtk \
-  --disable-gnutls \
-  --disable-gcrypt \
-  --disable-nettle \
-  --disable-curses \
-  --static
+  --target-list="$TARGETS" 
 
 make -j4
 make install

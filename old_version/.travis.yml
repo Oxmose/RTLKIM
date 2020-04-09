@@ -1,0 +1,37 @@
+language: c
+sudo: required
+dist: trusty
+
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.9
+        packages:
+            - g++-7
+            - nasm
+
+cache:
+    directories:
+        - $HOME/qemu
+
+env:
+    - TRAVIS_ARCH=386 QEMU_ARCHES=i386
+
+matrix:
+  include:
+    - compiler: gcc
+      env: COMPILER=g++-7
+
+before_install:
+    - export ARCH=$TRAVIS_ARCH
+    - if [ "$TRAVIS_OS_NAME" = "linux"  ]; then sudo apt-get -qq update;    fi
+
+before_script:
+    - chmod +x travis-qemu/travis-qemu.sh
+    - bash -e travis-qemu/travis-qemu.sh
+    - export PATH=$PATH:$HOME/qemu/bin
+    - qemu-system-i386 --version
+    - if [ "$COMPILER" = "g++-7"        ]; then export CXX="g++-7" CC="gcc-7";              fi
+
+script: ./.build-travis.sh
