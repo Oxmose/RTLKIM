@@ -743,16 +743,10 @@ void cpu_setup_gdt(void)
                      KERNEL_DATA_SEGMENT_BASE_16, KERNEL_DATA_SEGMENT_LIMIT_16,
                      kernel_data_16_seg_type, kernel_data_16_seg_flags);
 
-    format_gdt_entry(&cpu_gdt[TSS_SEGMENT / 8],
-                     (uintptr_t)&cpu_tss,
-                     ((uintptr_t)(&cpu_tss)) + sizeof(cpu_tss_entry_t),
-                     tss_seg_type, tss_seg_flags);
-
-    for(i = 1; i < MAX_CPU_COUNT; ++i)
+    for(i = 0; i < MAX_CPU_COUNT; ++i)
     {
         format_gdt_entry(&cpu_gdt[(TSS_SEGMENT + i * 0x08) / 8],
-                         (uintptr_t)&cpu_tss[i - 1],
-                         ((uintptr_t)(&cpu_tss[i - 1])) +
+                         (uintptr_t)&cpu_tss[i],
                             sizeof(cpu_tss_entry_t),
                          tss_seg_type, tss_seg_flags);
     }
@@ -825,7 +819,7 @@ void cpu_setup_tss(void)
     memset(cpu_tss, 0, sizeof(cpu_tss_entry_t) * MAX_CPU_COUNT);
 
     /* Set basic values */
-    for(i = 0; i < MAX_CPU_COUNT - 1; ++i)
+    for(i = 0; i < MAX_CPU_COUNT; ++i)
     {
         cpu_tss[i].ss0 = KERNEL_DS_32;
         cpu_tss[i].esp0 = (uintptr_t)(cpu_stacks[i] + KERNEL_STACK_SIZE);

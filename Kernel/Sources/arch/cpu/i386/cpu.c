@@ -69,8 +69,8 @@ static const uint32_t* cpu_ids;
 /** @brief CPU LAPICs array. */
 static const local_apic_t** cpu_lapics;
 
-/** @brief Number of CPU that completed the init sequence. */
-static volatile uint32_t init_seq_end;
+/** @brief Initialization sequence flag. */
+volatile uint32_t init_seq_end;
 
 /** @brief AP boot code location. */
 extern uint8_t init_ap_code;
@@ -98,7 +98,7 @@ extern void __cpu_smp_loader_init(void);
  * error code and the eflags register value.
  */
 static void sse_use_exception_handler(cpu_state_t* cpu_state,
-                                      uint32_t int_id,
+                                      uintptr_t int_id,
                                       stack_state_t* stack_state)
 {
     uint8_t* fxregs_addr;
@@ -498,7 +498,7 @@ void cpu_init_thread_context(void (*entry_point)(void),
     /* Set EIP, ESP and EBP */
     thread->cpu_context.eip = (uintptr_t)entry_point;
     thread->cpu_context.esp = (uintptr_t)&thread->stack[stack_index - 17];
-    thread->cpu_context.ebp = (uintptr_t)&thread->stack[stack_index - 1];
+    thread->cpu_context.ebp = (uintptr_t)&thread->stack + stack_index - 1;
 
     /* Set CR3 and free page table */
     thread->cpu_context.cr3 = page_table_address;
@@ -1504,7 +1504,7 @@ OS_RETURN_E cpu_smp_init(void)
     cpu_smp_test();
 #endif
 
-    return err;
+    return OS_NO_ERR;
 }
 
 uint32_t cpu_get_booted_cpu_count(void)

@@ -426,7 +426,7 @@ OS_RETURN_E keyboard_init(void)
     return err;
 }
 
-uint32_t keyboard_read(char* buffer, const uint32_t size)
+uint32_t keyboard_read(char* buffer, const size_t size)
 {
     uint32_t    read = 0;
 
@@ -450,7 +450,7 @@ uint32_t keyboard_read(char* buffer, const uint32_t size)
     return read;
 }
 
-uint32_t keyboard_secure_read(char* buffer, const uint32_t size)
+uint32_t keyboard_secure_read(char* buffer, const size_t size)
 {
     /* Read string */
     uint32_t new_size = keyboard_read(buffer, size);

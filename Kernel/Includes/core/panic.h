@@ -56,7 +56,7 @@
  * @warning Panic should never be called, it must only be used as an interrupt
  * handler.
  */
-void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state);
+void panic(cpu_state_t* cpu_state, uintptr_t int_id, stack_state_t* stack_state);
 
 /**
  * @brief Calls the panic interrupt line.

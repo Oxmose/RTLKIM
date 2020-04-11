@@ -52,7 +52,7 @@ static uint32_t nmi_panic_code = 0;
  * FUNCTIONS
  ******************************************************************************/
 
-void panic(cpu_state_t* cpu_state, uint32_t int_id, stack_state_t* stack_state)
+void panic(cpu_state_t* cpu_state, uintptr_t int_id, stack_state_t* stack_state)
 {
     uint32_t CR0;
     uint32_t CR2;

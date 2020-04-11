@@ -114,10 +114,10 @@ static spinlock_t lock = SPINLOCK_INIT_VALUE;
     );                                   \
 }
 
-#define INVAL_TLB(virt_addr)            \
+#define INVAL_TLB()                      \
 {                                        \
     __asm__ __volatile__(                \
-        "mov %%cr3, %%eax\n\tmov %%eax, %%cr3": :"r"(virt_addr) : "memory"     \
+        "mov %%cr3, %%eax\n\tmov %%eax, %%cr3": : : "eax"     \
     );                                   \
 }
 
@@ -334,9 +334,7 @@ static OS_RETURN_E kernel_mmap_internal(const void* virt_addr,
                                         const uint8_t cache_enabled,
                                         const uint8_t hardware)
 {
-    (void)read_only;
     (void)exec;
-    (void)cache_enabled;
 
     uintptr_t   virt_align;
     uintptr_t   phys_align;

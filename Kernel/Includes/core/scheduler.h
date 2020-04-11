@@ -36,9 +36,9 @@
 #define IDLE_THREAD_PRIORITY    KERNEL_LOWEST_PRIORITY
 
 /** @brief Defines the idle task's stack size in bytes. */
-#define SCHEDULER_IDLE_STACK_SIZE 0x1000
+#define SCHEDULER_IDLE_STACK_SIZE 0x4000
 /** @brief Defines the init task's stack size in bytes. */
-#define SCHEDULER_INIT_STACK_SIZE 0x2000
+#define SCHEDULER_INIT_STACK_SIZE 0x4000
 /** @brief Defines the main task's stack size in bytes. */
 #define SCHEDULER_MAIN_STACK_SIZE KERNEL_STACK_SIZE
 

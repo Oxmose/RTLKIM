@@ -20,9 +20,11 @@ init:
 
 ifeq ($(arch), i386)
 	@$(MAKE) -f ./$(MK_DIR)/Makei386.mk
+else ifeq ($(arch), x86_64)
+	@$(MAKE) -f ./$(MK_DIR)/Makex86.mk
 else
 	@echo "\e[1m\e[31mERROR You must select an architecture!\e[22m\e[39m"
-	@echo "Example: make arch=[i386]\n"
+	@echo "Example: make arch=[i386, x86_64]\n"
 	@exit 1
 endif 
 
@@ -30,34 +32,43 @@ clean:
 
 ifeq ($(arch), i386)
 	@$(MAKE) clean -f ./$(MK_DIR)/Makei386.mk
+else ifeq ($(arch), x86_64)
+	@$(MAKE) clean -f ./$(MK_DIR)/Makex86.mk
 else
 	@$(MAKE) clean -f ./$(MK_DIR)/Makei386.mk
+	@$(MAKE) clean -f ./$(MK_DIR)/Makex86.mk
 endif 
 
 run:
 ifeq ($(arch), i386)
 	@$(MAKE) run -f ./$(MK_DIR)/Makei386.mk
+else ifeq ($(arch), x86_64)
+	@$(MAKE) run -f ./$(MK_DIR)/Makex86.mk
 else
 	@echo "\e[1m\e[31mERROR You must select an architecture!\e[22m\e[39m"
-	@echo "Example: make arch=[i386]\n"
+	@echo "Example: make arch=[i386, x86_64]\n"
 	@exit 1
 endif 
 
 qemu-test-mode:
 ifeq ($(arch), i386)
 	@$(MAKE) qemu-test-mode -f ./$(MK_DIR)/Makei386.mk
+else ifeq ($(arch), x86_64)
+	@$(MAKE) qemu-test-mode  -f ./$(MK_DIR)/Makex86.mk
 else
 	@echo "\e[1m\e[31mERROR You must select an architecture!\e[22m\e[39m"
-	@echo "Example: make arch=[i386]\n"
+	@echo "Example: make arch=[i386, x86_64]\n"
 	@exit 1
 endif 
 
 debug:
 ifeq ($(arch), i386)
 	@$(MAKE) debug -f ./$(MK_DIR)/Makei386.mk
+else ifeq ($(arch), x86_64)
+	@$(MAKE) debug  -f ./$(MK_DIR)/Makex86.mk
 else
 	@echo "\e[1m\e[31mERROR You must select an architecture!\e[22m\e[39m"
-	@echo "Example: make arch=[i386]\n"
+	@echo "Example: make arch=[i386, x86_64]\n"
 	@exit 1
 endif 
 
@@ -65,8 +76,10 @@ endif
 bootable: all
 ifeq ($(arch), i386)
 	@$(MAKE) bootable -f ./$(MK_DIR)/Makei386.mk
+else ifeq ($(arch), x86_64)
+	@$(MAKE) bootable  -f ./$(MK_DIR)/Makex86.mk
 else
 	@echo "\e[1m\e[31mERROR You must select an architecture!\e[22m\e[39m"
-	@echo "Example: make arch=[i386]\n"
+	@echo "Example: make arch=[i386, x86_64]\n"
 	@exit 1
 endif 

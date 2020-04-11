@@ -174,7 +174,7 @@ struct kernel_thread
     virtual_cpu_context_t cpu_context;
 
     /** @brief Thread's stack. */
-    uint32_t* stack;
+    uintptr_t* stack;
 
     /** @brief Thread's stack size. */
     uint32_t stack_size;

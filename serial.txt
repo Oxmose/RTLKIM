@@ -1,0 +1,624 @@
+[DEBUG] [SERIAL] Serial initialization end
+[OK] GDT Initialized at 0xfffff0000012e000
+[OK] IDT Initialized at 0xfffff0000012d000
+[OK] TSS Initialized at 0xfffff0000013e090
+[OK] VGA driver initialized[DEBUG] Kickstarting the kernel
+ ============================== Kickstarting UTK ==============================
+[INFO] CPU Vendor: GenuineIntel
+[INFO] CPU Features: SSE3 - PCLMULQDQ - VMX - SSSE3 - CX16 - PCID - SSE41 - SSE42 - MOVBE - POPCNT - AESNI - XSAVE - AVX - RDRAND - FPU - VME - DE - PSE - TSC - MSR - PAE - MCE - CX8 - APIC - SEP - MTRR - PGE - MCA - CMOV - PAT - PSE36 - CLFLUSH - MMX - FXSR - SSE - SSE2 - HTT - SYSCALL - XD - RDTSCP - X64 - LAHF_LM - ABM - PREFETCH - UTK
+[OK] Kernel heap initialized
+[OK] Kernel interrupt manager initialized
+[OK] Kernel exception manager initialized
+[DEBUG] Reading memory configuration from 0x0000000000010000
+[INFO] === Kernel memory map
+[INFO] Area 0x0000000000000000 -> 0x000000000009fc00 | 01 |               639KB
+[INFO] Area 0x000000000009fc00 -> 0x00000000000a0000 | 02 |                 1KB
+[INFO] Area 0x00000000000f0000 -> 0x0000000000100000 | 02 |                64KB
+[INFO] Area 0x0000000000100000 -> 0x00000000dbff0000 | 01 |           3603392KB
+[INFO] Area 0x00000000dbff0000 -> 0x00000000dc000000 | 03 |                64KB
+[INFO] Area 0x00000000fec00000 -> 0x00000000fec01000 | 02 |                 4KB
+[INFO] Area 0x00000000fee00000 -> 0x00000000fee01000 | 02 |                 4KB
+[INFO] Area 0x00000000fffc0000 -> 0x0000000100000000 | 02 |               256KB
+[INFO] Area 0x0000000100000000 -> 0x0000000299500000 | 01 |           6706176KB
+[INFO] === Kernel memory layout
+[INFO] Code    0xfffff00000109000 -> 0xfffff000001223e1 |               100KB
+[INFO] RO-Data 0xfffff00000123000 -> 0xfffff0000012bbb0 |                34KB
+[INFO] Data    0xfffff0000012c000 -> 0xfffff0000012c3b4 |                 0KB
+[INFO] BSS     0xfffff0000012d000 -> 0xfffff0000014bf58 |               123KB
+[INFO] Config  0xfffff0000014c000 -> 0xfffff00000157530 |                45KB
+[INFO] Heap    0xfffff00000158000 -> 0xfffff00000958000 |              8192KB
+[DEBUG] Added free frame area 0x0000000000958000 -> 0x00000000dbff0000 (3510MB)
+[DEBUG] Added free frame area 0x0000000100000000 -> 0x0000000299500000 (6549MB)
+[DEBUG] Added free page area 0x0000000000100000 -> 0x00000000dbff0000 (3518MB)
+[DEBUG] Next free page range: 0x0000000100000000
+[DEBUG] Added free page area 0x0000000100000000 -> 0xfffff00000000000 (4278185984MB)
+[DEBUG] Next free page range: 0x0000000100000000
+[OK] Memory pools initialized
+[DEBUG] Initializing paging
+[DEBUG] Mapped kernel section at 0xfffff00000109000 -> 0xfffff000001223e1
+[DEBUG] Mapped kernel section at 0xfffff00000123000 -> 0xfffff0000012bbb0
+[DEBUG] Mapped kernel section at 0xfffff0000012c000 -> 0xfffff0000012c3b4
+[DEBUG] Mapped kernel section at 0xfffff0000012d000 -> 0xfffff0000014bf58
+[DEBUG] Mapped kernel section at 0xfffff0000014c000 -> 0xfffff00000157530
+[DEBUG] Mapped kernel section at 0xfffff00000158000 -> 0xfffff00000958000
+[DEBUG] Request HW mappping at 0x00000000000b8000 -> 0x00000000000b8000 (4000B)
+[DEBUG] Allocated 1 frames, at 0x0000000000958000 
+[DEBUG] Allocated 1 frames, at 0x0000000000959000 
+[DEBUG] Allocated 1 frames, at 0x000000000095a000 
+[DEBUG] Mapped page at 0x00000000000b8000 -> 0x00000000000b8000
+[DEBUG] Paging enabled
+[OK] Paging enabled
+[DEBUG] Request HW mappping at 0x00000000000e0000 -> 0x00000000000e0000 (131072B)
+[DEBUG] Mapped page at 0x00000000000e0000 -> 0x00000000000e0000
+[DEBUG] Mapped page at 0x00000000000e1000 -> 0x00000000000e1000
+[DEBUG] Mapped page at 0x00000000000e2000 -> 0x00000000000e2000
+[DEBUG] Mapped page at 0x00000000000e3000 -> 0x00000000000e3000
+[DEBUG] Mapped page at 0x00000000000e4000 -> 0x00000000000e4000
+[DEBUG] Mapped page at 0x00000000000e5000 -> 0x00000000000e5000
+[DEBUG] Mapped page at 0x00000000000e6000 -> 0x00000000000e6000
+[DEBUG] Mapped page at 0x00000000000e7000 -> 0x00000000000e7000
+[DEBUG] Mapped page at 0x00000000000e8000 -> 0x00000000000e8000
+[DEBUG] Mapped page at 0x00000000000e9000 -> 0x00000000000e9000
+[DEBUG] Mapped page at 0x00000000000ea000 -> 0x00000000000ea000
+[DEBUG] Mapped page at 0x00000000000eb000 -> 0x00000000000eb000
+[DEBUG] Mapped page at 0x00000000000ec000 -> 0x00000000000ec000
+[DEBUG] Mapped page at 0x00000000000ed000 -> 0x00000000000ed000
+[DEBUG] Mapped page at 0x00000000000ee000 -> 0x00000000000ee000
+[DEBUG] Mapped page at 0x00000000000ef000 -> 0x00000000000ef000
+[DEBUG] Mapped page at 0x00000000000f0000 -> 0x00000000000f0000
+[DEBUG] Mapped page at 0x00000000000f1000 -> 0x00000000000f1000
+[DEBUG] Mapped page at 0x00000000000f2000 -> 0x00000000000f2000
+[DEBUG] Mapped page at 0x00000000000f3000 -> 0x00000000000f3000
+[DEBUG] Mapped page at 0x00000000000f4000 -> 0x00000000000f4000
+[DEBUG] Mapped page at 0x00000000000f5000 -> 0x00000000000f5000
+[DEBUG] Mapped page at 0x00000000000f6000 -> 0x00000000000f6000
+[DEBUG] Mapped page at 0x00000000000f7000 -> 0x00000000000f7000
+[DEBUG] Mapped page at 0x00000000000f8000 -> 0x00000000000f8000
+[DEBUG] Mapped page at 0x00000000000f9000 -> 0x00000000000f9000
+[DEBUG] Mapped page at 0x00000000000fa000 -> 0x00000000000fa000
+[DEBUG] Mapped page at 0x00000000000fb000 -> 0x00000000000fb000
+[DEBUG] Mapped page at 0x00000000000fc000 -> 0x00000000000fc000
+[DEBUG] Mapped page at 0x00000000000fd000 -> 0x00000000000fd000
+[DEBUG] Mapped page at 0x00000000000fe000 -> 0x00000000000fe000
+[DEBUG] Mapped page at 0x00000000000ff000 -> 0x00000000000ff000
+[DEBUG] Request HW mappping at 0x00000000000e0000 -> 0x00000000000e0000 (4096B)
+[DEBUG] Mapped page at 0x00000000000e0000 -> 0x00000000000e0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095b000 
+[DEBUG] Allocated 1 frames, at 0x000000000095c000 
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff1000 -> 0x00000000dbff1000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff1000 -> 0x00000000dbff1000
+[DEBUG] Request HW mappping at 0x00000000dbff2000 -> 0x00000000dbff2000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff2000 -> 0x00000000dbff2000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[INFO] Exceeded CPU count (4), ignoring CPU 4
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[OK] ACPI initialized
+[OK] PIC initialized
+[DEBUG] Request HW mappping at 0x00000000fec00000 -> 0x00000000fec00000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095d000 
+[DEBUG] Mapped page at 0x00000000fec00000 -> 0x00000000fec00000
+[OK] IO-APIC initialized
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095e000 
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[OK] LAPIC initialized
+[OK] PIT initialized
+[OK] RTC initialized
+[OK] LAPIC timer initialized
+[OK] Timer factory initialized
+[OK] SSE initialized
+[OK] Keyboard initialized
+[ERROR] ATA device MASTER at 0x1f0 error [29]
+[OK] ATA-PIO initialized
+[INFO] Init 4 CPU cores
+[INFO] Main core ID 0
+[DEBUG] Request HW mappping at 0x0000000000004000 -> 0x0000000000004000 (4096B)
+[DEBUG] Mapped page at 0x0000000000004000 -> 0x0000000000004000
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 1 booted, idling...
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 2 booted, idling...
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 3 booted, idling...
+[OK] SMP initialized
+[OK] Scheduler initialized
+
+ ================================ UTK Started ================================ 
+
+Starting Main
+Single core took: 500
+[DEBUG] [SERIAL] Serial initialization end
+[OK] GDT Initialized at 0xfffff0000012e000
+[OK] IDT Initialized at 0xfffff0000012d000
+[OK] TSS Initialized at 0xfffff0000013e090
+[OK] VGA driver initialized[DEBUG] Kickstarting the kernel
+ ============================== Kickstarting UTK ==============================
+[INFO] CPU Vendor: GenuineIntel
+[INFO] CPU Features: SSE3 - PCLMULQDQ - VMX - SSSE3 - CX16 - PCID - SSE41 - SSE42 - MOVBE - POPCNT - AESNI - XSAVE - AVX - RDRAND - FPU - VME - DE - PSE - TSC - MSR - PAE - MCE - CX8 - APIC - SEP - MTRR - PGE - MCA - CMOV - PAT - PSE36 - CLFLUSH - MMX - FXSR - SSE - SSE2 - HTT - SYSCALL - XD - RDTSCP - X64 - LAHF_LM - ABM - PREFETCH - UTK
+[OK] Kernel heap initialized
+[OK] Kernel interrupt manager initialized
+[OK] Kernel exception manager initialized
+[DEBUG] Reading memory configuration from 0x0000000000010000
+[INFO] === Kernel memory map
+[INFO] Area 0x0000000000000000 -> 0x000000000009fc00 | 01 |               639KB
+[INFO] Area 0x000000000009fc00 -> 0x00000000000a0000 | 02 |                 1KB
+[INFO] Area 0x00000000000f0000 -> 0x0000000000100000 | 02 |                64KB
+[INFO] Area 0x0000000000100000 -> 0x00000000dbff0000 | 01 |           3603392KB
+[INFO] Area 0x00000000dbff0000 -> 0x00000000dc000000 | 03 |                64KB
+[INFO] Area 0x00000000fec00000 -> 0x00000000fec01000 | 02 |                 4KB
+[INFO] Area 0x00000000fee00000 -> 0x00000000fee01000 | 02 |                 4KB
+[INFO] Area 0x00000000fffc0000 -> 0x0000000100000000 | 02 |               256KB
+[INFO] Area 0x0000000100000000 -> 0x0000000299500000 | 01 |           6706176KB
+[INFO] === Kernel memory layout
+[INFO] Code    0xfffff00000109000 -> 0xfffff000001223e1 |               100KB
+[INFO] RO-Data 0xfffff00000123000 -> 0xfffff0000012bbb0 |                34KB
+[INFO] Data    0xfffff0000012c000 -> 0xfffff0000012c3b4 |                 0KB
+[INFO] BSS     0xfffff0000012d000 -> 0xfffff0000014bf58 |               123KB
+[INFO] Config  0xfffff0000014c000 -> 0xfffff00000157530 |                45KB
+[INFO] Heap    0xfffff00000158000 -> 0xfffff00000958000 |              8192KB
+[DEBUG] Added free frame area 0x0000000000958000 -> 0x00000000dbff0000 (3510MB)
+[DEBUG] Added free frame area 0x0000000100000000 -> 0x0000000299500000 (6549MB)
+[DEBUG] Added free page area 0x0000000000100000 -> 0x00000000dbff0000 (3518MB)
+[DEBUG] Next free page range: 0x0000000100000000
+[DEBUG] Added free page area 0x0000000100000000 -> 0xfffff00000000000 (4278185984MB)
+[DEBUG] Next free page range: 0x0000000100000000
+[OK] Memory pools initialized
+[DEBUG] Initializing paging
+[DEBUG] Mapped kernel section at 0xfffff00000109000 -> 0xfffff000001223e1
+[DEBUG] Mapped kernel section at 0xfffff00000123000 -> 0xfffff0000012bbb0
+[DEBUG] Mapped kernel section at 0xfffff0000012c000 -> 0xfffff0000012c3b4
+[DEBUG] Mapped kernel section at 0xfffff0000012d000 -> 0xfffff0000014bf58
+[DEBUG] Mapped kernel section at 0xfffff0000014c000 -> 0xfffff00000157530
+[DEBUG] Mapped kernel section at 0xfffff00000158000 -> 0xfffff00000958000
+[DEBUG] Request HW mappping at 0x00000000000b8000 -> 0x00000000000b8000 (4000B)
+[DEBUG] Allocated 1 frames, at 0x0000000000958000 
+[DEBUG] Allocated 1 frames, at 0x0000000000959000 
+[DEBUG] Allocated 1 frames, at 0x000000000095a000 
+[DEBUG] Mapped page at 0x00000000000b8000 -> 0x00000000000b8000
+[DEBUG] Paging enabled
+[OK] Paging enabled
+[DEBUG] Request HW mappping at 0x00000000000e0000 -> 0x00000000000e0000 (131072B)
+[DEBUG] Mapped page at 0x00000000000e0000 -> 0x00000000000e0000
+[DEBUG] Mapped page at 0x00000000000e1000 -> 0x00000000000e1000
+[DEBUG] Mapped page at 0x00000000000e2000 -> 0x00000000000e2000
+[DEBUG] Mapped page at 0x00000000000e3000 -> 0x00000000000e3000
+[DEBUG] Mapped page at 0x00000000000e4000 -> 0x00000000000e4000
+[DEBUG] Mapped page at 0x00000000000e5000 -> 0x00000000000e5000
+[DEBUG] Mapped page at 0x00000000000e6000 -> 0x00000000000e6000
+[DEBUG] Mapped page at 0x00000000000e7000 -> 0x00000000000e7000
+[DEBUG] Mapped page at 0x00000000000e8000 -> 0x00000000000e8000
+[DEBUG] Mapped page at 0x00000000000e9000 -> 0x00000000000e9000
+[DEBUG] Mapped page at 0x00000000000ea000 -> 0x00000000000ea000
+[DEBUG] Mapped page at 0x00000000000eb000 -> 0x00000000000eb000
+[DEBUG] Mapped page at 0x00000000000ec000 -> 0x00000000000ec000
+[DEBUG] Mapped page at 0x00000000000ed000 -> 0x00000000000ed000
+[DEBUG] Mapped page at 0x00000000000ee000 -> 0x00000000000ee000
+[DEBUG] Mapped page at 0x00000000000ef000 -> 0x00000000000ef000
+[DEBUG] Mapped page at 0x00000000000f0000 -> 0x00000000000f0000
+[DEBUG] Mapped page at 0x00000000000f1000 -> 0x00000000000f1000
+[DEBUG] Mapped page at 0x00000000000f2000 -> 0x00000000000f2000
+[DEBUG] Mapped page at 0x00000000000f3000 -> 0x00000000000f3000
+[DEBUG] Mapped page at 0x00000000000f4000 -> 0x00000000000f4000
+[DEBUG] Mapped page at 0x00000000000f5000 -> 0x00000000000f5000
+[DEBUG] Mapped page at 0x00000000000f6000 -> 0x00000000000f6000
+[DEBUG] Mapped page at 0x00000000000f7000 -> 0x00000000000f7000
+[DEBUG] Mapped page at 0x00000000000f8000 -> 0x00000000000f8000
+[DEBUG] Mapped page at 0x00000000000f9000 -> 0x00000000000f9000
+[DEBUG] Mapped page at 0x00000000000fa000 -> 0x00000000000fa000
+[DEBUG] Mapped page at 0x00000000000fb000 -> 0x00000000000fb000
+[DEBUG] Mapped page at 0x00000000000fc000 -> 0x00000000000fc000
+[DEBUG] Mapped page at 0x00000000000fd000 -> 0x00000000000fd000
+[DEBUG] Mapped page at 0x00000000000fe000 -> 0x00000000000fe000
+[DEBUG] Mapped page at 0x00000000000ff000 -> 0x00000000000ff000
+[DEBUG] Request HW mappping at 0x00000000000e0000 -> 0x00000000000e0000 (4096B)
+[DEBUG] Mapped page at 0x00000000000e0000 -> 0x00000000000e0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095b000 
+[DEBUG] Allocated 1 frames, at 0x000000000095c000 
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff1000 -> 0x00000000dbff1000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff1000 -> 0x00000000dbff1000
+[DEBUG] Request HW mappping at 0x00000000dbff2000 -> 0x00000000dbff2000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff2000 -> 0x00000000dbff2000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[INFO] Exceeded CPU count (4), ignoring CPU 4
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[OK] ACPI initialized
+[OK] PIC initialized
+[DEBUG] Request HW mappping at 0x00000000fec00000 -> 0x00000000fec00000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095d000 
+[DEBUG] Mapped page at 0x00000000fec00000 -> 0x00000000fec00000
+[OK] IO-APIC initialized
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095e000 
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[OK] LAPIC initialized
+[OK] PIT initialized
+[OK] RTC initialized
+[OK] LAPIC timer initialized
+[OK] Timer factory initialized
+[OK] SSE initialized
+[OK] Keyboard initialized
+[ERROR] ATA device MASTER at 0x1f0 error [29]
+[OK] ATA-PIO initialized
+[INFO] Init 4 CPU cores
+[INFO] Main core ID 0
+[DEBUG] Request HW mappping at 0x0000000000004000 -> 0x0000000000004000 (4096B)
+[DEBUG] Mapped page at 0x0000000000004000 -> 0x0000000000004000
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 1 booted, idling...
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 2 booted, idling...
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 3 booted, idling...
+[OK] SMP initialized
+[OK] Scheduler initialized
+
+ ================================ UTK Started ================================ 
+
+Starting Main
+Single core took: 485
+[DEBUG] [SERIAL] Serial initialization end
+[OK] GDT Initialized at 0xfffff0000012e000
+[OK] IDT Initialized at 0xfffff0000012d000
+[OK] TSS Initialized at 0xfffff0000013e090
+[OK] VGA driver initialized[DEBUG] Kickstarting the kernel
+ ============================== Kickstarting UTK ==============================
+[INFO] CPU Vendor: GenuineIntel
+[INFO] CPU Features: SSE3 - PCLMULQDQ - VMX - SSSE3 - CX16 - PCID - SSE41 - SSE42 - MOVBE - POPCNT - AESNI - XSAVE - AVX - RDRAND - FPU - VME - DE - PSE - TSC - MSR - PAE - MCE - CX8 - APIC - SEP - MTRR - PGE - MCA - CMOV - PAT - PSE36 - CLFLUSH - MMX - FXSR - SSE - SSE2 - HTT - SYSCALL - XD - RDTSCP - X64 - LAHF_LM - ABM - PREFETCH - UTK
+[OK] Kernel heap initialized
+[OK] Kernel interrupt manager initialized
+[OK] Kernel exception manager initialized
+[DEBUG] Reading memory configuration from 0x0000000000010000
+[INFO] === Kernel memory map
+[INFO] Area 0x0000000000000000 -> 0x000000000009fc00 | 01 |               639KB
+[INFO] Area 0x000000000009fc00 -> 0x00000000000a0000 | 02 |                 1KB
+[INFO] Area 0x00000000000f0000 -> 0x0000000000100000 | 02 |                64KB
+[INFO] Area 0x0000000000100000 -> 0x00000000dbff0000 | 01 |           3603392KB
+[INFO] Area 0x00000000dbff0000 -> 0x00000000dc000000 | 03 |                64KB
+[INFO] Area 0x00000000fec00000 -> 0x00000000fec01000 | 02 |                 4KB
+[INFO] Area 0x00000000fee00000 -> 0x00000000fee01000 | 02 |                 4KB
+[INFO] Area 0x00000000fffc0000 -> 0x0000000100000000 | 02 |               256KB
+[INFO] Area 0x0000000100000000 -> 0x0000000299500000 | 01 |           6706176KB
+[INFO] === Kernel memory layout
+[INFO] Code    0xfffff00000109000 -> 0xfffff000001223e1 |               100KB
+[INFO] RO-Data 0xfffff00000123000 -> 0xfffff0000012bbb0 |                34KB
+[INFO] Data    0xfffff0000012c000 -> 0xfffff0000012c3b4 |                 0KB
+[INFO] BSS     0xfffff0000012d000 -> 0xfffff0000014bf58 |               123KB
+[INFO] Config  0xfffff0000014c000 -> 0xfffff00000157530 |                45KB
+[INFO] Heap    0xfffff00000158000 -> 0xfffff00000958000 |              8192KB
+[DEBUG] Added free frame area 0x0000000000958000 -> 0x00000000dbff0000 (3510MB)
+[DEBUG] Added free frame area 0x0000000100000000 -> 0x0000000299500000 (6549MB)
+[DEBUG] Added free page area 0x0000000000100000 -> 0x00000000dbff0000 (3518MB)
+[DEBUG] Next free page range: 0x0000000100000000
+[DEBUG] Added free page area 0x0000000100000000 -> 0xfffff00000000000 (4278185984MB)
+[DEBUG] Next free page range: 0x0000000100000000
+[OK] Memory pools initialized
+[DEBUG] Initializing paging
+[DEBUG] Mapped kernel section at 0xfffff00000109000 -> 0xfffff000001223e1
+[DEBUG] Mapped kernel section at 0xfffff00000123000 -> 0xfffff0000012bbb0
+[DEBUG] Mapped kernel section at 0xfffff0000012c000 -> 0xfffff0000012c3b4
+[DEBUG] Mapped kernel section at 0xfffff0000012d000 -> 0xfffff0000014bf58
+[DEBUG] Mapped kernel section at 0xfffff0000014c000 -> 0xfffff00000157530
+[DEBUG] Mapped kernel section at 0xfffff00000158000 -> 0xfffff00000958000
+[DEBUG] Request HW mappping at 0x00000000000b8000 -> 0x00000000000b8000 (4000B)
+[DEBUG] Allocated 1 frames, at 0x0000000000958000 
+[DEBUG] Allocated 1 frames, at 0x0000000000959000 
+[DEBUG] Allocated 1 frames, at 0x000000000095a000 
+[DEBUG] Mapped page at 0x00000000000b8000 -> 0x00000000000b8000
+[DEBUG] Paging enabled
+[OK] Paging enabled
+[DEBUG] Request HW mappping at 0x00000000000e0000 -> 0x00000000000e0000 (131072B)
+[DEBUG] Mapped page at 0x00000000000e0000 -> 0x00000000000e0000
+[DEBUG] Mapped page at 0x00000000000e1000 -> 0x00000000000e1000
+[DEBUG] Mapped page at 0x00000000000e2000 -> 0x00000000000e2000
+[DEBUG] Mapped page at 0x00000000000e3000 -> 0x00000000000e3000
+[DEBUG] Mapped page at 0x00000000000e4000 -> 0x00000000000e4000
+[DEBUG] Mapped page at 0x00000000000e5000 -> 0x00000000000e5000
+[DEBUG] Mapped page at 0x00000000000e6000 -> 0x00000000000e6000
+[DEBUG] Mapped page at 0x00000000000e7000 -> 0x00000000000e7000
+[DEBUG] Mapped page at 0x00000000000e8000 -> 0x00000000000e8000
+[DEBUG] Mapped page at 0x00000000000e9000 -> 0x00000000000e9000
+[DEBUG] Mapped page at 0x00000000000ea000 -> 0x00000000000ea000
+[DEBUG] Mapped page at 0x00000000000eb000 -> 0x00000000000eb000
+[DEBUG] Mapped page at 0x00000000000ec000 -> 0x00000000000ec000
+[DEBUG] Mapped page at 0x00000000000ed000 -> 0x00000000000ed000
+[DEBUG] Mapped page at 0x00000000000ee000 -> 0x00000000000ee000
+[DEBUG] Mapped page at 0x00000000000ef000 -> 0x00000000000ef000
+[DEBUG] Mapped page at 0x00000000000f0000 -> 0x00000000000f0000
+[DEBUG] Mapped page at 0x00000000000f1000 -> 0x00000000000f1000
+[DEBUG] Mapped page at 0x00000000000f2000 -> 0x00000000000f2000
+[DEBUG] Mapped page at 0x00000000000f3000 -> 0x00000000000f3000
+[DEBUG] Mapped page at 0x00000000000f4000 -> 0x00000000000f4000
+[DEBUG] Mapped page at 0x00000000000f5000 -> 0x00000000000f5000
+[DEBUG] Mapped page at 0x00000000000f6000 -> 0x00000000000f6000
+[DEBUG] Mapped page at 0x00000000000f7000 -> 0x00000000000f7000
+[DEBUG] Mapped page at 0x00000000000f8000 -> 0x00000000000f8000
+[DEBUG] Mapped page at 0x00000000000f9000 -> 0x00000000000f9000
+[DEBUG] Mapped page at 0x00000000000fa000 -> 0x00000000000fa000
+[DEBUG] Mapped page at 0x00000000000fb000 -> 0x00000000000fb000
+[DEBUG] Mapped page at 0x00000000000fc000 -> 0x00000000000fc000
+[DEBUG] Mapped page at 0x00000000000fd000 -> 0x00000000000fd000
+[DEBUG] Mapped page at 0x00000000000fe000 -> 0x00000000000fe000
+[DEBUG] Mapped page at 0x00000000000ff000 -> 0x00000000000ff000
+[DEBUG] Request HW mappping at 0x00000000000e0000 -> 0x00000000000e0000 (4096B)
+[DEBUG] Mapped page at 0x00000000000e0000 -> 0x00000000000e0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095b000 
+[DEBUG] Allocated 1 frames, at 0x000000000095c000 
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff1000 -> 0x00000000dbff1000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff1000 -> 0x00000000dbff1000
+[DEBUG] Request HW mappping at 0x00000000dbff2000 -> 0x00000000dbff2000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff2000 -> 0x00000000dbff2000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[INFO] Exceeded CPU count (4), ignoring CPU 4
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[OK] ACPI initialized
+[OK] PIC initialized
+[DEBUG] Request HW mappping at 0x00000000fec00000 -> 0x00000000fec00000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095d000 
+[DEBUG] Mapped page at 0x00000000fec00000 -> 0x00000000fec00000
+[OK] IO-APIC initialized
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095e000 
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[OK] LAPIC initialized
+[OK] PIT initialized
+[OK] RTC initialized
+[OK] LAPIC timer initialized
+[OK] Timer factory initialized
+[OK] SSE initialized
+[OK] Keyboard initialized
+[ERROR] ATA device MASTER at 0x1f0 error [29]
+[OK] ATA-PIO initialized
+[INFO] Init 4 CPU cores
+[INFO] Main core ID 0
+[DEBUG] Request HW mappping at 0x0000000000004000 -> 0x0000000000004000 (4096B)
+[DEBUG] Mapped page at 0x0000000000004000 -> 0x0000000000004000
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 1 booted, idling...
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 2 booted, idling...
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 3 booted, idling...
+[OK] SMP initialized
+[OK] Scheduler initialized
+
+ ================================ UTK Started ================================ 
+
+Starting Main
+Single core took: 485
+[DEBUG] [SERIAL] Serial initialization end
+[OK] GDT Initialized at 0xfffff0000012e000
+[OK] IDT Initialized at 0xfffff0000012d000
+[OK] TSS Initialized at 0xfffff0000013e090
+[OK] VGA driver initialized[DEBUG] Kickstarting the kernel
+ ============================== Kickstarting UTK ==============================
+[INFO] CPU Vendor: GenuineIntel
+[INFO] CPU Features: SSE3 - PCLMULQDQ - VMX - SSSE3 - CX16 - PCID - SSE41 - SSE42 - MOVBE - POPCNT - AESNI - XSAVE - AVX - RDRAND - FPU - VME - DE - PSE - TSC - MSR - PAE - MCE - CX8 - APIC - SEP - MTRR - PGE - MCA - CMOV - PAT - PSE36 - CLFLUSH - MMX - FXSR - SSE - SSE2 - HTT - SYSCALL - XD - RDTSCP - X64 - LAHF_LM - ABM - PREFETCH - UTK
+[OK] Kernel heap initialized
+[OK] Kernel interrupt manager initialized
+[OK] Kernel exception manager initialized
+[DEBUG] Reading memory configuration from 0x0000000000010000
+[INFO] === Kernel memory map
+[INFO] Area 0x0000000000000000 -> 0x000000000009fc00 | 01 |               639KB
+[INFO] Area 0x000000000009fc00 -> 0x00000000000a0000 | 02 |                 1KB
+[INFO] Area 0x00000000000f0000 -> 0x0000000000100000 | 02 |                64KB
+[INFO] Area 0x0000000000100000 -> 0x00000000dbff0000 | 01 |           3603392KB
+[INFO] Area 0x00000000dbff0000 -> 0x00000000dc000000 | 03 |                64KB
+[INFO] Area 0x00000000fec00000 -> 0x00000000fec01000 | 02 |                 4KB
+[INFO] Area 0x00000000fee00000 -> 0x00000000fee01000 | 02 |                 4KB
+[INFO] Area 0x00000000fffc0000 -> 0x0000000100000000 | 02 |               256KB
+[INFO] Area 0x0000000100000000 -> 0x0000000299500000 | 01 |           6706176KB
+[INFO] === Kernel memory layout
+[INFO] Code    0xfffff00000109000 -> 0xfffff000001223e1 |               100KB
+[INFO] RO-Data 0xfffff00000123000 -> 0xfffff0000012bbb0 |                34KB
+[INFO] Data    0xfffff0000012c000 -> 0xfffff0000012c3b4 |                 0KB
+[INFO] BSS     0xfffff0000012d000 -> 0xfffff0000014bf58 |               123KB
+[INFO] Config  0xfffff0000014c000 -> 0xfffff00000157530 |                45KB
+[INFO] Heap    0xfffff00000158000 -> 0xfffff00000958000 |              8192KB
+[DEBUG] Added free frame area 0x0000000000958000 -> 0x00000000dbff0000 (3510MB)
+[DEBUG] Added free frame area 0x0000000100000000 -> 0x0000000299500000 (6549MB)
+[DEBUG] Added free page area 0x0000000000100000 -> 0x00000000dbff0000 (3518MB)
+[DEBUG] Next free page range: 0x0000000100000000
+[DEBUG] Added free page area 0x0000000100000000 -> 0xfffff00000000000 (4278185984MB)
+[DEBUG] Next free page range: 0x0000000100000000
+[OK] Memory pools initialized
+[DEBUG] Initializing paging
+[DEBUG] Mapped kernel section at 0xfffff00000109000 -> 0xfffff000001223e1
+[DEBUG] Mapped kernel section at 0xfffff00000123000 -> 0xfffff0000012bbb0
+[DEBUG] Mapped kernel section at 0xfffff0000012c000 -> 0xfffff0000012c3b4
+[DEBUG] Mapped kernel section at 0xfffff0000012d000 -> 0xfffff0000014bf58
+[DEBUG] Mapped kernel section at 0xfffff0000014c000 -> 0xfffff00000157530
+[DEBUG] Mapped kernel section at 0xfffff00000158000 -> 0xfffff00000958000
+[DEBUG] Request HW mappping at 0x00000000000b8000 -> 0x00000000000b8000 (4000B)
+[DEBUG] Allocated 1 frames, at 0x0000000000958000 
+[DEBUG] Allocated 1 frames, at 0x0000000000959000 
+[DEBUG] Allocated 1 frames, at 0x000000000095a000 
+[DEBUG] Mapped page at 0x00000000000b8000 -> 0x00000000000b8000
+[DEBUG] Paging enabled
+[OK] Paging enabled
+[DEBUG] Request HW mappping at 0x00000000000e0000 -> 0x00000000000e0000 (131072B)
+[DEBUG] Mapped page at 0x00000000000e0000 -> 0x00000000000e0000
+[DEBUG] Mapped page at 0x00000000000e1000 -> 0x00000000000e1000
+[DEBUG] Mapped page at 0x00000000000e2000 -> 0x00000000000e2000
+[DEBUG] Mapped page at 0x00000000000e3000 -> 0x00000000000e3000
+[DEBUG] Mapped page at 0x00000000000e4000 -> 0x00000000000e4000
+[DEBUG] Mapped page at 0x00000000000e5000 -> 0x00000000000e5000
+[DEBUG] Mapped page at 0x00000000000e6000 -> 0x00000000000e6000
+[DEBUG] Mapped page at 0x00000000000e7000 -> 0x00000000000e7000
+[DEBUG] Mapped page at 0x00000000000e8000 -> 0x00000000000e8000
+[DEBUG] Mapped page at 0x00000000000e9000 -> 0x00000000000e9000
+[DEBUG] Mapped page at 0x00000000000ea000 -> 0x00000000000ea000
+[DEBUG] Mapped page at 0x00000000000eb000 -> 0x00000000000eb000
+[DEBUG] Mapped page at 0x00000000000ec000 -> 0x00000000000ec000
+[DEBUG] Mapped page at 0x00000000000ed000 -> 0x00000000000ed000
+[DEBUG] Mapped page at 0x00000000000ee000 -> 0x00000000000ee000
+[DEBUG] Mapped page at 0x00000000000ef000 -> 0x00000000000ef000
+[DEBUG] Mapped page at 0x00000000000f0000 -> 0x00000000000f0000
+[DEBUG] Mapped page at 0x00000000000f1000 -> 0x00000000000f1000
+[DEBUG] Mapped page at 0x00000000000f2000 -> 0x00000000000f2000
+[DEBUG] Mapped page at 0x00000000000f3000 -> 0x00000000000f3000
+[DEBUG] Mapped page at 0x00000000000f4000 -> 0x00000000000f4000
+[DEBUG] Mapped page at 0x00000000000f5000 -> 0x00000000000f5000
+[DEBUG] Mapped page at 0x00000000000f6000 -> 0x00000000000f6000
+[DEBUG] Mapped page at 0x00000000000f7000 -> 0x00000000000f7000
+[DEBUG] Mapped page at 0x00000000000f8000 -> 0x00000000000f8000
+[DEBUG] Mapped page at 0x00000000000f9000 -> 0x00000000000f9000
+[DEBUG] Mapped page at 0x00000000000fa000 -> 0x00000000000fa000
+[DEBUG] Mapped page at 0x00000000000fb000 -> 0x00000000000fb000
+[DEBUG] Mapped page at 0x00000000000fc000 -> 0x00000000000fc000
+[DEBUG] Mapped page at 0x00000000000fd000 -> 0x00000000000fd000
+[DEBUG] Mapped page at 0x00000000000fe000 -> 0x00000000000fe000
+[DEBUG] Mapped page at 0x00000000000ff000 -> 0x00000000000ff000
+[DEBUG] Request HW mappping at 0x00000000000e0000 -> 0x00000000000e0000 (4096B)
+[DEBUG] Mapped page at 0x00000000000e0000 -> 0x00000000000e0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095b000 
+[DEBUG] Allocated 1 frames, at 0x000000000095c000 
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff1000 -> 0x00000000dbff1000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff1000 -> 0x00000000dbff1000
+[DEBUG] Request HW mappping at 0x00000000dbff2000 -> 0x00000000dbff2000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff2000 -> 0x00000000dbff2000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[INFO] Exceeded CPU count (4), ignoring CPU 4
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[DEBUG] Request HW mappping at 0x00000000dbff0000 -> 0x00000000dbff0000 (4096B)
+[DEBUG] Mapped page at 0x00000000dbff0000 -> 0x00000000dbff0000
+[OK] ACPI initialized
+[OK] PIC initialized
+[DEBUG] Request HW mappping at 0x00000000fec00000 -> 0x00000000fec00000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095d000 
+[DEBUG] Mapped page at 0x00000000fec00000 -> 0x00000000fec00000
+[OK] IO-APIC initialized
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Allocated 1 frames, at 0x000000000095e000 
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[OK] LAPIC initialized
+[OK] PIT initialized
+[OK] RTC initialized
+[OK] LAPIC timer initialized
+[OK] Timer factory initialized
+[OK] SSE initialized
+[OK] Keyboard initialized
+[ERROR] ATA device MASTER at 0x1f0 error [29]
+[OK] ATA-PIO initialized
+[INFO] Init 4 CPU cores
+[INFO] Main core ID 0
+[DEBUG] Request HW mappping at 0x0000000000004000 -> 0x0000000000004000 (4096B)
+[DEBUG] Mapped page at 0x0000000000004000 -> 0x0000000000004000
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 1 booted, idling...
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 2 booted, idling...
+[DEBUG] Request HW mappping at 0x00000000fee00000 -> 0x00000000fee00000 (4096B)
+[DEBUG] Mapped page at 0x00000000fee00000 -> 0x00000000fee00000
+[INFO] CPU 3 booted, idling...
+[OK] SMP initialized
+[OK] Scheduler initialized
+
+ ================================ UTK Started ================================ 
+
+Starting Main
+Single core took: 485

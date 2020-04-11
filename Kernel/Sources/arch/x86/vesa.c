@@ -1274,7 +1274,7 @@ void vesa_put_char(const char charactrer)
     last_printed_cursor = screen_cursor;
 }
 
-void vesa_console_write_keyboard(const char* string, const uint32_t size)
+void vesa_console_write_keyboard(const char* string, const size_t size)
 {
     /* Output each character of the string */
     uint32_t i;

@@ -291,6 +291,7 @@ OS_RETURN_E memalloc_init(void)
     uintptr_t   start;
     uintptr_t   next_limit;
     uintptr_t   next_start;
+    uintptr_t   prev_limit;
     OS_RETURN_E err;
 
     kernel_free_frames = NULL;
@@ -325,6 +326,7 @@ OS_RETURN_E memalloc_init(void)
 
     /* Map pages, peripherals are not available */
     start = (uintptr_t)&_kernel_start_phys;
+    prev_limit = 0;
     while(start)
     {
         /* Search for next limit */
@@ -341,19 +343,24 @@ OS_RETURN_E memalloc_init(void)
 
         if(i == memory_map_size)
         {
-            next_limit = ARCH_MAX_ADDRESS;
+            next_limit = KERNEL_MEM_OFFSET;
         }
 
         /* Search for next start */
         for(i = 0; i < memory_map_size; ++i)
         {
+            prev_limit = memory_map_data[i].limit;
             /* Check if free */
             if(memory_map_data[i].type == 1 &&
                memory_map_data[i].base > next_limit)
             {
-                next_start = memory_map_data[i].base;
+                next_start = memory_map_data[i].base;                
                 break;
             }
+        }
+        if(next_start == 0 && next_limit != KERNEL_MEM_OFFSET)
+        {
+            next_start = prev_limit;
         }
 
         err = add_free(start, next_limit - start, &kernel_free_pages);        
@@ -364,14 +371,11 @@ OS_RETURN_E memalloc_init(void)
 #if MEMORY_KERNEL_DEBUG == 1
         kernel_serial_debug("Added free page area 0x%p -> 0x%p (%uMB)\n",
                             start, next_limit, (next_limit - start) >> 20);
-#endif
-
-#if MEMORY_KERNEL_DEBUG == 1
         kernel_serial_debug("Next free page range: 0x%p\n",
-                            start);
+                            next_start);
 #endif
 
-        if(next_limit == ARCH_MAX_ADDRESS)
+        if(next_limit == KERNEL_MEM_OFFSET)
         {
             start = 0;
         }

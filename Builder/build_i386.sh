@@ -27,7 +27,7 @@ function build_kernel()
 {
     echo -e "\e[1m\e[34m========== Building Kernel\e[22m\e[39m"
     echo
-    cd Source
+    cd ../Kernel
     {
         make clean && make arch=i386 
     } > /dev/null
@@ -36,7 +36,7 @@ function build_kernel()
         exit $?
     fi
 
-    cd ..
+    cd ../Builder
 }
 
 function build_bootloader()
@@ -44,9 +44,9 @@ function build_bootloader()
     echo -e "\e[1m\e[34m========== Building Bootloader\e[22m\e[39m"
     echo
 
-    cd Bootloader/i386
+    cd ../Bootloader/i386
 
-    k_size=$(wc -c < ../../build/kernel.bin)
+    k_size=$(wc -c < ../../Builder/build/kernel.bin)
     k_size_sect=$(( $k_size / 512  * 2))
     k_left=$(( $k_size % 512 ))
     if [ $k_left -ne 0 ]
@@ -72,10 +72,10 @@ function build_bootloader()
     fi
 
     echo -e "\e[1m\e[34m========== Merging Images\e[22m\e[39m"
-    cp bin/bootloader.bin ../../build/bootloader.bin 
-    cd ../../build 
+    cp bin/bootloader.bin ../../Builder/build/bootloader.bin 
+    cd ../../Builder/build 
     cat bootloader.bin kernel.bin > os_binary.bin
-    cd ..
+    cd ../
 }
 
 PLATFORM=0
@@ -137,7 +137,7 @@ build_kernel
 
 if [ $PLATFORM -eq 1 ] && [ $BOOTLOADER -eq 1 ]
 then 
-    cp Source/Bin/kernel.bin ../QEMU_GRUB.bin
+    cp ../Kernel/Bin/kernel.bin QEMU_GRUB.bin
 
     echo -e "\e[1m\e[34m========== Image generated: QEMU_GRUB.bin\e[22m\e[39m"
     exit 0
@@ -145,7 +145,7 @@ fi
 
 if [ $PLATFORM -eq 1 ] && [ $BOOTLOADER -eq 2 ]
 then 
-    objcopy -O binary Source/Bin/kernel.bin build/kernel.bin
+    objcopy -O binary ../Kernel/Bin/kernel.bin build/kernel.bin
     if [ $? != 0 ]
     then
         exit $?
@@ -175,7 +175,7 @@ fi
 if [ $PLATFORM -eq 2 ] && [ $BOOTLOADER -eq 1 ]
 then 
     echo -e "\e[1m\e[34m========== Creating ISO Image\e[22m\e[39m"
-    cd Source/
+    cd ../Kernel/
     {
         make arch=i386 bootable
         if [ $? != 0 ]
@@ -183,8 +183,8 @@ then
             exit $?
         fi
     } > /dev/null
-    cd ..
-    mv Image/bootable.iso HW_GRUB.iso
+    cd ../Builder
+    mv Kernel/Image/bootable.iso HW_GRUB.iso
     echo
     echo -e "\e[1m\e[34m========== Image generated:HW_GRUB.iso\e[22m\e[39m"
     exit 0
@@ -192,7 +192,7 @@ fi
 
 if [ $PLATFORM -eq 2 ] && [ $BOOTLOADER -eq 2 ]
 then 
-    objcopy -O binary Source/Bin/kernel.bin build/kernel.bin
+    objcopy -O binary ../Kernel/Bin/kernel.bin build/kernel.bin
     if [ $? != 0 ]
     then
         exit $?

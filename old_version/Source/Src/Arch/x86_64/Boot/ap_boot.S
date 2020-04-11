@@ -90,6 +90,7 @@ ap_boot_loader_pm_:
     mov es, ax
     mov fs, ax
     mov gs, ax
+	mov ss, ax
 
     ; Set CR3
 	mov eax, [OFFSET_ADDR(ap_boot_pgdir_)]

@@ -33,7 +33,7 @@ endstruc
 ;-----------------------------------------------------------
 ; CODE REALOCATION
 ;-----------------------------------------------------------
-%define CODE_LOCATION      0x7100 ; Lease space for stack
+%define CODE_LOCATION      0x7100 ; Leave space for stack
 %define OFFSET_ADDR(addr)  (((addr) - low_mem) + CODE_LOCATION)
 
 ;-----------------------------------------------------------

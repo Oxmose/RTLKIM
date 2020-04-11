@@ -27,8 +27,6 @@ CHECKSUM    equ -(MAGIC + FLAGS)
 ; Kernel memory layout 
 KERNEL_MEM_OFFSET    equ 0xE0000000 ; WARNING This value should be updated to 
                                     ; fit other configuration files
-KERNEL_STACK_SIZE    equ 0x4000 ; WARNING This value should be updated to fit 
-                                ; other configuration files
 KERNEL_START_PAGE_ID equ (KERNEL_MEM_OFFSET >> 22)
 __kinit_low          equ (__kinit - KERNEL_MEM_OFFSET)
 
@@ -59,8 +57,6 @@ extern _kernel_bss_end
 
 extern cpu_gdt_ptr
 extern cpu_idt_ptr
-
-extern init_cpu_count
 
 extern kernel_pgdir
 
@@ -139,7 +135,8 @@ __kinit_high:
 
     ; Init stack
     mov eax, cpu_stacks
-    add eax, KERNEL_STACK_SIZE
+    mov ebx, [cpu_stack_size]
+    add eax, ebx
     mov esp, eax 
     mov ebp, esp
 
@@ -197,8 +194,8 @@ __cpu_smp_loader_init:
     rep  movsb                         ; Copy the code to low memory space
     
     pop ecx 
-    pop esi 
-    pop edi        
+    pop edi 
+    pop esi        
     ret
 
 ;-------------------------------------------------------------------------------
